@@ -1,0 +1,145 @@
+// app/acreditacion/page.tsx
+"use client";
+import { useState } from "react";
+import AreaSelector, { TipoArea } from "@/components/AreaSelector";
+import AccreditationForm, { DatosBasicos } from "@/components/AccreditationForm";
+import Image from "next/image";
+import Link from "next/link";
+import BotonFlotante from "@/components/BotonFlotante";
+import { useRouter } from "next/navigation";
+
+export default function AcreditacionPage() {
+  const [area, setArea] = useState<TipoArea | null>(null);
+  const [enviado, setEnviado] = useState<null | { nombre: string; apellido: string }>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const router = useRouter();
+
+  const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsNavigating(true);
+    router.push("/");
+  };
+
+  return (
+    <main className="min-h-screen w-full bg-gradient-to-br from-[#a10d79] via-[#3d2362] to-[#7518ef] relative">
+      {/* Overlay de loading */}
+      {isNavigating && (
+        <div className="fixed inset-0 bg-[#3d2362]/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+            <p className="text-white font-semibold">Cargando...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Decoración de fondo sutil */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-[#e8b543] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#7518ef] rounded-full blur-3xl"></div>
+      </div>
+
+      <BotonFlotante />
+
+      <div className="relative z-10 w-full flex flex-col items-center px-4 py-8">
+        {/* Botón volver - posicionado arriba a la izquierda */}
+        <Link
+          href="/"
+          onClick={handleBack}
+          className="fixed top-6 left-6 z-50 inline-flex items-center gap-2 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 font-medium transition-all px-4 py-2 rounded-full border border-white/30 hover:scale-105"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span className="hidden sm:inline">Volver</span>
+        </Link>
+
+        <div className="w-full max-w-2xl">
+          {/* Header compacto */}
+          <header className="mb-8 flex flex-col items-center text-center">
+            <div className="relative w-full max-w-md mb-4">
+              <Image
+                src="/img/DesafioInter.png"
+                alt="Logo del evento"
+                width={600}
+                height={200}
+                priority
+                className="w-full h-auto object-contain drop-shadow-2xl"
+              />
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+              Sistema de acreditación
+            </h1>
+            <p className="text-white/80 mt-2">
+              Universidad de Chile vs Racing de Avellaneda
+            </p>
+          </header>
+
+          {/* Indicador de pasos mejorado */}
+          <div className="mb-8 flex items-center justify-center gap-3 text-sm">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+              !area 
+                ? "bg-white text-[#a10d79] shadow-xl font-semibold" 
+                : "bg-white/20 text-white/70 border border-white/30 backdrop-blur-sm"
+            }`}>
+              <span className="font-semibold">1</span>
+              <span>Selecciona área</span>
+            </div>
+            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+              area 
+                ? "bg-white text-[#a10d79] shadow-xl font-semibold" 
+                : "bg-white/20 text-white/70 border border-white/30 backdrop-blur-sm"
+            }`}>
+              <span className="font-semibold">2</span>
+              <span>Completa datos</span>
+            </div>
+          </div>
+
+          {!area && <AreaSelector onSelect={(a) => setArea(a)} />}
+
+          {area && !enviado && (
+            <AccreditationForm
+              area={area}
+              onCancel={() => setArea(null)}
+              onSuccess={(datos) => setEnviado({ nombre: datos.nombre, apellido: datos.apellido })}
+            />
+          )}
+
+          {enviado && (
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-8 shadow-2xl">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-[#e8b543] to-[#d7834f] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">¡Solicitud enviada!</h2>
+                <p className="text-gray-700 text-lg mb-6">
+                  Gracias <span className="font-semibold text-[#a10d79]">{enviado.nombre} {enviado.apellido}</span>.
+                  <br />
+                  Hemos recibido tu solicitud de acreditación.
+                </p>
+                <button 
+                  className="px-6 py-3 bg-gradient-to-r from-[#e8b543] via-[#d7834f] to-[#b5301f] text-white font-semibold rounded-xl hover:from-[#d7834f] hover:via-[#b5301f] hover:to-[#b5301f] transition-all duration-300 hover:scale-105 shadow-lg" 
+                  onClick={() => { setEnviado(null); setArea(null); }}
+                >
+                  Enviar otra solicitud
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="py-6 text-center mt-8">
+          <p className="text-white/40 text-xs">
+            © 2026 Somos VS. Todos los derechos reservados.
+          </p>
+        </footer>
+      </div>
+    </main>
+  );
+}
