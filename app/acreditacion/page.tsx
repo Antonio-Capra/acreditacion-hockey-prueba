@@ -135,6 +135,9 @@ export default function AcreditacionPage() {
 
         {/* Footer */}
         <footer className="py-6 text-center mt-8">
+            <p className="text-sm text-white/60">
+            Sistema de acreditación oficial • Registro rápido y seguro
+          </p> <br />
           <p className="text-white/40 text-xs">
             © 2026 Somos VS. Todos los derechos reservados.
           </p>
