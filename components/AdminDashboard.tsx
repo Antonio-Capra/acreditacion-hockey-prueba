@@ -240,32 +240,32 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#a10d79] via-[#3d2362] to-[#7518ef] relative overflow-hidden">
+    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] relative overflow-hidden">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-[#e8b543] rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#7518ef] rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 flex flex-col items-center px-4 py-8">
         <div className="w-full max-w-7xl">
           {/* Encabezado con logo */}
-          <header className="mb-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 border border-purple-100">
+          <header className="mb-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 border border-blue-100">
             <div className="flex flex-col gap-4">
               {/* Logo y título */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="relative w-24 h-10 sm:w-32 sm:h-12">
                     <Image
-                      src="/img/VSLogo.png"
-                      alt="Logo VS"
+                      src="/UCimg/EscudoUC.png"
+                      alt="Escudo UC"
                       fill
                       className="object-contain"
                       priority
                     />
                   </div>
-                  <div className="border-l-2 border-purple-300 pl-3 sm:pl-4">
-                    <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#a10d79] via-[#3d2362] to-[#7518ef] bg-clip-text text-transparent">
+                  <div className="border-l-2 border-blue-300 pl-3 sm:pl-4">
+                    <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#1e5799] to-[#7db9e8] bg-clip-text text-transparent">
                       Panel de acreditaciones
                     </h1>
                     <p className="text-gray-600 text-xs sm:text-sm">
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <button
                     onClick={exportCSV}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#e8b543] to-[#f5d574] hover:shadow-lg text-gray-800 font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] hover:shadow-lg text-white hover:text-[#1e5799] font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
           </header>
 
           {/* Filtros */}
-          <div className="mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-5 border border-purple-100">
+          <div className="mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-5 border border-blue-100">
             <h2 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Filtros de búsqueda</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               <div className="relative">
@@ -310,13 +310,13 @@ export default function AdminDashboard() {
                 </div>
                 <input
                   placeholder="Buscar por nombre, rut, correo, empresa"
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
               </div>
               <select
-                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
               >
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
                 ))}
               </select>
               <select
-                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
               </select>
               <button
                 onClick={load}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#a10d79] via-[#3d2362] to-[#7518ef] hover:shadow-lg text-white font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -350,10 +350,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Tabla */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-purple-100">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-blue-100">
             {/* Indicador de scroll en móvil */}
-            <div className="block sm:hidden bg-purple-50 px-4 py-2 text-center">
-              <p className="text-xs text-purple-700">
+            <div className="block sm:hidden bg-blue-50 px-4 py-2 text-center">
+              <p className="text-xs text-blue-700">
                 <svg className="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-gradient-to-r from-[#a10d79] via-[#3d2362] to-[#7518ef] text-white">
+                <thead className="bg-gradient-to-r from-[#1e5799] to-[#7db9e8] text-white">
                   <tr>
                     <th className="text-left p-2 sm:p-4 font-semibold border-r border-white/20 text-xs sm:text-sm">Fecha</th>
                     <th className="text-left p-2 sm:p-4 font-semibold border-r border-white/20 text-xs sm:text-sm">Área</th>
@@ -421,7 +421,7 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="p-2 sm:p-4 whitespace-nowrap border-r border-gray-200">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               {r.area}
                             </span>
                           </td>
@@ -513,7 +513,7 @@ export default function AdminDashboard() {
                               </button>
                               <button
                                 onClick={() => eliminarRegistro(r)}
-                                className="group relative inline-flex items-center justify-center rounded-lg bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
+                                className="group relative inline-flex items-center justify-center rounded-lg bg-[#2989d8] hover:bg-[#207cca] text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
                                 title="Eliminar registro"
                               >
                                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Desafío Internacional - Sistema de Acreditación",
-  description: "Sistema de acreditación oficial para el partido Universidad de Chile vs Racing de Avellaneda",
+  title: "Acreditaciones UC",
+  description: "Sistema de acreditación oficial para el partido Universidad Católica vs Deportes Concepción - 8 de Febrero 2026, Claro Arena",
+  icons: {
+    icon: "/UCimg/EscudoUC.png",
+  },
 };
 
 export default function RootLayout({
@@ -23,9 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${barlowCondensed.variable} antialiased font-sans`}
+        style={{ fontFamily: 'var(--font-barlow-condensed), sans-serif' }}
         suppressHydrationWarning
       >
         {children}

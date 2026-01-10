@@ -39,7 +39,7 @@ listener.subscription.unsubscribe();
 
 if (loading) {
     return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-[#a10d79] via-[#3d2362] to-[#7518ef] flex items-center justify-center">
+      <div className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <svg className="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
