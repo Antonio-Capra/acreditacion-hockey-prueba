@@ -5,7 +5,8 @@ import AreaSelector, { TipoArea } from "@/components/AreaSelector";
 import AccreditationForm, { DatosBasicos } from "@/components/AccreditationForm";
 import Image from "next/image";
 import Link from "next/link";
-import BotonFlotante from "@/components/BotonFlotante";
+import BotonFlotante from "@/components/BotonesFlotantes/BotonFlotante";
+import IconoFlotanteAdmin from "@/components/BotonesFlotantes/IconoFlotanteAdmin";
 import { useRouter } from "next/navigation";
 
 export default function AcreditacionPage() {
@@ -38,6 +39,7 @@ export default function AcreditacionPage() {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#7518ef] rounded-full blur-3xl"></div>
       </div>
 
+      <IconoFlotanteAdmin />
       <BotonFlotante />
 
       <div className="relative z-10 w-full flex flex-col items-center px-4 py-8">
@@ -56,21 +58,22 @@ export default function AcreditacionPage() {
         <div className="w-full max-w-2xl">
           {/* Header compacto */}
           <header className="mb-8 flex flex-col items-center text-center">
-            <div className="relative w-full max-w-md mb-4">
+            <div className="relative w-full max-w-md mb-4 min-h-[120px] flex items-center justify-center">
               <Image
                 src="/img/DesafioInter.png"
                 alt="Logo del evento"
                 width={600}
                 height={200}
                 priority
-                className="w-full h-auto object-contain drop-shadow-2xl"
+                className="w-full h-auto object-contain drop-shadow-2xl opacity-0 animate-fade-in"
+                style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
               />
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg opacity-0 animate-fade-in-delay-1">
               Sistema de acreditación
             </h1>
-            <p className="text-white/80 mt-2">
+            <p className="text-white/80 mt-2 opacity-0 animate-fade-in-delay-2">
               Universidad de Chile vs Racing de Avellaneda
             </p>
           </header>

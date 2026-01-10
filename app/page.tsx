@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import BotonFlotante from "@/components/BotonFlotante";
+import BotonFlotante from "@/components/BotonesFlotantes/BotonFlotante";
+import IconoFlotanteAdmin from "@/components/BotonesFlotantes/IconoFlotanteAdmin";
 
 export default function LandingPage() {
   const [showContent, setShowContent] = useState(false);
@@ -42,6 +43,7 @@ export default function LandingPage() {
         </div>
       )}
 
+      <IconoFlotanteAdmin />
       <BotonFlotante />
 
       {/* Primera sección: Logo grande */}
