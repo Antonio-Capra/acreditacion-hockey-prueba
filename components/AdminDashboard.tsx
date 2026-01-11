@@ -131,9 +131,9 @@ export default function AdminDashboard() {
       )
     );
 
-    // 2) Envía el correo (no rompe nada si falla)
+    // 2) Envía el correo automático
     try {
-      await fetch("/api/send-approval", {
+      const response = await fetch("/api/send-approval", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -144,8 +144,25 @@ export default function AdminDashboard() {
           area: r.area,
         }),
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("Error al enviar correo:", result);
+        alert(
+          `⚠️ Acreditación aprobada, pero el correo NO se envió.\n\nError: ${result.error || "Desconocido"}\n\nVerifica la configuración de RESEND_API_KEY en el archivo .env`
+        );
+      } else {
+        console.log("✅ Correo enviado exitosamente a:", r.correo);
+        alert(
+          `✅ Acreditación aprobada correctamente.\n\nSe ha enviado un correo de confirmación a: ${r.correo}`
+        );
+      }
     } catch (e) {
-      console.error("Error enviando correo de aprobación", e);
+      console.error("Error enviando correo de aprobación:", e);
+      alert(
+        `⚠️ Acreditación aprobada, pero hubo un problema al enviar el correo.\n\nRevisa la consola del navegador (F12) para más detalles.`
+      );
     }
   };
 
@@ -257,7 +274,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3">
                   <div className="relative w-24 h-10 sm:w-32 sm:h-12">
                     <Image
-                      src="/img/VSLogo.png"
+                      src="/img/VSLogo1.png"
                       alt="Logo VS"
                       fill
                       className="object-contain"

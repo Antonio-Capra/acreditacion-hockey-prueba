@@ -15,17 +15,120 @@ export async function POST(req: Request) {
     }
 
     // 👇 Para desarrollo: usar SIEMPRE onboarding@resend.dev
-    const from = "Acreditaciones Mundial <onboarding@resend.dev>";
+    const from = "Acreditaciones VS <onboarding@resend.dev>";
 
     const { data, error } = await resend.emails.send({
       from,
       to: correo,
-      subject: "Acreditación aprobada · Mundial de Hockey",
+      subject: "✅ Tu acreditación ha sido aprobada",
       html: `
-        <p>Hola ${nombre} ${apellido},</p>
-        <p>Tu acreditación para el área <strong>${area}</strong> ha sido aprobada.</p>
-        <p>Zona asignada: <strong>${zona ?? "Por definir"}</strong></p>
-        <p>¡Te esperamos en el evento!</p>
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Acreditación Aprobada</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <!-- Contenedor principal -->
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; max-width: 100%;">
+                  
+                  <!-- Header con gradiente -->
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #a10d79 0%, #3d2362 50%, #7518ef 100%); padding: 40px 30px; text-align: center;">
+                      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 10px 0; font-weight: 700;">
+                        <img src="https://res.cloudinary.com/dubnevl0h/image/upload/v1768136932/Dise%C3%B1o_sin_t%C3%ADtulo_1_z8qzbu.png" alt="Logo VS" style="height: 70px; margin-bottom: 10px;" />
+                      </h1>
+                      <p style="color: #e8b543; font-size: 16px; margin: 0; font-weight: 600;">
+                        Sistema de Acreditaciones
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Contenido principal -->
+                  <tr>
+                    <td style="padding: 40px 30px;">
+                      <!-- Badge de éxito -->
+                      <div style="text-align: center; margin-bottom: 30px;">
+                        <div style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 16px;">
+                          ✅ Acreditación Aprobada
+                        </div>
+                      </div>
+
+                      <!-- Saludo -->
+                      <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0; line-height: 1.6;">
+                        Hola <strong>${nombre} ${apellido}</strong>,
+                      </p>
+
+                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
+                        Nos complace informarte que tu solicitud de acreditación ha sido <strong style="color: #10b981;">aprobada exitosamente</strong>.
+                      </p>
+
+                      <!-- Información en tarjetas -->
+                      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                        <tr>
+                          <td style="padding: 20px; background-color: #f9fafb; border-left: 4px solid #a10d79; border-radius: 8px; margin-bottom: 15px;">
+                            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                              Área de Acreditación
+                            </p>
+                            <p style="margin: 0; color: #1f2937; font-size: 18px; font-weight: 700;">
+                              ${area}
+                            </p>
+                          </td>
+                        </tr>
+                        <tr><td style="height: 15px;"></td></tr>
+                        <tr>
+                          <td style="padding: 20px; background-color: #fef3c7; border-left: 4px solid #e8b543; border-radius: 8px;">
+                            <p style="margin: 0 0 8px 0; color: #92400e; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                              Zona Asignada
+                            </p>
+                            <p style="margin: 0; color: #78350f; font-size: 18px; font-weight: 700;">
+                              ${zona ?? "Por confirmar"}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Instrucciones -->
+                      <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                        <p style="margin: 0 0 10px 0; color: #1e40af; font-weight: 600; font-size: 15px;">
+                          📋 Próximos pasos:
+                        </p>
+                        <ul style="margin: 0; padding-left: 20px; color: #1e3a8a; font-size: 14px; line-height: 1.8;">
+                          <li>Guarda este correo como comprobante</li>
+                          <li>Presentate en el evento con tu documento de identidad</li>
+                          <li>Dirígete a la zona de acreditaciones para recoger tu credencial</li>
+                        </ul>
+                      </div>
+
+                      <p style="font-size: 16px; color: #4b5563; margin: 0; line-height: 1.6;">
+                        ¡Te esperamos en el evento!
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                      <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
+                        <strong>Acreditaciones VS</strong>
+                      </p>
+                      <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.6;">
+                        Este es un correo automático, por favor no responder.<br>
+                        Para consultas, contacta al equipo organizador.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `,
     });
 

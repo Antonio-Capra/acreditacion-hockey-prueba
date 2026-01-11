@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "VS - Sistema de Acreditación",
   description: "Sistema de acreditación oficial para el partido Universidad de Chile vs Racing de Avellaneda",
+   icons: {
+    icon: "/img/VSLogo.png",
+  }
 };
 
 export default function RootLayout({

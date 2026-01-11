@@ -38,7 +38,7 @@ export default function AdminLogin() {
           <div className="flex justify-center mb-8">
             <div className="relative w-48 h-20">
               <Image
-                src="/img/VSLogo.png"
+                src="/img/VSLogo1.png"
                 alt="Logo VS"
                 fill
                 className="object-contain"
