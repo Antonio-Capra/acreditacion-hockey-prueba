@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Desafío Internacional - Sistema de Acreditación",
+  title: "VS - Sistema de Acreditación",
   description: "Sistema de acreditación oficial para el partido Universidad de Chile vs Racing de Avellaneda",
 };
 

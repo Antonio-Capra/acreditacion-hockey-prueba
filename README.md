@@ -1,6 +1,6 @@
-# Sistema de Acreditación Hockey
+# Sistema de Acreditación
 
-Sistema de gestión de acreditaciones para eventos de hockey desarrollado con Next.js y TypeScript.
+Sistema de gestión de acreditaciones desarrollado con Next.js y TypeScript.
 
 ## 🚀 Tecnologías
 
