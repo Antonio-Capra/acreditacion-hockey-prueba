@@ -119,7 +119,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
               <div className="bg-white rounded-full p-4 sm:p-6 mb-4 shadow-2xl">
                 <Image
-                  src="/img/Racing.png"
+                  src="/img/Racing1.png"
                   alt="Escudo Racing de Avellaneda"
                   width={250}
                   height={250}
