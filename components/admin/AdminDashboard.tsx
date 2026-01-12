@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Modal from "@/components/common/Modal";
+import { AREAS, ZONA_LABEL, ZONAS } from "@/constants/areas";
+import { Acreditacion, Zona } from "@/types";
 import Image from "next/image";
 
-/** ===== Tipos ===== */
-type Zona = `Zona ${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}` | null;
+export type Row = Acreditacion;
 
-export type Row = {
-  id: number;
+/** ===== Componente ===== */
+export default function AdminDashboard() {
   area: string;
   nombre: string;
   apellido: string;

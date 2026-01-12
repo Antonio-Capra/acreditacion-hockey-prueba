@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "../../lib/supabase";
-import AdminLogin from "../../components/AdminLogin";
-import AdminDashboard from "../../components/AdminDashboard";
+import AdminLogin from "@/components/auth/AdminLogin";
+import AdminDashboard from "@/components/admin/AdminDashboard";
 
 
 export default function AdminPage() {
