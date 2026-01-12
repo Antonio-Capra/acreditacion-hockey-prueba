@@ -15,7 +15,7 @@ export default function AreaSelector({ onSelect }: { onSelect: (a: TipoArea) => 
           <button
             key={a}
             onClick={() => onSelect(a)}
-            className="rounded-xl bg-gradient-to-r from-[#a10d79] to-[#7518ef] text-white px-4 py-3 text-left transition-all duration-200
+            className="rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] text-white px-4 py-3 text-left transition-all duration-200
                        hover:from-[#7518ef] hover:to-[#a10d79] hover:scale-105 hover:shadow-lg
                        focus:outline-none focus:ring-2 focus:ring-[#e8b543]"
           >

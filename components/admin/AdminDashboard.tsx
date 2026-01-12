@@ -11,50 +11,17 @@ export type Row = Acreditacion;
 
 /** ===== Componente ===== */
 export default function AdminDashboard() {
-  area: string;
-  nombre: string;
-  apellido: string;
-  rut: string;
-  correo: string;
-  empresa: string | null;
-  status: "pendiente" | "aprobado" | "rechazado";
-  created_at: string;
-  zona: Zona;
-};
-
-/** ===== Constantes ===== */
-const AREAS = [
-  "Producción",
-  "Voluntarios",
-  "Auspiciadores",
-  "Proveedores",
-  "Fan Fest",
-  "Prensa",
-] as const;
-
-// Mapa: valor guardado -> texto que se muestra en el select
-const ZONA_LABEL: Record<Exclude<Zona, null>, string> = {
-  "Zona 1": "Zona 1.Venue",
-  "Zona 2": "Zona 2.FOP",
-  "Zona 3": "Zona 3.LOC",
-  "Zona 4": "Zona 4.VIP",
-  "Zona 5": "Zona 5.Broadcast",
-  "Zona 6": "Zona 6.Officials",
-  "Zona 7": "Zona 7.Media",
-  "Zona 8": "Zona 8.Volunteers",
-  "Zona 9": "Todas las zonas", // 👈 nueva zona, texto frontend
-};
-
-// Lista de valores internos (lo que se guarda en la BD)
-const ZONAS = Object.keys(ZONA_LABEL) as Exclude<Zona, null>[];
-
-/** ===== Componente ===== */
-export default function AdminDashboard() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [area, setArea] = useState<string>("*");
   const [status, setStatus] = useState<string>("*");
+  
+  // Estados del Modal
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
+  const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,11 +78,23 @@ export default function AdminDashboard() {
 
   const aprobarConZona = async (r: Row) => {
     if (!r.zona) {
-      alert("Debes seleccionar una zona antes de aprobar.");
+      setConfirmTitle("⚠️ Zona no seleccionada");
+      setConfirmMessage("Debes seleccionar una zona antes de aprobar.");
+      setConfirmAction(() => () => {});
+      setConfirmModal(true);
       return;
     }
 
-    // 1) Actualiza en Supabase
+    setConfirmTitle("Confirmar aprobación");
+    setConfirmMessage(`¿Deseas aprobar la acreditación de ${r.nombre} ${r.apellido} en ${r.zona}?\n\nSe enviará un correo de confirmación.`);
+    setConfirmAction(() => async () => {
+      await ejecutarAprobacion(r);
+      setConfirmModal(false);
+    });
+    setConfirmModal(true);
+  };
+
+  const ejecutarAprobacion = async (r: Row) => {
     const { error } = await supabase
       .from("acreditaciones")
       .update({ status: "aprobado", zona: r.zona })
@@ -126,16 +105,14 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Actualiza estado local
     setRows((prev) =>
       prev.map((x) =>
         x.id === r.id ? { ...x, status: "aprobado", zona: r.zona } : x
       )
     );
 
-    // 2) Envía el correo (no rompe nada si falla)
     try {
-      await fetch("/api/send-approval", {
+      const response = await fetch("/api/send-approval", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,30 +123,43 @@ export default function AdminDashboard() {
           area: r.area,
         }),
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("Error al enviar correo:", result);
+        alert(
+          `⚠️ Acreditación aprobada, pero el correo NO se envió.\n\nError: ${result.error || "Desconocido"}\n\nVerifica la configuración de RESEND_API_KEY en el archivo .env`
+        );
+      } else {
+        console.log("✅ Correo enviado exitosamente a:", r.correo);
+      }
     } catch (e) {
-      console.error("Error enviando correo de aprobación", e);
+      console.error("Error enviando correo de aprobación:", e);
+      alert(
+        `⚠️ Acreditación aprobada, pero hubo un problema al enviar el correo.\n\nRevisa la consola del navegador (F12) para más detalles.`
+      );
     }
   };
 
   const eliminarRegistro = async (r: Row) => {
-    const confirmacion = window.confirm(
-      `¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.apellido}?\n\nEsta acción no se puede deshacer.`
-    );
+    setConfirmTitle("⚠️ Confirmar eliminación");
+    setConfirmMessage(`¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.apellido}?\n\nEsta acción no se puede deshacer.`);
+    setConfirmAction(() => async () => {
+      const { error } = await supabase
+        .from("acreditaciones")
+        .delete()
+        .eq("id", r.id);
 
-    if (!confirmacion) return;
+      if (error) {
+        alert(`Error al eliminar: ${error.message}`);
+        return;
+      }
 
-    const { error } = await supabase
-      .from("acreditaciones")
-      .delete()
-      .eq("id", r.id);
-
-    if (error) {
-      alert(`Error al eliminar: ${error.message}`);
-      return;
-    }
-
-    // Elimina del estado local
-    setRows((prev) => prev.filter((x) => x.id !== r.id));
+      setRows((prev) => prev.filter((x) => x.id !== r.id));
+      setConfirmModal(false);
+    });
+    setConfirmModal(true);
   };
 
   const exportCSV = () => {
@@ -242,7 +232,8 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] relative overflow-hidden">
+    <>
+    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] via-[#2989d8] to-[#7db9e8] relative overflow-hidden">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
@@ -252,22 +243,22 @@ export default function AdminDashboard() {
       <div className="relative z-10 flex flex-col items-center px-4 py-8">
         <div className="w-full max-w-7xl">
           {/* Encabezado con logo */}
-          <header className="mb-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 border border-blue-100">
+          <header className="mb-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 border border-purple-100">
             <div className="flex flex-col gap-4">
               {/* Logo y título */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="relative w-24 h-10 sm:w-32 sm:h-12">
                     <Image
-                      src="/UCimg/EscudoUC.png"
-                      alt="Escudo UC"
+                      src="/img/VSLogo1.png"
+                      alt="Logo VS"
                       fill
                       className="object-contain"
                       priority
                     />
                   </div>
-                  <div className="border-l-2 border-blue-300 pl-3 sm:pl-4">
-                    <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#1e5799] to-[#7db9e8] bg-clip-text text-transparent">
+                  <div className="border-l-2 border-purple-300 pl-3 sm:pl-4">
+                    <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] bg-clip-text text-transparent">
                       Panel de acreditaciones
                     </h1>
                     <p className="text-gray-600 text-xs sm:text-sm">
@@ -278,7 +269,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <button
                     onClick={exportCSV}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] hover:shadow-lg text-white hover:text-[#1e5799] font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#e8b543] to-[#f5d574] hover:shadow-lg text-gray-800 font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -301,7 +292,7 @@ export default function AdminDashboard() {
           </header>
 
           {/* Filtros */}
-          <div className="mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-5 border border-blue-100">
+          <div className="mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-5 border border-purple-100">
             <h2 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Filtros de búsqueda</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               <div className="relative">
@@ -312,13 +303,13 @@ export default function AdminDashboard() {
                 </div>
                 <input
                   placeholder="Buscar por nombre, rut, correo, empresa"
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
               </div>
               <select
-                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
               >
@@ -330,7 +321,7 @@ export default function AdminDashboard() {
                 ))}
               </select>
               <select
-                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
@@ -341,7 +332,7 @@ export default function AdminDashboard() {
               </select>
               <button
                 onClick={load}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -352,10 +343,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Tabla */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-blue-100">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-purple-100">
             {/* Indicador de scroll en móvil */}
-            <div className="block sm:hidden bg-blue-50 px-4 py-2 text-center">
-              <p className="text-xs text-blue-700">
+            <div className="block sm:hidden bg-purple-50 px-4 py-2 text-center">
+              <p className="text-xs text-purple-700">
                 <svg className="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
@@ -364,7 +355,7 @@ export default function AdminDashboard() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-gradient-to-r from-[#1e5799] to-[#7db9e8] text-white">
+                <thead className="bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] text-white">
                   <tr>
                     <th className="text-left p-2 sm:p-4 font-semibold border-r border-white/20 text-xs sm:text-sm">Fecha</th>
                     <th className="text-left p-2 sm:p-4 font-semibold border-r border-white/20 text-xs sm:text-sm">Área</th>
@@ -423,7 +414,7 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="p-2 sm:p-4 whitespace-nowrap border-r border-gray-200">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                               {r.area}
                             </span>
                           </td>
@@ -457,19 +448,19 @@ export default function AdminDashboard() {
                           <td className="p-2 sm:p-4 whitespace-nowrap border-r border-gray-200">
                             <select
                               className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none bg-white"
-                              value={r.zona ?? ""}
+                              value={r.zona ? String(r.zona) : ""}
                               onChange={(e) => {
-                                const val = e.target.value as Zona | "";
+                                const val = e.target.value;
                                 setZona(
                                   r.id,
-                                  val === "" ? null : (val as Zona)
+                                  val === "" ? null : (val as Exclude<Zona, null>)
                                 );
                               }}
                             >
                               <option value="">Sin asignar</option>
                               {ZONAS.map((z) => (
-                                <option key={z} value={z}>
-                                  {ZONA_LABEL[z]}
+                                <option key={z} value={String(z)}>
+                                  {z && ZONA_LABEL[z as Exclude<Zona, null>]}
                                 </option>
                               ))}
                             </select>
@@ -515,7 +506,7 @@ export default function AdminDashboard() {
                               </button>
                               <button
                                 onClick={() => eliminarRegistro(r)}
-                                className="group relative inline-flex items-center justify-center rounded-lg bg-[#2989d8] hover:bg-[#207cca] text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
+                                className="group relative inline-flex items-center justify-center rounded-lg bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
                                 title="Eliminar registro"
                               >
                                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -538,8 +529,26 @@ export default function AdminDashboard() {
         </div>
       </div>
     </main>
+
+    <Modal
+      isOpen={confirmModal}
+      type={confirmTitle.includes("Confirmar aprobación") ? "confirm" : "warning"}
+      title={confirmTitle}
+      message={confirmMessage}
+      buttons={[
+        {
+          label: confirmTitle.includes("Confirmar aprobación") ? "Confirmar" : "Eliminar",
+          onClick: confirmAction,
+          variant: confirmTitle.includes("Eliminar") ? "danger" : "primary",
+        },
+        {
+          label: "Cancelar",
+          onClick: () => setConfirmModal(false),
+          variant: "secondary",
+        },
+      ]}
+      onClose={() => setConfirmModal(false)}
+    />
+    </>
   );
 }
-
-
-

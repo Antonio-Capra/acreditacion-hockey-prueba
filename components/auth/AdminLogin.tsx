@@ -22,7 +22,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] flex items-center justify-center px-4 py-10 relative overflow-hidden">
+    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] via-[#2989d8] to-[#7db9e8] flex items-center justify-center px-4 py-10 relative overflow-hidden">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
@@ -33,13 +33,13 @@ export default function AdminLogin() {
 
       {/* Tarjeta de login */}
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-blue-100">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-purple-100">
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <div className="relative w-48 h-20">
               <Image
-                src="/UCimg/EscudoUC.png"
-                alt="Escudo UC"
+                src="/img/VSLogo1.png"
+                alt="Logo VS"
                 fill
                 className="object-contain"
                 priority
@@ -71,7 +71,7 @@ export default function AdminLogin() {
                   </svg>
                 </div>
                 <input
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
                   type="email"
                   placeholder="admin@ejemplo.com"
                   value={email}
@@ -93,7 +93,7 @@ export default function AdminLogin() {
                   </svg>
                 </div>
                 <input
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-12 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-12 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
@@ -133,7 +133,7 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-3.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full rounded-xl bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-3.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? (
                 <>

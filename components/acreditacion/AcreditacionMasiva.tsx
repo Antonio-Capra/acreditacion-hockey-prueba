@@ -191,7 +191,7 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
           <button
             type="submit"
             disabled={!file || isLoading}
-            className="w-full px-4 py-2 bg-gradient-to-r from-[#a10d79] to-[#7518ef] text-white font-semibold rounded-lg hover:from-[#7518ef] hover:to-[#a10d79] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-gradient-to-r from-[#1e5799] to-[#7db9e8] text-white font-semibold rounded-lg hover:from-[#7518ef] hover:to-[#a10d79] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
