@@ -48,7 +48,7 @@ export default function LandingPage() {
       <BotonFlotante />
 
       {/* Primera sección: Logo grande */}
-      <section className="min-h-screen w-full flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden">
+      <section className="min-h-screen md:min-h-screen w-full flex flex-col items-center justify-between px-3 sm:px-4 py-6 sm:py-8 md:py-12 relative overflow-hidden">
         {/* Decoración de fondo */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-96 h-96 bg-[#e8b543] rounded-full blur-3xl"></div>
@@ -56,7 +56,7 @@ export default function LandingPage() {
         </div>
 
         {/* Espaciador superior */}
-        <div></div>
+        <div className="h-2 sm:h-4"></div>
 
         {/* Logo centrado */}
         <div className="w-full max-w-4xl text-center relative z-10">
@@ -73,10 +73,10 @@ export default function LandingPage() {
         </div>
 
         {/* Indicador de scroll en la parte inferior */}
-        <div className="opacity-0 animate-fade-in-delay-3 pb-8">
-          <div className="flex flex-col items-center gap-2 text-white/60 animate-bounce">
-            <span className="text-sm">Desliza para continuar</span>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="opacity-0 animate-fade-in-delay-3 pb-2 sm:pb-4 md:pb-8">
+          <div className="flex flex-col items-center gap-1 sm:gap-2 text-white/60 animate-bounce">
+            <span className="text-xs sm:text-sm">Desliza para continuar</span>
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </div>
