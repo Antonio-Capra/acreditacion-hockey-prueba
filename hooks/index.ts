@@ -1,1 +1,1 @@
-export { useModal } from './useModal';
+// Exportar hooks aquí si es necesario
