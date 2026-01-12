@@ -1,7 +1,4 @@
-// Archivo para simplificar imports de componentes
-// Uso: import { Modal, BotonFlotante } from '@/components'
-
-export { default as Modal } from './common/Modal';
+// Componentes comunes
 export { default as BotonFlotante } from './common/BotonesFlotantes/BotonFlotante';
 export { default as BotonVolver } from './common/BotonesFlotantes/BotonVolver';
 export { default as IconoFlotanteAdmin } from './common/BotonesFlotantes/IconoFlotanteAdmin';
