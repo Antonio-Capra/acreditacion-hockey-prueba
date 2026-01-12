@@ -33,13 +33,13 @@ export default function AdminLogin() {
 
       {/* Tarjeta de login */}
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-purple-100">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-blue-100">
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <div className="relative w-48 h-20">
               <Image
-                src="/img/VSLogo1.png"
-                alt="Logo VS"
+                src="/UCimg/EscudoUC.png"
+                alt="Logo UC"
                 fill
                 className="object-contain"
                 priority
@@ -71,7 +71,7 @@ export default function AdminLogin() {
                   </svg>
                 </div>
                 <input
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   type="email"
                   placeholder="admin@ejemplo.com"
                   value={email}
@@ -93,7 +93,7 @@ export default function AdminLogin() {
                   </svg>
                 </div>
                 <input
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-12 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-12 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}

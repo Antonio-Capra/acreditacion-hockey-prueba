@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import BotonFlotante from "@/components/BotonesFlotantes/BotonFlotante";
-import IconoFlotanteAdmin from "@/components/BotonesFlotantes/IconoFlotanteAdmin";
+import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
+import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
 
 export default function LandingPage() {
   const [showContent, setShowContent] = useState(false);

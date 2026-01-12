@@ -243,21 +243,21 @@ export default function AdminDashboard() {
       <div className="relative z-10 flex flex-col items-center px-4 py-8">
         <div className="w-full max-w-7xl">
           {/* Encabezado con logo */}
-          <header className="mb-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 border border-purple-100">
+          <header className="mb-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 border border-blue-100">
             <div className="flex flex-col gap-4">
               {/* Logo y título */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="relative w-24 h-10 sm:w-32 sm:h-12">
                     <Image
-                      src="/img/VSLogo1.png"
-                      alt="Logo VS"
+                      src="/UCimg/EscudoUC.png"
+                      alt="Logo UC"
                       fill
                       className="object-contain"
                       priority
                     />
                   </div>
-                  <div className="border-l-2 border-purple-300 pl-3 sm:pl-4">
+                  <div className="border-l-2 border-blue-300 pl-3 sm:pl-4">
                     <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] bg-clip-text text-transparent">
                       Panel de acreditaciones
                     </h1>
@@ -292,7 +292,7 @@ export default function AdminDashboard() {
           </header>
 
           {/* Filtros */}
-          <div className="mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-5 border border-purple-100">
+          <div className="mb-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-5 border border-blue-100">
             <h2 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Filtros de búsqueda</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               <div className="relative">
@@ -303,13 +303,13 @@ export default function AdminDashboard() {
                 </div>
                 <input
                   placeholder="Buscar por nombre, rut, correo, empresa"
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
               </div>
               <select
-                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
               >
@@ -321,7 +321,7 @@ export default function AdminDashboard() {
                 ))}
               </select>
               <select
-                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
@@ -343,10 +343,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Tabla */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-purple-100">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-blue-100">
             {/* Indicador de scroll en móvil */}
-            <div className="block sm:hidden bg-purple-50 px-4 py-2 text-center">
-              <p className="text-xs text-purple-700">
+            <div className="block sm:hidden bg-blue-50 px-4 py-2 text-center">
+              <p className="text-xs text-blue-700">
                 <svg className="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
                     <tr>
                       <td className="p-8 text-center" colSpan={9}>
                         <div className="flex items-center justify-center gap-3">
-                          <svg className="animate-spin h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
@@ -414,7 +414,7 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="p-2 sm:p-4 whitespace-nowrap border-r border-gray-200">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               {r.area}
                             </span>
                           </td>
@@ -447,7 +447,7 @@ export default function AdminDashboard() {
                           {/* Zona (select editable con etiquetas nuevas) */}
                           <td className="p-2 sm:p-4 whitespace-nowrap border-r border-gray-200">
                             <select
-                              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none bg-white"
+                              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white"
                               value={r.zona ? String(r.zona) : ""}
                               onChange={(e) => {
                                 const val = e.target.value;

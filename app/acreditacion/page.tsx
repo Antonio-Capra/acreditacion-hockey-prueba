@@ -1,12 +1,12 @@
-// app/acreditacion/page.tsx
 "use client";
 import { useState } from "react";
-import AreaSelector, { TipoArea } from "@/components/AreaSelector";
-import AccreditationForm, { DatosBasicos } from "@/components/AccreditationForm";
+import AreaSelector, { TipoArea } from "@/components/acreditacion/AreaSelector";
+import AccreditationForm, { DatosBasicos } from "@/components/acreditacion/AccreditationForm";
+import AcreditacionMasiva from "@/components/acreditacion/AcreditacionMasiva";
 import Image from "next/image";
 import Link from "next/link";
-import BotonFlotante from "@/components/BotonesFlotantes/BotonFlotante";
-import IconoFlotanteAdmin from "@/components/BotonesFlotantes/IconoFlotanteAdmin";
+import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
+import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
 import { useRouter } from "next/navigation";
 
 export default function AcreditacionPage() {
@@ -23,7 +23,6 @@ export default function AcreditacionPage() {
 
   return (
     <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] relative">
-      {/* Overlay de loading */}
       {isNavigating && (
         <div className="fixed inset-0 bg-[#1e5799]/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
@@ -33,7 +32,6 @@ export default function AcreditacionPage() {
         </div>
       )}
 
-      {/* Decoración de fondo sutil */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#FFFFFF] rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
@@ -43,7 +41,6 @@ export default function AcreditacionPage() {
       <BotonFlotante />
 
       <div className="relative z-10 w-full flex flex-col items-center px-4 py-8">
-        {/* Botón volver - posicionado arriba a la izquierda */}
         <Link
           href="/"
           onClick={handleBack}
@@ -56,7 +53,6 @@ export default function AcreditacionPage() {
         </Link>
 
         <div className="w-full max-w-2xl">
-          {/* Header compacto */}
           <header className="mb-8 flex flex-col items-center text-center">
             <div className="relative w-full max-w-xs mb-4 min-h-[60px] flex items-center justify-center">
               <Image
@@ -78,7 +74,6 @@ export default function AcreditacionPage() {
             </p>
           </header>
 
-          {/* Indicador de pasos mejorado */}
           <div className="mb-8 flex items-center justify-center gap-3 text-sm">
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
               !area 
@@ -101,7 +96,14 @@ export default function AcreditacionPage() {
             </div>
           </div>
 
-          {!area && <AreaSelector onSelect={(a) => setArea(a)} />}
+          {!area && (
+            <>
+              <AreaSelector onSelect={(a) => setArea(a)} />
+              <div className="mt-8">
+                <AcreditacionMasiva />
+              </div>
+            </>
+          )}
 
           {area && !enviado && (
             <AccreditationForm
@@ -136,11 +138,11 @@ export default function AcreditacionPage() {
           )}
         </div>
 
-        {/* Footer */}
         <footer className="py-6 text-center mt-8">
-            <p className="text-sm text-white/60">
+          <p className="text-sm text-white/60">
             Sistema de acreditación oficial • Registro rápido y seguro
-          </p> <br />
+          </p>
+          <br />
           <p className="text-white/40 text-xs">
             Desarrollado por VS para Universidad Católica • © 2026
           </p>

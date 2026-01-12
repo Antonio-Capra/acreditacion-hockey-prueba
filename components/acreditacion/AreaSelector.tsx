@@ -2,6 +2,8 @@
 import { AREAS } from "@/constants/areas";
 import type { TipoArea } from "@/types";
 
+export type { TipoArea };
+
 export default function AreaSelector({ onSelect }: { onSelect: (a: TipoArea) => void }) {
   return (
     <section className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 shadow-2xl">
@@ -15,9 +17,9 @@ export default function AreaSelector({ onSelect }: { onSelect: (a: TipoArea) => 
           <button
             key={a}
             onClick={() => onSelect(a)}
-            className="rounded-xl bg-gradient-to-r from-[#1e5799] to-[#7db9e8] text-white px-4 py-3 text-left transition-all duration-200
-                       hover:from-[#7518ef] hover:to-[#a10d79] hover:scale-105 hover:shadow-lg
-                       focus:outline-none focus:ring-2 focus:ring-[#e8b543]"
+            className="rounded-xl bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white px-4 py-3 text-left transition-all duration-200
+                       hover:from-[#2989d8] hover:to-[#7db9e8] hover:scale-105 hover:shadow-lg
+                       focus:outline-none focus:ring-2 focus:ring-white/50"
           >
             <span className="block text-base font-semibold">{a}</span>
             <span className="block text-sm text-white/80">Continuar →</span>

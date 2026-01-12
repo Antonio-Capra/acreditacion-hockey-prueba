@@ -83,12 +83,12 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
     return (
       <button
         onClick={() => setShowForm(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#e8b543] to-[#d7834f] text-white font-semibold rounded-xl hover:from-[#d7834f] hover:via-[#b5301f] hover:to-[#b5301f] transition-all duration-300 hover:scale-105 shadow-lg border border-white/20"
+        className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-white hover:bg-gray-50 text-[#1e5799] font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg border-2 border-[#207cca]/20 hover:border-[#207cca]/40"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        <span>Acreditación masiva</span>
+        <span>Carga múltiples acreditaciones</span>
       </button>
     );
   }
@@ -140,14 +140,14 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
         </div>
 
         {/* Sección de descarga de template */}
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-fade-in-up transition-all">
+        <div className="mb-6 p-4 bg-gradient-to-r from-[#1e5799]/10 to-[#2989d8]/10 border border-[#1e5799]/30 rounded-lg animate-fade-in-up transition-all">
           <p className="text-sm text-gray-700 mb-3">
             Descarga el template CSV, rellénalo con tus datos y luego sube el archivo aquí.
           </p>
           <button
             type="button"
             onClick={handleDownloadTemplate}
-            className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-white hover:bg-gray-50 text-[#1e5799] font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 border border-[#207cca]/20 hover:border-[#207cca]/40"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -157,7 +157,7 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#a10d79] hover:bg-purple-50/30 transition-all duration-300">
+          <div className="border-2 border-dashed border-[#1e5799]/30 rounded-lg p-6 text-center hover:border-[#1e5799] hover:bg-[#1e5799]/5 transition-all duration-300">
             <input
               ref={fileInputRef}
               type="file"
@@ -170,7 +170,7 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
               htmlFor="file-upload"
               className="cursor-pointer flex flex-col items-center gap-2"
             >
-              <svg className={`w-8 h-8 transition-all duration-300 ${file ? 'text-[#a10d79] scale-110' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-8 h-8 transition-all duration-300 ${file ? 'text-[#1e5799] scale-110' : 'text-[#2989d8]/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               <span className="text-sm font-medium text-gray-700">
@@ -181,8 +181,8 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
           </div>
 
           {isLoading && (
-            <div className="animate-fade-in-up flex flex-col items-center justify-center p-6 bg-purple-50 rounded-lg border border-purple-200">
-              <div className="w-12 h-12 border-4 border-purple-200 border-t-[#a10d79] rounded-full animate-spin-custom mb-3"></div>
+            <div className="animate-fade-in-up flex flex-col items-center justify-center p-6 bg-gradient-to-r from-[#1e5799]/10 to-[#2989d8]/10 rounded-lg border border-[#1e5799]/20">
+              <div className="w-12 h-12 border-4 border-[#2989d8]/30 border-t-[#1e5799] rounded-full animate-spin-custom mb-3"></div>
               <p className="text-sm font-medium text-gray-700">Procesando archivo...</p>
               <p className="text-xs text-gray-500 mt-1">Por favor espera</p>
             </div>
@@ -191,7 +191,7 @@ const AcreditacionMasiva: React.FC<AcreditacionMasivaProps> = ({ onSuccess }) =>
           <button
             type="submit"
             disabled={!file || isLoading}
-            className="w-full px-4 py-2 bg-gradient-to-r from-[#1e5799] to-[#7db9e8] text-white font-semibold rounded-lg hover:from-[#7518ef] hover:to-[#a10d79] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-white hover:bg-gray-50 text-[#1e5799] font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 border border-[#207cca]/20 hover:border-[#207cca]/40 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
