@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import BotonVolver from "@/components/BotonesFlotantes/BotonVolver";
+import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");

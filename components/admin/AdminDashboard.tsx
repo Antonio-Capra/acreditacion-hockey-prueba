@@ -2,49 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Modal from "@/components/common/Modal";
+import { AREAS, ZONA_LABEL, ZONAS } from "@/constants/areas";
+import { Acreditacion, Zona } from "@/types";
 import Image from "next/image";
 
-/** ===== Tipos ===== */
-type Zona = `Zona ${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}` | null;
-
-export type Row = {
-  id: number;
-  area: string;
-  nombre: string;
-  apellido: string;
-  rut: string;
-  correo: string;
-  empresa: string | null;
-  status: "pendiente" | "aprobado" | "rechazado";
-  created_at: string;
-  zona: Zona;
-};
-
-/** ===== Constantes ===== */
-const AREAS = [
-  "Producción",
-  "Voluntarios",
-  "Auspiciadores",
-  "Proveedores",
-  "Fan Fest",
-  "Prensa",
-] as const;
-
-// Mapa: valor guardado -> texto que se muestra en el select
-const ZONA_LABEL: Record<Exclude<Zona, null>, string> = {
-  "Zona 1": "Zona 1.Venue",
-  "Zona 2": "Zona 2.FOP",
-  "Zona 3": "Zona 3.LOC",
-  "Zona 4": "Zona 4.VIP",
-  "Zona 5": "Zona 5.Broadcast",
-  "Zona 6": "Zona 6.Officials",
-  "Zona 7": "Zona 7.Media",
-  "Zona 8": "Zona 8.Volunteers",
-  "Zona 9": "Todas las zonas", // 👈 nueva zona, texto frontend
-};
-
-// Lista de valores internos (lo que se guarda en la BD)
-const ZONAS = Object.keys(ZONA_LABEL) as Exclude<Zona, null>[];
+export type Row = Acreditacion;
 
 /** ===== Componente ===== */
 export default function AdminDashboard() {
@@ -53,6 +16,12 @@ export default function AdminDashboard() {
   const [q, setQ] = useState("");
   const [area, setArea] = useState<string>("*");
   const [status, setStatus] = useState<string>("*");
+  
+  // Estados del Modal
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
+  const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -109,11 +78,23 @@ export default function AdminDashboard() {
 
   const aprobarConZona = async (r: Row) => {
     if (!r.zona) {
-      alert("Debes seleccionar una zona antes de aprobar.");
+      setConfirmTitle("⚠️ Zona no seleccionada");
+      setConfirmMessage("Debes seleccionar una zona antes de aprobar.");
+      setConfirmAction(() => () => {});
+      setConfirmModal(true);
       return;
     }
 
-    // 1) Actualiza en Supabase
+    setConfirmTitle("Confirmar aprobación");
+    setConfirmMessage(`¿Deseas aprobar la acreditación de ${r.nombre} ${r.apellido} en ${r.zona}?\n\nSe enviará un correo de confirmación.`);
+    setConfirmAction(() => async () => {
+      await ejecutarAprobacion(r);
+      setConfirmModal(false);
+    });
+    setConfirmModal(true);
+  };
+
+  const ejecutarAprobacion = async (r: Row) => {
     const { error } = await supabase
       .from("acreditaciones")
       .update({ status: "aprobado", zona: r.zona })
@@ -124,14 +105,12 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Actualiza estado local
     setRows((prev) =>
       prev.map((x) =>
         x.id === r.id ? { ...x, status: "aprobado", zona: r.zona } : x
       )
     );
 
-    // 2) Envía el correo automático
     try {
       const response = await fetch("/api/send-approval", {
         method: "POST",
@@ -154,9 +133,6 @@ export default function AdminDashboard() {
         );
       } else {
         console.log("✅ Correo enviado exitosamente a:", r.correo);
-        alert(
-          `✅ Acreditación aprobada correctamente.\n\nSe ha enviado un correo de confirmación a: ${r.correo}`
-        );
       }
     } catch (e) {
       console.error("Error enviando correo de aprobación:", e);
@@ -167,24 +143,23 @@ export default function AdminDashboard() {
   };
 
   const eliminarRegistro = async (r: Row) => {
-    const confirmacion = window.confirm(
-      `¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.apellido}?\n\nEsta acción no se puede deshacer.`
-    );
+    setConfirmTitle("⚠️ Confirmar eliminación");
+    setConfirmMessage(`¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.apellido}?\n\nEsta acción no se puede deshacer.`);
+    setConfirmAction(() => async () => {
+      const { error } = await supabase
+        .from("acreditaciones")
+        .delete()
+        .eq("id", r.id);
 
-    if (!confirmacion) return;
+      if (error) {
+        alert(`Error al eliminar: ${error.message}`);
+        return;
+      }
 
-    const { error } = await supabase
-      .from("acreditaciones")
-      .delete()
-      .eq("id", r.id);
-
-    if (error) {
-      alert(`Error al eliminar: ${error.message}`);
-      return;
-    }
-
-    // Elimina del estado local
-    setRows((prev) => prev.filter((x) => x.id !== r.id));
+      setRows((prev) => prev.filter((x) => x.id !== r.id));
+      setConfirmModal(false);
+    });
+    setConfirmModal(true);
   };
 
   const exportCSV = () => {
@@ -257,6 +232,7 @@ export default function AdminDashboard() {
   };
 
   return (
+    <>
     <main className="min-h-screen w-full bg-gradient-to-br from-[#a10d79] via-[#3d2362] to-[#7518ef] relative overflow-hidden">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -472,19 +448,19 @@ export default function AdminDashboard() {
                           <td className="p-2 sm:p-4 whitespace-nowrap border-r border-gray-200">
                             <select
                               className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none bg-white"
-                              value={r.zona ?? ""}
+                              value={r.zona ? String(r.zona) : ""}
                               onChange={(e) => {
-                                const val = e.target.value as Zona | "";
+                                const val = e.target.value;
                                 setZona(
                                   r.id,
-                                  val === "" ? null : (val as Zona)
+                                  val === "" ? null : (val as Exclude<Zona, null>)
                                 );
                               }}
                             >
                               <option value="">Sin asignar</option>
                               {ZONAS.map((z) => (
-                                <option key={z} value={z}>
-                                  {ZONA_LABEL[z]}
+                                <option key={z} value={String(z)}>
+                                  {z && ZONA_LABEL[z as Exclude<Zona, null>]}
                                 </option>
                               ))}
                             </select>
@@ -553,8 +529,26 @@ export default function AdminDashboard() {
         </div>
       </div>
     </main>
+
+    <Modal
+      isOpen={confirmModal}
+      type={confirmTitle.includes("Confirmar aprobación") ? "confirm" : "warning"}
+      title={confirmTitle}
+      message={confirmMessage}
+      buttons={[
+        {
+          label: confirmTitle.includes("Confirmar aprobación") ? "Confirmar" : "Eliminar",
+          onClick: confirmAction,
+          variant: confirmTitle.includes("Eliminar") ? "danger" : "primary",
+        },
+        {
+          label: "Cancelar",
+          onClick: () => setConfirmModal(false),
+          variant: "secondary",
+        },
+      ]}
+      onClose={() => setConfirmModal(false)}
+    />
+    </>
   );
 }
-
-
-

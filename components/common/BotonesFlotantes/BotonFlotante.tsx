@@ -1,4 +1,4 @@
-// components/FloatingButton.tsx
+// components/common/BotonesFlotantes/BotonFlotante.tsx
 export default function BotonFlotante() {
   return (
     <a

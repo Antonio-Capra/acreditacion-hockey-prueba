@@ -1,14 +1,14 @@
-// components/AccreditationForm.tsx
+// components/acreditacion/AccreditationForm.tsx
 "use client";
 
 import { useState } from "react";
-import type { TipoArea } from "./AreaSelector";
+import type { TipoArea } from "@/types";
 import { supabase } from "@/lib/supabase";
 
 export type DatosBasicos = {
   nombre: string;
   apellido: string;
-  rut: string; // Puede ser pasaporte/DNI/RUT; sin validación de DV
+  rut: string;
   correo: string;
   empresa: string;
 };
@@ -43,34 +43,36 @@ export default function AccreditationForm({
       return;
     }
 
+    if (!aceptaTyC) {
+      setError("Debes aceptar los términos y condiciones.");
+      return;
+    }
+
     setCargando(true);
     try {
-  const { error: sbError } = await supabase.from("acreditaciones").insert({
-    area,
-    nombre: datos.nombre.trim(),
-    apellido: datos.apellido.trim(),
-    rut: datos.rut.trim(),
-    correo: datos.correo.trim().toLowerCase(),
-    empresa: datos.empresa.trim(),
-  });
+      const { error: sbError } = await supabase.from("acreditaciones").insert({
+        area,
+        nombre: datos.nombre.trim(),
+        apellido: datos.apellido.trim(),
+        rut: datos.rut.trim(),
+        correo: datos.correo.trim().toLowerCase(),
+        empresa: datos.empresa.trim(),
+      });
 
-  if (sbError) {
-    console.error("Supabase insert error:", sbError); // <— mira la consola
-    setError(sbError.message);                         // <— muestra el mensaje real
-    return;
-  }
+      if (sbError) {
+        console.error("Supabase insert error:", sbError);
+        setError(sbError.message);
+        return;
+      }
 
-  onSuccess(datos);
-} catch (err: unknown) {
-  const msg = err instanceof Error ? err.message : "Error desconocido.";
-  console.error("Catch error:", err);
-  setError(msg);
-}
-  if (!aceptaTyC) {
-  setError("Debes aceptar los términos y condiciones.");
-  return;
-}
-
+      onSuccess(datos);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error desconocido.";
+      console.error("Catch error:", err);
+      setError(msg);
+    } finally {
+      setCargando(false);
+    }
   }
 
 
@@ -138,27 +140,26 @@ export default function AccreditationForm({
           />
         </div>
         {/* Términos y condiciones */}
-<div className="flex items-start gap-2">
-  <input
-    id="acepta-tyc"
-    type="checkbox"
-    className="mt-1 h-4 w-4 rounded border-gray-300 text-[#a10d79] focus:ring-[#a10d79]"
-    checked={aceptaTyC}
-    onChange={(e) => setAceptaTyC(e.target.checked)}
-  />
-  <label htmlFor="acepta-tyc" className="text-sm text-gray-700">
-    Acepto los{" "}
-    <a
-      href="/docs/TerminosFEOCH.pdf"  // ← si usas URL externa, reemplázala aquí
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-[#a10d79] hover:text-[#7518ef] underline font-medium"
-    >
-      términos y condiciones
-    </a>.
-  </label>
-</div>
-
+        <div className="flex items-start gap-2">
+          <input
+            id="acepta-tyc"
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-[#a10d79] focus:ring-[#a10d79]"
+            checked={aceptaTyC}
+            onChange={(e) => setAceptaTyC(e.target.checked)}
+          />
+          <label htmlFor="acepta-tyc" className="text-sm text-gray-700">
+            Acepto los{" "}
+            <a
+              href="/docs/TerminosFEOCH.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#a10d79] hover:text-[#7518ef] underline font-medium"
+            >
+              términos y condiciones
+            </a>.
+          </label>
+        </div>
 
         {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 

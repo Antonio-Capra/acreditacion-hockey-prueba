@@ -1,13 +1,15 @@
 // app/acreditacion/page.tsx
 "use client";
 import { useState } from "react";
-import AreaSelector, { TipoArea } from "@/components/AreaSelector";
-import AccreditationForm, { DatosBasicos } from "@/components/AccreditationForm";
+import { useRouter } from "next/navigation";
+import AreaSelector from "@/components/acreditacion/AreaSelector";
+import AccreditationForm from "@/components/acreditacion/AccreditationForm";
+import AcreditacionMasiva from "@/components/acreditacion/AcreditacionMasiva";
 import Image from "next/image";
 import Link from "next/link";
-import BotonFlotante from "@/components/BotonesFlotantes/BotonFlotante";
-import IconoFlotanteAdmin from "@/components/BotonesFlotantes/IconoFlotanteAdmin";
-import { useRouter } from "next/navigation";
+import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
+import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
+import type { TipoArea } from "@/types";
 
 export default function AcreditacionPage() {
   const [area, setArea] = useState<TipoArea | null>(null);
@@ -79,7 +81,7 @@ export default function AcreditacionPage() {
           </header>
 
           {/* Indicador de pasos mejorado */}
-          <div className="mb-8 flex items-center justify-center gap-3 text-sm">
+          <div className="mb-8 flex items-center justify-center gap-3 text-sm flex-wrap">
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
               !area 
                 ? "bg-white text-[#a10d79] shadow-xl font-semibold" 
@@ -109,6 +111,13 @@ export default function AcreditacionPage() {
               onCancel={() => setArea(null)}
               onSuccess={(datos) => setEnviado({ nombre: datos.nombre, apellido: datos.apellido })}
             />
+          )}
+
+          {/* Botón de Acreditación Masiva - Debajo del formulario */}
+          {!area && !enviado && (
+            <div className="mt-8 flex justify-center">
+              <AcreditacionMasiva />
+            </div>
           )}
 
           {enviado && (
