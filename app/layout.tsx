@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hockey Women's Junior World Cup 2025",
-  description: "Página para acreditaciones del mundial de hockey",
+  title: "VS - Sistema de Acreditación",
+  description: "Sistema de acreditación oficial para el partido Universidad de Chile vs Racing de Avellaneda",
+   icons: {
+    icon: "/img/VSLogo.png",
+  }
 };
 
 export default function RootLayout({
@@ -26,6 +29,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         {children}
       </body>
