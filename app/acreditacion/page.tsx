@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import AreaSelector, { TipoArea } from "@/components/acreditacion/AreaSelector";
-import AccreditationForm, { DatosBasicos } from "@/components/acreditacion/AccreditationForm";
+import AccreditationForm from "@/components/acreditacion/AccreditationForm";
 import AcreditacionMasiva from "@/components/acreditacion/AcreditacionMasiva";
 import Image from "next/image";
 import Link from "next/link";
