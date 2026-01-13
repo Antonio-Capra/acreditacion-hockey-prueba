@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export type ModalType = 'success' | 'error' | 'info' | 'warning' | 'confirm';
+export type ModalType = 'success' | 'error' | 'info' | 'warning' | 'confirm' | 'loading';
 
 interface ModalProps {
   isOpen: boolean;
@@ -55,12 +55,20 @@ const getStyles = (type: ModalType) => {
       buttonHover: 'hover:from-yellow-600 hover:to-yellow-700',
     },
     confirm: {
-      iconBg: 'from-purple-400 to-purple-600',
-      borderColor: 'border-purple-200',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
-      buttonBg: 'from-purple-500 to-purple-600',
-      buttonHover: 'hover:from-purple-600 hover:to-purple-700',
+      iconBg: 'from-[#1e5799] to-[#2989d8]',
+      borderColor: 'border-[#1e5799]/20',
+      bgColor: 'bg-[#eff6ff]',
+      textColor: 'text-[#1e5799]',
+      buttonBg: 'from-[#1e5799] to-[#2989d8]',
+      buttonHover: 'hover:from-[#2989d8] hover:to-[#3c9de5]',
+    },
+    loading: {
+      iconBg: 'from-blue-400 to-blue-600',
+      borderColor: 'border-blue-200',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-600',
+      buttonBg: 'from-blue-500 to-blue-600',
+      buttonHover: 'hover:from-blue-600 hover:to-blue-700',
     },
   };
   return styles[type];
@@ -91,6 +99,12 @@ const getDefaultIcon = (type: ModalType) => {
     confirm: (
       <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+      </svg>
+    ),
+    loading: (
+      <svg className="w-10 h-10 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
     ),
   };
@@ -127,7 +141,7 @@ const Modal: React.FC<ModalProps> = ({
       <div className="animate-slide-down bg-white rounded-3xl p-8 shadow-2xl max-w-md mx-4">
         <div className="flex flex-col items-center text-center">
           {/* Icono animado */}
-          <div className={`w-20 h-20 bg-gradient-to-br ${styles.iconBg} rounded-full flex items-center justify-center mb-6 animate-pulse`}>
+          <div className={`w-20 h-20 bg-gradient-to-br ${styles.iconBg} rounded-full flex items-center justify-center mb-6 ${type !== 'loading' ? 'animate-pulse' : ''}`}>
             {defaultIcon}
           </div>
 
@@ -147,12 +161,13 @@ const Modal: React.FC<ModalProps> = ({
                 <button
                   key={index}
                   onClick={button.onClick}
-                  className={`w-full px-6 py-3 text-white font-semibold rounded-lg transition-all duration-300 active:scale-95 ${
+                  disabled={type === 'loading'}
+                  className={`w-full px-6 py-3 text-white font-semibold rounded-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
                     button.variant === 'secondary'
-                      ? 'bg-gray-300 hover:bg-gray-400'
+                      ? 'bg-gray-300 hover:bg-gray-400 disabled:hover:bg-gray-300'
                       : button.variant === 'danger'
-                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
-                      : `bg-gradient-to-r ${styles.buttonBg} ${styles.buttonHover}`
+                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:hover:from-red-500 disabled:hover:to-red-600'
+                      : `bg-gradient-to-r ${styles.buttonBg} ${styles.buttonHover} disabled:hover:${styles.buttonBg}`
                   }`}
                 >
                   {button.label}
@@ -161,7 +176,8 @@ const Modal: React.FC<ModalProps> = ({
             ) : (
               <button
                 onClick={onClose}
-                className={`w-full px-6 py-3 bg-gradient-to-r ${styles.buttonBg} ${styles.buttonHover} text-white font-semibold rounded-lg transition-all duration-300 active:scale-95`}
+                disabled={type === 'loading'}
+                className={`w-full px-6 py-3 bg-gradient-to-r ${styles.buttonBg} ${styles.buttonHover} text-white font-semibold rounded-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 Cerrar
               </button>

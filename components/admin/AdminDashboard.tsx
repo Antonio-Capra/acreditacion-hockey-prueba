@@ -1,169 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Modal from "@/components/common/Modal";
 import { AREAS, ZONA_LABEL, ZONAS } from "@/constants/areas";
-import { Acreditacion, Zona } from "@/types";
+import { Zona } from "@/types";
 import Image from "next/image";
+import { useAccreditationData } from "@/hooks/useAccreditationData";
+import { useAccreditationActions } from "@/hooks/useAccreditationActions";
+import { useModalManager } from "@/hooks/useModalManager";
 
-export type Row = Acreditacion;
+export type Row = ReturnType<typeof useAccreditationData> extends { rows: infer R } ? R : never;
 
 /** ===== Componente ===== */
 export default function AdminDashboard() {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState("");
-  const [area, setArea] = useState<string>("*");
-  const [status, setStatus] = useState<string>("*");
-  
-  // Estados del Modal
-  const [confirmModal, setConfirmModal] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
-  const [confirmTitle, setConfirmTitle] = useState("");
-  const [confirmMessage, setConfirmMessage] = useState("");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  // Hooks personalizados
+  const data = useAccreditationData();
+  const modal = useModalManager();
+  const actions = useAccreditationActions({
+    onSetRows: (updater) => data.setRows(updater(data.rows)),
+    onOpenConfirm: modal.openConfirm,
+    onOpenResult: modal.openResult,
+  });
 
-    let query = supabase
-      .from("acreditaciones")
-      .select(
-        "id,area,nombre,apellido,rut,correo,empresa,status,created_at,zona"
-      )
-      .order("created_at", { ascending: false });
-
-    if (area !== "*") query = query.eq("area", area);
-    if (status !== "*") query = query.eq("status", status);
-
-    const { data, error } = await query;
-    if (error) console.error(error);
-    setRows((data ?? []) as Row[]);
-    setLoading(false);
-  }, [area, status]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (!term) return rows;
-    return rows.filter((r) =>
-      [r.nombre, r.apellido, r.rut, r.correo, r.empresa ?? ""].some((x) =>
-        x.toLowerCase().includes(term)
-      )
-    );
-  }, [rows, q]);
-
-  const setEstado = async (id: number, nuevo: Row["status"]) => {
-    const { error } = await supabase
-      .from("acreditaciones")
-      .update({ status: nuevo })
-      .eq("id", id);
-    if (error) return alert(error.message);
-    setRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: nuevo } : r))
-    );
-  };
-
-  const setZona = async (id: number, zona: Zona) => {
-    const { error } = await supabase
-      .from("acreditaciones")
-      .update({ zona })
-      .eq("id", id);
-    if (error) return alert(error.message);
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, zona } : r)));
-  };
-
-  const aprobarConZona = async (r: Row) => {
-    if (!r.zona) {
-      setConfirmTitle("⚠️ Zona no seleccionada");
-      setConfirmMessage("Debes seleccionar una zona antes de aprobar.");
-      setConfirmAction(() => () => {});
-      setConfirmModal(true);
-      return;
-    }
-
-    setConfirmTitle("Confirmar aprobación");
-    setConfirmMessage(`¿Deseas aprobar la acreditación de ${r.nombre} ${r.apellido} en ${r.zona}?\n\nSe enviará un correo de confirmación.`);
-    setConfirmAction(() => async () => {
-      await ejecutarAprobacion(r);
-      setConfirmModal(false);
-    });
-    setConfirmModal(true);
-  };
-
-  const ejecutarAprobacion = async (r: Row) => {
-    const { error } = await supabase
-      .from("acreditaciones")
-      .update({ status: "aprobado", zona: r.zona })
-      .eq("id", r.id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setRows((prev) =>
-      prev.map((x) =>
-        x.id === r.id ? { ...x, status: "aprobado", zona: r.zona } : x
-      )
-    );
-
-    try {
-      const response = await fetch("/api/send-approval", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: r.nombre,
-          apellido: r.apellido,
-          correo: r.correo,
-          zona: r.zona,
-          area: r.area,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error("Error al enviar correo:", result);
-        alert(
-          `⚠️ Acreditación aprobada, pero el correo NO se envió.\n\nError: ${result.error || "Desconocido"}\n\nVerifica la configuración de RESEND_API_KEY en el archivo .env`
-        );
-      } else {
-        console.log("✅ Correo enviado exitosamente a:", r.correo);
-      }
-    } catch (e) {
-      console.error("Error enviando correo de aprobación:", e);
-      alert(
-        `⚠️ Acreditación aprobada, pero hubo un problema al enviar el correo.\n\nRevisa la consola del navegador (F12) para más detalles.`
-      );
-    }
-  };
-
-  const eliminarRegistro = async (r: Row) => {
-    setConfirmTitle("⚠️ Confirmar eliminación");
-    setConfirmMessage(`¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.apellido}?\n\nEsta acción no se puede deshacer.`);
-    setConfirmAction(() => async () => {
-      const { error } = await supabase
-        .from("acreditaciones")
-        .delete()
-        .eq("id", r.id);
-
-      if (error) {
-        alert(`Error al eliminar: ${error.message}`);
-        return;
-      }
-
-      setRows((prev) => prev.filter((x) => x.id !== r.id));
-      setConfirmModal(false);
-    });
-    setConfirmModal(true);
-  };
-
+  // Exportar datos a CSV
   const exportCSV = () => {
-    // Headers en español más descriptivos
     const headers = [
       "ID",
       "Área",
@@ -178,8 +41,7 @@ export default function AdminDashboard() {
     ];
 
     const lines = [headers.join(",")].concat(
-      filtered.map((r) => {
-        // Formatear fecha legible
+      data.filtered.map((r) => {
         const fecha = new Date(r.created_at).toLocaleString("es-CL", {
           year: "numeric",
           month: "2-digit",
@@ -188,7 +50,6 @@ export default function AdminDashboard() {
           minute: "2-digit",
         });
 
-        // Traducir estado
         const estadoES =
           r.status === "pendiente"
             ? "Pendiente"
@@ -196,7 +57,6 @@ export default function AdminDashboard() {
             ? "Aprobado"
             : "Rechazado";
 
-        // Usar el label legible de zona si existe
         const zonaLegible = r.zona ? ZONA_LABEL[r.zona] : "Sin asignar";
 
         const row = [
@@ -216,7 +76,7 @@ export default function AdminDashboard() {
       })
     );
 
-    const csv = "\uFEFF" + lines.join("\n"); // BOM para que Excel reconozca UTF-8
+    const csv = "\uFEFF" + lines.join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -226,9 +86,14 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
   };
 
+  // Cerrar sesión
   const logout = async () => {
-    await supabase.auth.signOut();
-    // No necesitamos location.reload() porque onAuthStateChange actualiza automáticamente
+    setIsLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -279,12 +144,19 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     onClick={logout}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-gray-300 text-gray-700 font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
+                    disabled={isLoggingOut}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-gray-300 text-gray-700 font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Cerrar sesión
+                    {isLoggingOut ? (
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Cerrar sesión
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -304,14 +176,14 @@ export default function AdminDashboard() {
                 <input
                   placeholder="Buscar por nombre, rut, correo, empresa"
                   className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
+                  value={data.q}
+                  onChange={(e) => data.setQ(e.target.value)}
                 />
               </div>
               <select
                 className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
+                value={data.area}
+                onChange={(e) => data.setArea(e.target.value)}
               >
                 <option value="*">Todas las áreas</option>
                 {AREAS.map((a) => (
@@ -322,8 +194,8 @@ export default function AdminDashboard() {
               </select>
               <select
                 className="rounded-xl border border-gray-300 px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={data.status}
+                onChange={(e) => data.setStatus(e.target.value)}
               >
                 <option value="*">Todos los estados</option>
                 <option value="pendiente">Pendiente</option>
@@ -331,7 +203,7 @@ export default function AdminDashboard() {
                 <option value="rechazado">Rechazado</option>
               </select>
               <button
-                onClick={load}
+                onClick={data.load}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,7 +242,7 @@ export default function AdminDashboard() {
                 </thead>
 
                 <tbody className="bg-white">
-                  {loading ? (
+                  {data.loading ? (
                     <tr>
                       <td className="p-8 text-center" colSpan={9}>
                         <div className="flex items-center justify-center gap-3">
@@ -382,7 +254,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                     </tr>
-                  ) : filtered.length === 0 ? (
+                  ) : data.filtered.length === 0 ? (
                     <tr>
                       <td className="p-8 text-center" colSpan={9}>
                         <div className="flex flex-col items-center gap-2">
@@ -395,7 +267,7 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((r) => {
+                    data.filtered.map((r) => {
                       const rowColor =
                         r.status === "aprobado"
                           ? "bg-green-50 hover:bg-green-100"
@@ -451,7 +323,7 @@ export default function AdminDashboard() {
                               value={r.zona ? String(r.zona) : ""}
                               onChange={(e) => {
                                 const val = e.target.value;
-                                setZona(
+                                actions.setZona(
                                   r.id,
                                   val === "" ? null : (val as Exclude<Zona, null>)
                                 );
@@ -469,7 +341,7 @@ export default function AdminDashboard() {
                           <td className="p-2 sm:p-4 whitespace-nowrap">
                             <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                               <button
-                                onClick={() => aprobarConZona(r)}
+                                onClick={() => actions.aprobarConZona(r)}
                                 className="group relative inline-flex items-center justify-center rounded-lg bg-green-500 hover:bg-green-600 text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
                                 title="Aprobar"
                               >
@@ -481,7 +353,7 @@ export default function AdminDashboard() {
                                 </span>
                               </button>
                               <button
-                                onClick={() => setEstado(r.id, "rechazado")}
+                                onClick={() => actions.setEstado(r.id, "rechazado")}
                                 className="group relative inline-flex items-center justify-center rounded-lg bg-red-500 hover:bg-red-600 text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
                                 title="Rechazar"
                               >
@@ -493,7 +365,7 @@ export default function AdminDashboard() {
                                 </span>
                               </button>
                               <button
-                                onClick={() => setEstado(r.id, "pendiente")}
+                                onClick={() => actions.setEstado(r.id, "pendiente")}
                                 className="group relative inline-flex items-center justify-center rounded-lg bg-gray-500 hover:bg-gray-600 text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
                                 title="Marcar como pendiente"
                               >
@@ -505,7 +377,7 @@ export default function AdminDashboard() {
                                 </span>
                               </button>
                               <button
-                                onClick={() => eliminarRegistro(r)}
+                                onClick={() => actions.eliminarRegistro(r)}
                                 className="group relative inline-flex items-center justify-center rounded-lg bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105 active:scale-95"
                                 title="Eliminar registro"
                               >
@@ -531,23 +403,28 @@ export default function AdminDashboard() {
     </main>
 
     <Modal
-      isOpen={confirmModal}
-      type={confirmTitle.includes("Confirmar aprobación") ? "confirm" : "warning"}
-      title={confirmTitle}
-      message={confirmMessage}
+      isOpen={modal.confirmModal}
+      type={modal.confirmModalType}
+      title={modal.confirmTitle}
+      message={modal.confirmMessage}
+      buttons={modal.confirmModalButtons}
+      onClose={modal.closeConfirm}
+    />
+
+    <Modal
+      isOpen={modal.resultModal}
+      type={modal.resultType}
+      title={modal.resultTitle}
+      message={modal.resultMessage}
       buttons={[
         {
-          label: confirmTitle.includes("Confirmar aprobación") ? "Confirmar" : "Eliminar",
-          onClick: confirmAction,
-          variant: confirmTitle.includes("Eliminar") ? "danger" : "primary",
-        },
-        {
-          label: "Cancelar",
-          onClick: () => setConfirmModal(false),
-          variant: "secondary",
+          label: "Cerrar",
+          onClick: modal.closeResult,
+          variant: "primary",
         },
       ]}
-      onClose={() => setConfirmModal(false)}
+      onClose={modal.closeResult}
+      autoClose={modal.resultType === 'success' ? 3000 : undefined}
     />
     </>
   );

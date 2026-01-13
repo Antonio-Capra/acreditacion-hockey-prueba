@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     // 👇 Para desarrollo: usar SIEMPRE onboarding@resend.dev
-    const from = "Acreditaciones VS <onboarding@resend.dev>";
+    const from = "Acreditaciones UC <onboarding@resend.dev>";
 
     const { data, error } = await resend.emails.send({
       from,
@@ -36,13 +36,13 @@ export async function POST(req: Request) {
                 <!-- Contenedor principal -->
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; max-width: 100%;">
                   
-                  <!-- Header con gradiente -->
+                  <!-- Header con gradiente UC -->
                   <tr>
-                    <td style="background: linear-gradient(135deg, #a10d79 0%, #3d2362 50%, #7518ef 100%); padding: 40px 30px; text-align: center;">
+                    <td style="background: linear-gradient(135deg, #1e5799 0%, #2989d8 50%, #3c9de5 100%); padding: 40px 30px; text-align: center;">
                       <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 10px 0; font-weight: 700;">
-                        <img src="https://res.cloudinary.com/dubnevl0h/image/upload/v1768136932/Dise%C3%B1o_sin_t%C3%ADtulo_1_z8qzbu.png" alt="Logo VS" style="height: 70px; margin-bottom: 10px;" />
+                        <img src="https://res.cloudinary.com/dubnevl0h/image/upload/v1768312623/Escudo_Club_Deportivo_Universidad_Cat%C3%B3lica.svg_iwzca6.png" alt="Logo UC" style="height: 70px; margin-bottom: 10px;" />
                       </h1>
-                      <p style="color: #e8b543; font-size: 16px; margin: 0; font-weight: 600;">
+                      <p style="color: #ffffff; font-size: 16px; margin: 0; font-weight: 600;">
                         Sistema de Acreditaciones
                       </p>
                     </td>
@@ -70,11 +70,11 @@ export async function POST(req: Request) {
                       <!-- Información en tarjetas -->
                       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
                         <tr>
-                          <td style="padding: 20px; background-color: #f9fafb; border-left: 4px solid #a10d79; border-radius: 8px; margin-bottom: 15px;">
-                            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                          <td style="padding: 20px; background-color: #eff6ff; border-left: 4px solid #1e5799; border-radius: 8px; margin-bottom: 15px;">
+                            <p style="margin: 0 0 8px 0; color: #0c4a6e; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                               Área de Acreditación
                             </p>
-                            <p style="margin: 0; color: #1f2937; font-size: 18px; font-weight: 700;">
+                            <p style="margin: 0; color: #1e5799; font-size: 18px; font-weight: 700;">
                               ${area}
                             </p>
                           </td>
@@ -93,11 +93,11 @@ export async function POST(req: Request) {
                       </table>
 
                       <!-- Instrucciones -->
-                      <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                        <p style="margin: 0 0 10px 0; color: #1e40af; font-weight: 600; font-size: 15px;">
+                      <div style="background-color: #eff6ff; border-left: 4px solid #1e5799; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                        <p style="margin: 0 0 10px 0; color: #0c4a6e; font-weight: 600; font-size: 15px;">
                           📋 Próximos pasos:
                         </p>
-                        <ul style="margin: 0; padding-left: 20px; color: #1e3a8a; font-size: 14px; line-height: 1.8;">
+                        <ul style="margin: 0; padding-left: 20px; color: #1e5799; font-size: 14px; line-height: 1.8;">
                           <li>Guarda este correo como comprobante</li>
                           <li>Presentate en el evento con tu documento de identidad</li>
                           <li>Dirígete a la zona de acreditaciones para recoger tu credencial</li>
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
                   <tr>
                     <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
-                        <strong>Acreditaciones VS</strong>
+                        <strong>Acreditaciones UC</strong>
                       </p>
                       <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.6;">
                         Este es un correo automático, por favor no responder.<br>

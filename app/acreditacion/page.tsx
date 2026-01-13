@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { useRouter } from "next/navigation";
 
 export default function AcreditacionPage() {
@@ -23,14 +24,7 @@ export default function AcreditacionPage() {
 
   return (
     <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] relative">
-      {isNavigating && (
-        <div className="fixed inset-0 bg-[#1e5799]/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-            <p className="text-white font-semibold">Cargando...</p>
-          </div>
-        </div>
-      )}
+      {isNavigating && <LoadingSpinner message="Cargando..." />}
 
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#FFFFFF] rounded-full blur-3xl"></div>
@@ -44,9 +38,9 @@ export default function AcreditacionPage() {
         <Link
           href="/"
           onClick={handleBack}
-          className="fixed top-6 left-6 z-50 inline-flex items-center gap-2 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 font-medium transition-all px-4 py-2 rounded-full border border-white/30 hover:scale-105"
+          className="fixed top-4 sm:top-6 left-4 sm:left-6 z-50 inline-flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 font-medium transition-all px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/30 hover:scale-105 text-xs sm:text-sm"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           <span className="hidden sm:inline">Volver</span>
@@ -74,25 +68,27 @@ export default function AcreditacionPage() {
             </p>
           </header>
 
-          <div className="mb-8 flex items-center justify-center gap-3 text-sm">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+          <div className="mb-8 flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
+            <div className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full transition-all ${
               !area 
                 ? "bg-white text-[#1e5799] shadow-xl font-semibold" 
                 : "bg-white/20 text-white/70 border border-white/30 backdrop-blur-sm"
             }`}>
               <span className="font-semibold">1</span>
-              <span>Selecciona área</span>
+              <span className="hidden sm:inline">Selecciona área</span>
+              <span className="sm:hidden">Área</span>
             </div>
-            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+            <div className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full transition-all ${
               area 
                 ? "bg-white text-[#1e5799] shadow-xl font-semibold" 
                 : "bg-white/20 text-white/70 border border-white/30 backdrop-blur-sm"
             }`}>
               <span className="font-semibold">2</span>
-              <span>Completa datos</span>
+              <span className="hidden sm:inline">Completa datos</span>
+              <span className="sm:hidden">Datos</span>
             </div>
           </div>
 
