@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function LandingPage() {
   const [showContent, setShowContent] = useState(false);
@@ -33,15 +34,7 @@ export default function LandingPage() {
 
   return (
     <div className="bg-gradient-to-br from-[#1e5799] to-[#7db9e8]">
-      {/* Overlay de loading */}
-      {isNavigating && (
-        <div className="fixed inset-0 bg-[#1e5799]/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-            <p className="text-white font-semibold">Cargando...</p>
-          </div>
-        </div>
-      )}
+      {isNavigating && <LoadingSpinner message="Cargando..." />}
 
       <IconoFlotanteAdmin />
       <BotonFlotante />

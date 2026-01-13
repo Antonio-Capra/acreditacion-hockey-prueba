@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface BotonVolverProps {
   href?: string;
@@ -20,15 +21,7 @@ export default function BotonVolver({ href = "/" }: BotonVolverProps) {
 
   return (
     <>
-      {/* Overlay de loading */}
-      {isNavigating && (
-        <div className="fixed inset-0 bg-[#3d2362]/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-            <p className="text-white font-semibold">Cargando...</p>
-          </div>
-        </div>
-      )}
+      {isNavigating && <LoadingSpinner message="Cargando..." />}
 
       {/* Botón volver */}
       <Link
