@@ -23,18 +23,18 @@ export default function AcreditacionPage() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] overflow-hidden">
+    <div className="bg-gradient-to-br from-[#1e5799] to-[#7db9e8] overflow-x-hidden max-w-full">
       {isNavigating && <LoadingSpinner message="Cargando..." />}
 
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-[#FFFFFF] rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#FFFFFF] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-1/2 transform translate-x-1/2 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
       </div>
 
       <IconoFlotanteAdmin />
       <BotonFlotante />
 
-      <div className="w-screen flex flex-col items-center px-4 py-8 overflow-x-hidden">
+      <main className="min-h-screen w-full max-w-full flex flex-col items-center px-4 py-8 relative overflow-hidden box-border">
         <Link
           href="/"
           onClick={handleBack}
@@ -143,7 +143,7 @@ export default function AcreditacionPage() {
             Desarrollado por VS para Universidad Católica • © 2026
           </p>
         </footer>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

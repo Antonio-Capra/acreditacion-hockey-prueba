@@ -33,18 +33,18 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#1e5799] to-[#7db9e8]">
+    <div className="bg-gradient-to-br from-[#1e5799] to-[#7db9e8] overflow-x-hidden max-w-full">
       {isNavigating && <LoadingSpinner message="Cargando..." />}
 
       <IconoFlotanteAdmin />
       <BotonFlotante />
 
       {/* Primera sección: Logo grande */}
-      <section className="min-h-screen w-full flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden">
+      <section className="min-h-screen w-full max-w-full flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden box-border">
         {/* Decoración de fondo */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-[#7db9e8] rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 opacity-10 overflow-hidden">
+          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#7db9e8] rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-1/2 transform translate-x-1/2 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
         </div>
 
         {/* Espaciador superior */}
@@ -79,7 +79,7 @@ export default function LandingPage() {
       </section>
 
       {/* Segunda sección: Escudos y botón */}
-      <section className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-16 relative">
+      <section className="min-h-screen w-full max-w-full flex flex-col items-center justify-center px-4 py-16 relative overflow-hidden box-border">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#207cca]/5 to-[#7db9e8]/10"></div>
         
         <div className={`w-full max-w-6xl text-center relative z-10 transition-all duration-1000 ${
