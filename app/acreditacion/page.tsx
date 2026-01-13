@@ -23,7 +23,7 @@ export default function AcreditacionPage() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] relative">
+    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] to-[#7db9e8] overflow-hidden">
       {isNavigating && <LoadingSpinner message="Cargando..." />}
 
       <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -34,13 +34,13 @@ export default function AcreditacionPage() {
       <IconoFlotanteAdmin />
       <BotonFlotante />
 
-      <div className="relative z-10 w-full flex flex-col items-center px-4 py-8">
+      <div className="w-screen flex flex-col items-center px-4 py-8 overflow-x-hidden">
         <Link
           href="/"
           onClick={handleBack}
-          className="fixed top-4 sm:top-6 left-4 sm:left-6 z-50 inline-flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 font-medium transition-all px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/30 hover:scale-105 text-xs sm:text-sm"
+          className="fixed top-3 sm:top-6 left-3 sm:left-6 z-50 inline-flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 font-medium transition-all px-3 sm:px-4 py-2 sm:py-2 rounded-full border border-white/30 hover:scale-105 active:scale-95 text-xs sm:text-sm"
         >
-          <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           <span className="hidden sm:inline">Volver</span>
