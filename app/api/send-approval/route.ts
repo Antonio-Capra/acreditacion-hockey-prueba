@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
+interface ResendError {
+  message: string;
+  code?: string;
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 🔐 Configuración SEGURA para evitar bloqueos
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
 
     // 🚨 Verificar si la cuenta está limitada (sandbox implícito)
     // Si recibe error "unverified email", usar email de prueba
-    let toEmail = correo;
+    const toEmail: string = correo;
     
     // 🔐 Email validado y seguro
     const from = getFromEmail();
@@ -169,7 +174,7 @@ export async function POST(req: Request) {
       console.error("ERROR RESEND:", error);
       
       // 🔐 Logging detallado para debugging sin exponer credenciales
-      const errorType = typeof error === "object" ? (error as any).message : String(error);
+      const errorType = typeof error === "object" ? (error as ResendError).message : String(error);
       console.error("[EMAIL_SECURITY] Error enviando correo a:", correo?.split("@")[1] || "unknown");
       
       // Si es error de verificación/autenticación, avisar al admin

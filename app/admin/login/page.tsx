@@ -1,25 +1,45 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
+import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 
-export default function AdminLogin() {
+export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
-  const login = async (e: React.FormEvent) => {
+  async function login(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(error.message);
-    setLoading(false);
-  };
+
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.session) {
+        router.push("/admin");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] via-[#2989d8] to-[#7db9e8] flex items-center justify-center px-4 py-10 relative overflow-hidden">
@@ -30,6 +50,7 @@ export default function AdminLogin() {
       </div>
 
       <BotonVolver />
+      <BotonFlotante />
 
       {/* Tarjeta de login */}
       <div className="w-full max-w-md relative z-10">
@@ -77,6 +98,7 @@ export default function AdminLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -99,6 +121,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -165,3 +188,4 @@ export default function AdminLogin() {
     </main>
   );
 }
+

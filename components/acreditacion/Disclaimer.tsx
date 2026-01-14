@@ -61,9 +61,9 @@ const DisclaimerModal: React.FC<DisclaimerModalProps> = ({ onAccept, isVisible =
   return (
     <>
       {!isVisible ? null : (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4" suppressHydrationWarning>
           {/* Modal */}
-          <div className="bg-white rounded-3xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] w-full sm:max-w-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] w-full sm:max-w-2xl flex flex-col overflow-hidden duration-300">
             {/* Header */}
             <div className="sticky top-0 bg-gradient-to-r from-[#f59e0b] to-[#e8b543] px-6 sm:px-8 py-6 flex items-center gap-3 shadow-md">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">

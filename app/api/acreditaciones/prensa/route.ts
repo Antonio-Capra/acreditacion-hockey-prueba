@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+interface Acreditado {
+  nombre: string;
+  apellido: string;
+  rut: string;
+  email: string;
+  cargo: string;
+  tipo_credencial: string;
+  numero_credencial: string;
+}
+
+interface AccreditacionRequest {
+  responsable_nombre: string;
+  responsable_apellido: string;
+  responsable_rut: string;
+  responsable_email: string;
+  responsable_telefono: string;
+  medio: string;
+  acreditados: Acreditado[];
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -8,6 +28,7 @@ const supabase = createClient(
 
 export async function POST(req: Request) {
   try {
+    const data: AccreditacionRequest = await req.json();
     const { 
       responsable_nombre, 
       responsable_apellido, 
@@ -16,7 +37,7 @@ export async function POST(req: Request) {
       responsable_telefono, 
       medio, 
       acreditados 
-    } = await req.json();
+    } = data;
 
     console.log("REQUEST RECIBIDO:", { 
       responsable_nombre, 
@@ -37,7 +58,7 @@ export async function POST(req: Request) {
     const medioTrimmed = medio.trim();
     
     // Buscar coincidencia exacta primero
-    let { data: medioData, error: medioError } = await supabase
+    let { data: medioData } = await supabase
       .from("medios")
       .select("id, cupo_disponible")
       .eq("nombre", medioTrimmed)
@@ -110,7 +131,7 @@ export async function POST(req: Request) {
     }
 
     // 4. Crear registros en acreditados_prensa
-    const acreditadosToInsert = acreditados.map((acreditado: any) => ({
+    const acreditadosToInsert = acreditados.map((acreditado: Acreditado) => ({
       acreditacion_id: acreditacionData.id,
       nombre: acreditado.nombre,
       apellido: acreditado.apellido,
