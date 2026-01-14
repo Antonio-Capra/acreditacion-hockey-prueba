@@ -6,7 +6,12 @@ interface DisclaimerItem {
   text: string;
 }
 
-const DisclaimerModal: React.FC<{ onAccept: () => void }> = ({ onAccept }) => {
+interface DisclaimerModalProps {
+  onAccept: () => void;
+  isVisible?: boolean;
+}
+
+const DisclaimerModal: React.FC<DisclaimerModalProps> = ({ onAccept, isVisible = true }) => {
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
   const disclaimerItems: DisclaimerItem[] = [
@@ -54,83 +59,87 @@ const DisclaimerModal: React.FC<{ onAccept: () => void }> = ({ onAccept }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-      {/* Modal */}
-      <div className="bg-white rounded-3xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] w-full sm:max-w-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-300">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-[#f59e0b] to-[#e8b543] px-6 sm:px-8 py-6 flex items-center gap-3 shadow-md">
-          <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl sm:text-2xl font-bold text-white">
-              Términos Importantes
-            </h2>
-            <p className="text-white/80 text-xs sm:text-sm">
-              Lee con atención antes de continuar
-            </p>
-          </div>
-        </div>
-
-        {/* Content - Scrollable */}
-        <div
-          className="flex-1 overflow-y-auto px-6 sm:px-8 py-6"
-          onScroll={handleScroll}
-        >
-          <div className="space-y-4">
-            {disclaimerItems.map((item, index) => (
-              <div
-                key={index}
-                className="flex gap-4 bg-gradient-to-br from-[#fef3c7] to-[#fde68a] rounded-xl p-4 border border-[#f59e0b]/20 hover:border-[#f59e0b]/50 transition-all"
-              >
-                {/* Icon */}
-                <div className="flex-shrink-0 pt-1 flex items-start">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
-                    {item.icon}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[#78350f] text-sm sm:text-base leading-relaxed">
-                    {item.text}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Scroll hint */}
-          {!isScrolledToBottom && (
-            <div className="flex justify-center pt-4">
-              <div className="flex items-center gap-2 text-xs text-gray-500 animate-bounce">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M7 10l5 5 5-5z" />
+    <>
+      {!isVisible ? null : (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          {/* Modal */}
+          <div className="bg-white rounded-3xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] w-full sm:max-w-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-300">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-[#f59e0b] to-[#e8b543] px-6 sm:px-8 py-6 flex items-center gap-3 shadow-md">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
                 </svg>
-                Desplázate para ver más
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  Términos Importantes
+                </h2>
+                <p className="text-white/80 text-xs sm:text-sm">
+                  Lee con atención antes de continuar
+                </p>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Footer - Sticky */}
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 sm:px-8 py-4 flex gap-3 sm:gap-4">
-          <button
-            onClick={onAccept}
-            disabled={!isScrolledToBottom}
-            className={`flex-1 px-4 py-3 font-semibold rounded-xl transition-all duration-300 ${
-              isScrolledToBottom
-                ? "bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white hover:from-[#207cca] hover:to-[#7db9e8] shadow-lg hover:shadow-xl active:scale-95 cursor-pointer"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-          >
-            {isScrolledToBottom ? "✓ Entiendo y acepto" : "Desplázate hasta abajo"}
-          </button>
+            {/* Content - Scrollable */}
+            <div
+              className="flex-1 overflow-y-auto px-6 sm:px-8 py-6"
+              onScroll={handleScroll}
+            >
+              <div className="space-y-4">
+                {disclaimerItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-4 bg-gradient-to-br from-[#fef3c7] to-[#fde68a] rounded-xl p-4 border border-[#f59e0b]/20 hover:border-[#f59e0b]/50 transition-all"
+                  >
+                    {/* Icon */}
+                    <div className="flex-shrink-0 pt-1 flex items-start">
+                      <div className="p-2 bg-white rounded-lg shadow-sm">
+                        {item.icon}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[#78350f] text-sm sm:text-base leading-relaxed">
+                        {item.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Scroll hint */}
+              {!isScrolledToBottom && (
+                <div className="flex justify-center pt-4">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 animate-bounce">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                    Desplázate para ver más
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer - Sticky */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 sm:px-8 py-4 flex gap-3 sm:gap-4">
+              <button
+                onClick={onAccept}
+                disabled={!isScrolledToBottom}
+                className={`flex-1 px-4 py-3 font-semibold rounded-xl transition-all duration-300 ${
+                  isScrolledToBottom
+                    ? "bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white hover:from-[#207cca] hover:to-[#7db9e8] shadow-lg hover:shadow-xl active:scale-95 cursor-pointer"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                {isScrolledToBottom ? "✓ Entiendo y acepto" : "Desplázate hasta abajo"}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
