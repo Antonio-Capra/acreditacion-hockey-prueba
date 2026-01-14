@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AreaSelector, { TipoArea } from "@/components/acreditacion/AreaSelector";
 import AccreditationForm from "@/components/acreditacion/AccreditationForm";
 import AcreditacionMasiva from "@/components/acreditacion/AcreditacionMasiva";
+import DisclaimerModal from "@/components/acreditacion/Disclaimer";
 import Image from "next/image";
 import Link from "next/link";
 import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
@@ -14,6 +15,7 @@ export default function AcreditacionPage() {
   const [area, setArea] = useState<TipoArea | null>(null);
   const [enviado, setEnviado] = useState<null | { nombre: string; apellido: string }>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
   const router = useRouter();
 
   const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -25,6 +27,7 @@ export default function AcreditacionPage() {
   return (
     <div className="bg-gradient-to-br from-[#1e5799] to-[#7db9e8] overflow-x-hidden max-w-full">
       {isNavigating && <LoadingSpinner message="Cargando..." />}
+      {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
 
       <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-[#FFFFFF] rounded-full blur-3xl"></div>

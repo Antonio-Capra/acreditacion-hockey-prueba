@@ -1,6 +1,20 @@
 
+# 🔐 RESEND API - Configuración segura para evitar bloqueos
 RESEND_API_KEY=Tu_clave_resend
+
+# Opción 1 (RECOMENDADA): Usar subdomain gratuito de Resend
+# No necesita verificación DNS - 100% seguro
+# Formato: noreply@tuproyecto.resend.dev
+# RESEND_FROM_EMAIL=noreply@acreditaciones.resend.dev
+
+# Opción 2 (Avanzado): Solo si tienes dominio verificado en Resend
+# ⚠️ NO USAR SIN VERIFICACIÓN PREVIA O SE BLOQUEARÁ LA AGENCIA
+# Requiere:
+#   1. Verificar dominio en panel Resend
+#   2. Configurar DNS records (SPF, DKIM, DMARC) en tu proveedor
+#   3. Esperar validación (~24-48h)
+# RESEND_VERIFIED_DOMAIN=acreditaciones.agencia.com
 
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_llave_public_anon
 
-NEXT_PUBLIC_SUPABASE_URL= tu_llave_public_supabase
+NEXT_PUBLIC_SUPABASE_URL=tu_llave_public_supabase
