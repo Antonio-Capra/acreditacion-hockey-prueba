@@ -3,7 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 
 interface Acreditado {
   nombre: string;
-  apellido: string;
+  primer_apellido: string;
+  segundo_apellido: string;
   rut: string;
   email: string;
   cargo: string;
@@ -13,17 +14,25 @@ interface Acreditado {
 
 interface AccreditacionRequest {
   responsable_nombre: string;
-  responsable_apellido: string;
-  responsable_rut: string;
+  responsable_primer_apellido: string;
+  responsable_segundo_apellido: string;
   responsable_email: string;
   responsable_telefono: string;
-  medio: string;
+  empresa: string;
+  area: string;
   acreditados: Acreditado[];
 }
 
-const supabase = createClient(
+// Cliente anónimo para INSERT
+const supabaseAnon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Cliente con service role para SELECT (sin restricciones RLS)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(req: Request) {
@@ -31,22 +40,25 @@ export async function POST(req: Request) {
     const data: AccreditacionRequest = await req.json();
     const { 
       responsable_nombre, 
-      responsable_apellido, 
-      responsable_rut, 
+      responsable_primer_apellido, 
       responsable_email, 
-      responsable_telefono, 
-      medio, 
+      responsable_telefono,
+      empresa,
+      area,
       acreditados 
     } = data;
 
-    console.log("REQUEST RECIBIDO:", { 
-      responsable_nombre, 
-      medio, 
-      acreditados_count: acreditados?.length 
-    });
+    console.log("\n========== API POST /acreditaciones/prensa ==========");
+    console.log(`⏰ ${new Date().toISOString()}`);
+    console.log(`REQUEST RECIBIDO:`);
+    console.log(`  - Responsable: ${responsable_nombre}`);
+    console.log(`  - Empresa: "${empresa}"`);
+    console.log(`  - Área: "${area}"`);
+    console.log(`  - Acreditados: ${acreditados?.length}`);
+    console.log("===================================================\n");
 
-    // Validaciones
-    if (!responsable_email || !responsable_nombre || !acreditados.length) {
+    // Validaciones básicas
+    if (!responsable_email || !responsable_nombre || !empresa || !area || !acreditados.length) {
       console.log("VALIDACIÓN FALLIDA: datos incompletos");
       return NextResponse.json(
         { error: "Datos incompletos" },
@@ -54,133 +66,122 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Obtener el medio por nombre (exacta primero, luego flexible)
-    const medioTrimmed = medio.trim();
+    // 1. Obtener información de áreas
+    const { data: areasData, error: areasError } = await supabaseAdmin
+      .from("areas_prensa")
+      .select("id, codigo, cupo_maximo")
+      .eq("evento_id", 1);
+
+    if (areasError) throw areasError;
+
+    // 2. Validar cupos para CADA acreditado
+    // IMPORTANTE: Contar existentes PERO considerar que estamos insertando múltiples
+    const areaRecord = areasData?.find((a) => a.codigo === area);
     
-    // Buscar coincidencia exacta primero
-    let { data: medioData } = await supabase
-      .from("medios")
-      .select("id, cupo_disponible")
-      .eq("nombre", medioTrimmed)
-      .maybeSingle();
-
-    // Si no encuentra coincidencia exacta, buscar parcial
-    if (!medioData) {
-      const { data: medioParcial } = await supabase
-        .from("medios")
-        .select("id, cupo_disponible, nombre")
-        .ilike("nombre", `%${medioTrimmed}%`)
-        .maybeSingle();
-      
-      medioData = medioParcial;
-      console.log("Búsqueda parcial:", { medioTrimmed, encontrado: !!medioParcial });
-    } else {
-      console.log("Búsqueda exacta exitosa:", medioTrimmed);
-    }
-
-    if (!medioData) {
-      // Debug: obtener todos los medios
-      const { data: todosMedios } = await supabase
-        .from("medios")
-        .select("nombre");
-      
-      console.error("Medio no encontrado:", { 
-        buscado: medioTrimmed,
-        disponibles: todosMedios?.map(m => m.nombre)
-      });
-      
+    if (!areaRecord) {
       return NextResponse.json(
-        { error: `Medio no encontrado. Buscado: "${medioTrimmed}"` },
+        { error: `Área ${area} no encontrada` },
         { status: 400 }
       );
     }
 
-    // 2. Validar cupos
-    if (medioData.cupo_disponible < acreditados.length) {
-      return NextResponse.json(
-        { 
-          error: `Cupos insuficientes. Disponibles: ${medioData.cupo_disponible}, Solicitados: ${acreditados.length}` 
-        },
-        { status: 400 }
-      );
-    }
+    // Contar acreditados EXISTENTES para esta área + empresa
+    // NOTA: usando ilike para case-insensitive comparison
+    const { count: countAll, error: countError1 } = await supabaseAdmin
+      .from("acreditados")
+      .select("*", { count: "exact", head: true })
+      .eq("evento_id", 1)
+      .ilike("area", area)
+      .ilike("empresa", empresa);
 
-    // 3. Crear registro en acreditaciones_prensa
-    const { data: acreditacionData, error: acreditacionError } = await supabase
-      .from("acreditaciones_prensa")
-      .insert([
+    if (countError1) throw countError1;
+
+    // Contar acreditados RECHAZADOS para esta área + empresa
+    // NOTA: usando ilike para case-insensitive comparison
+    const { count: countRechazados, error: countError2 } = await supabaseAdmin
+      .from("acreditados")
+      .select("*", { count: "exact", head: true })
+      .eq("evento_id", 1)
+      .ilike("area", area)
+      .ilike("empresa", empresa)
+      .eq("status", "rechazado");
+
+    if (countError2) throw countError2;
+
+    // Acreditados válidos = todos - rechazados
+    const currentCount = (countAll || 0) - (countRechazados || 0);
+    const totalAfterInsert = currentCount + acreditados.length;
+
+    console.log("=== VALIDACIÓN DE CUPOS ===");
+    console.log(`Empresa: "${empresa}"`);
+    console.log(`Área: "${area}" (Máximo: ${areaRecord.cupo_maximo})`);
+    console.log(`Total en BD: ${countAll || 0}`);
+    console.log(`Rechazados: ${countRechazados || 0}`);
+    console.log(`Válidos (total - rechazados): ${currentCount}`);
+    console.log(`Nuevos a insertar: ${acreditados.length}`);
+    console.log(`Total después de insertar: ${totalAfterInsert}`);
+    console.log(`LÍMITE MÁXIMO: ${areaRecord.cupo_maximo}`);
+    console.log(`¿Permitir?: ${totalAfterInsert} <= ${areaRecord.cupo_maximo} = ${totalAfterInsert <= areaRecord.cupo_maximo}`);
+    console.log("=========================");
+
+    if (totalAfterInsert > areaRecord.cupo_maximo) {
+      console.log(`❌ VALIDACIÓN FALLIDA: Total (${totalAfterInsert}) > Máximo (${areaRecord.cupo_maximo})`);
+      return NextResponse.json(
         {
-          responsable_nombre,
-          responsable_apellido,
-          responsable_rut,
-          responsable_email,
-          responsable_telefono,
-          medio_id: medioData.id,
-          estado: "pendiente",
+          error: `No hay cupos disponibles para ${empresa} en el área ${area}. Máximo: ${areaRecord.cupo_maximo}, Acreditados existentes: ${currentCount}, Solicitados: ${acreditados.length}, Total: ${totalAfterInsert}`,
+          area: area,
+          empresa: empresa,
+          cupos_disponibles: Math.max(0, areaRecord.cupo_maximo - currentCount),
+          cupo_maximo: areaRecord.cupo_maximo,
+          acreditados_existentes: currentCount,
+          acreditados_solicitados: acreditados.length,
         },
-      ])
-      .select()
-      .single();
-
-    if (acreditacionError || !acreditacionData) {
-      console.error("Error creando acreditación:", acreditacionError);
-      return NextResponse.json(
-        { error: "Error al crear la solicitud" },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
-    // 4. Crear registros en acreditados_prensa
+    // 3. Insertar acreditados
     const acreditadosToInsert = acreditados.map((acreditado: Acreditado) => ({
-      acreditacion_id: acreditacionData.id,
+      evento_id: 1,
       nombre: acreditado.nombre,
-      apellido: acreditado.apellido,
+      primer_apellido: acreditado.primer_apellido,
+      segundo_apellido: acreditado.segundo_apellido,
       rut: acreditado.rut,
       email: acreditado.email,
       cargo: acreditado.cargo,
       tipo_credencial: acreditado.tipo_credencial,
       numero_credencial: acreditado.numero_credencial,
-      activo: true,
+      area: area,
+      empresa: empresa,
+      status: "pendiente",
+      responsable_nombre,
+      responsable_email,
+      responsable_telefono,
     }));
 
-    const { error: acreditadosError } = await supabase
-      .from("acreditados_prensa")
+    const { data: insertedData, error: insertError } = await supabaseAnon
+      .from("acreditados")
       .insert(acreditadosToInsert);
 
-    if (acreditadosError) {
-      console.error("Error creando acreditados:", acreditadosError);
-      return NextResponse.json(
-        { error: "Error al registrar acreditados" },
-        { status: 500 }
-      );
-    }
+    if (insertError) throw insertError;
 
-    // 5. Actualizar cupos disponibles
-    const { error: updateError } = await supabase
-      .from("medios")
-      .update({ 
-        cupo_disponible: medioData.cupo_disponible - acreditados.length 
-      })
-      .eq("id", medioData.id);
+    console.log("ACREDITADOS INSERTADOS");
 
-    if (updateError) {
-      console.error("Error actualizando cupos:", updateError);
-      return NextResponse.json(
-        { error: "Error al actualizar cupos" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ 
-      ok: true, 
-      message: "Solicitud registrada exitosamente",
-      acreditacion_id: acreditacionData.id 
-    });
-
-  } catch (err) {
-    console.error("ERROR prensa:", err);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      {
+        success: true,
+        message: "Acreditación enviada correctamente",
+        acreditados_insertados: acreditados.length,
+      },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("ERROR EN API:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "Error al procesar la acreditación",
+        details: error,
+      },
       { status: 500 }
     );
   }

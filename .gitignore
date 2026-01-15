@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Archivos con datos sensibles
+*.xlsx
+*.xls
+*.csv
+/public/docs/*.pdf
+/uploads/
+/exports/

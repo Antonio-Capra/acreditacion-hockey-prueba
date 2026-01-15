@@ -5,11 +5,18 @@ import Image from "next/image";
 import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
 import DisclaimerModal from "@/components/acreditacion/Disclaimer";
+import FormSection from "@/components/acreditacion/FormSection";
+import ProgressIndicator from "@/components/common/ProgressIndicator";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import SuccessToast from "@/components/common/SuccessToast";
+import ConfirmationModal from "@/components/common/ConfirmationModal";
+import ValidationBadge from "@/components/common/ValidationBadge";
 import { useRouter } from "next/navigation";
 
 interface Acreditado {
   nombre: string;
-  apellido: string;
+  primer_apellido: string;
+  segundo_apellido: string;
   rut: string;
   email: string;
   cargo: string;
@@ -19,85 +26,95 @@ interface Acreditado {
 
 interface FormData {
   responsable_nombre: string;
-  responsable_apellido: string;
-  responsable_rut: string;
+  responsable_primer_apellido: string;
+  responsable_segundo_apellido: string;
   responsable_email: string;
   responsable_telefono: string;
-  medio: string;
+  empresa: string;
+  area: string;
   acreditados: Acreditado[];
 }
 
-const MEDIOS = [
-  "Bío Bío",
-  "Cooperativa",
-  "ADN",
-  "Agricultura",
-  "Radiales sin caseta",
-  "Medios Televisivos Nacionales",
-  "Sitios Web",
-  "Medios Escritos",
-  "Agencias",
-  "Otro",
+const AREAS = [
+  { codigo: "A", nombre: "Radiales con caseta", cupos: 5 },
+  { codigo: "B", nombre: "Radiales sin caseta", cupos: 3 },
+  { codigo: "C", nombre: "TV Nacionales", cupos: 2 },
+  { codigo: "D", nombre: "Sitios Web", cupos: 2 },
+  { codigo: "E", nombre: "Medios Escritos", cupos: 2 },
+  { codigo: "F", nombre: "Agencias", cupos: 1 },
+  { codigo: "G", nombre: "Reportero gráfico cancha", cupos: 1 },
 ];
 
 const CARGOS = [
   "Periodista",
+  "Periodista Pupitre",
   "Relator",
+  "Comentarista",
   "Camarógrafo",
+  "Reportero Gráfico Cancha",
+  "Reportero Gráfico Tribuna",
   "Técnico",
-  "Productor",
-  "Editor",
 ];
 
-const TIPOS_CREDENCIAL = [
-  "ANFP",
-  "Reportero gráfico cancha",
-  "Camarógrafo",
-];
+function createEmptyAcreditado(): Acreditado {
+  return {
+    nombre: "",
+    primer_apellido: "",
+    segundo_apellido: "",
+    rut: "",
+    email: "",
+    cargo: "",
+    tipo_credencial: "",
+    numero_credencial: "",
+  };
+}
 
 export default function AcreditacionPage() {
   const [formData, setFormData] = useState<FormData>({
     responsable_nombre: "",
-    responsable_apellido: "",
-    responsable_rut: "",
+    responsable_primer_apellido: "",
+    responsable_segundo_apellido: "",
     responsable_email: "",
     responsable_telefono: "",
-    medio: "",
-    acreditados: [
-      {
-        nombre: "",
-        apellido: "",
-        rut: "",
-        email: "",
-        cargo: "",
-        tipo_credencial: "",
-        numero_credencial: "",
-      },
-    ],
+    empresa: "",
+    area: "A",
+    acreditados: [createEmptyAcreditado()],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [successToast, setSuccessToast] = useState<{
+    show: boolean;
+    acreditados_count: number;
+  }>({ show: false, acreditados_count: 0 });
   const [submissionStatus, setSubmissionStatus] = useState<{
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+  const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
 
-  const handleResponsableChange = (
-    field: keyof Omit<FormData, "acreditados" | "medio">,
-    value: string
-  ) => {
+  const handleResponsableChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleMedioChange = (value: string) => {
+  const handleAreaChange = (value: string) => {
+    const selectedArea = AREAS.find((a) => a.codigo === value);
+    const cupos = selectedArea?.cupos || 1;
+
+    // Crear arreglo de acreditados con el número de cupos
+    const newAcreditados = Array.from({ length: cupos }, () =>
+      createEmptyAcreditado()
+    );
+
     setFormData((prev) => ({
       ...prev,
-      medio: value,
+      area: value,
+      acreditados: newAcreditados,
     }));
   };
 
@@ -117,38 +134,15 @@ export default function AcreditacionPage() {
     }));
   };
 
-  const addAcreditado = () => {
-    setFormData((prev) => ({
-      ...prev,
-      acreditados: [
-        ...prev.acreditados,
-        {
-          nombre: "",
-          apellido: "",
-          rut: "",
-          email: "",
-          cargo: "",
-          tipo_credencial: "",
-          numero_credencial: "",
-        },
-      ],
-    }));
-  };
-
-  const removeAcreditado = (index: number) => {
-    if (formData.acreditados.length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        acreditados: prev.acreditados.filter((_, i) => i !== index),
-      }));
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validaciones básicas
-    if (!formData.responsable_nombre || !formData.responsable_email) {
+    // Validar datos del responsable
+    if (
+      !formData.responsable_nombre ||
+      !formData.responsable_primer_apellido ||
+      !formData.responsable_email
+    ) {
       setSubmissionStatus({
         type: "error",
         message: "Por favor completa los datos del responsable",
@@ -156,15 +150,26 @@ export default function AcreditacionPage() {
       return;
     }
 
-    if (!formData.medio) {
+    if (!formData.empresa) {
       setSubmissionStatus({
         type: "error",
-        message: "Por favor selecciona un medio",
+        message: "Por favor especifica el medio/empresa",
       });
       return;
     }
 
-    if (formData.acreditados.some((a) => !a.nombre || !a.apellido || !a.rut)) {
+    // Validar que todos los acreditados estén completos
+    if (
+      formData.acreditados.some(
+        (a) =>
+          !a.nombre ||
+          !a.primer_apellido ||
+          !a.rut ||
+          !a.email ||
+          !a.cargo ||
+          !a.tipo_credencial
+      )
+    ) {
       setSubmissionStatus({
         type: "error",
         message: "Por favor completa todos los datos de los acreditados",
@@ -172,13 +177,31 @@ export default function AcreditacionPage() {
       return;
     }
 
+    // Mostrar modal de confirmación
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/acreditaciones/prensa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          responsable_nombre: formData.responsable_nombre,
+          responsable_primer_apellido: formData.responsable_primer_apellido,
+          responsable_segundo_apellido: formData.responsable_segundo_apellido,
+          responsable_email: formData.responsable_email,
+          responsable_telefono: formData.responsable_telefono,
+          empresa: formData.empresa,
+          area: formData.area,
+          acreditados: formData.acreditados.map((a) => ({
+            ...a,
+            area: formData.area,
+            empresa: formData.empresa,
+          })),
+        }),
       });
 
       const result = await response.json();
@@ -187,36 +210,30 @@ export default function AcreditacionPage() {
         throw new Error(result.error || "Error al enviar la solicitud");
       }
 
-      setSubmissionStatus({
-        type: "success",
-        message: "Solicitud enviada correctamente",
+      setShowConfirmation(false);
+
+      // Mostrar toast de éxito
+      setSuccessToast({
+        show: true,
+        acreditados_count: formData.acreditados.length,
       });
 
-      // Limpiar formulario
-      setFormData({
-        responsable_nombre: "",
-        responsable_apellido: "",
-        responsable_rut: "",
-        responsable_email: "",
-        responsable_telefono: "",
-        medio: "",
-        acreditados: [
-          {
-            nombre: "",
-            apellido: "",
-            rut: "",
-            email: "",
-            cargo: "",
-            tipo_credencial: "",
-            numero_credencial: "",
-          },
-        ],
-      });
-
+      // Limpiar formulario después del toast
       setTimeout(() => {
-        setSubmissionStatus({ type: null, message: "" });
-      }, 3000);
+        setFormData({
+          responsable_nombre: "",
+          responsable_primer_apellido: "",
+          responsable_segundo_apellido: "",
+          responsable_email: "",
+          responsable_telefono: "",
+          empresa: "",
+          area: "A",
+          acreditados: [createEmptyAcreditado()],
+        });
+        setCurrentStep(1);
+      }, 2000);
     } catch (error) {
+      setShowConfirmation(false);
       setSubmissionStatus({
         type: "error",
         message:
@@ -226,6 +243,8 @@ export default function AcreditacionPage() {
       setIsSubmitting(false);
     }
   };
+
+  const selectedArea = AREAS.find((a) => a.codigo === formData.area);
 
   return (
     <div className="bg-gradient-to-br from-[#1e5799] to-[#7db9e8] overflow-x-hidden max-w-full">
@@ -290,6 +309,13 @@ export default function AcreditacionPage() {
             onSubmit={handleSubmit}
             className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl space-y-8"
           >
+            {/* Progress Indicator */}
+            <ProgressIndicator
+              currentStep={currentStep}
+              totalSteps={3}
+              stepLabels={["Responsable", "Institución", "Acreditados"]}
+            />
+
             {/* Mensaje de estado */}
             {submissionStatus.type && (
               <div
@@ -304,51 +330,58 @@ export default function AcreditacionPage() {
             )}
 
             {/* Sección Responsable */}
-            <div>
-              <h2 className="text-xl font-bold text-[#1e5799] mb-4 flex items-center gap-2">
-                <span className="bg-[#1e5799] text-white px-3 py-1 rounded-full text-sm">
-                  1
-                </span>
-                Responsable del Medio
-              </h2>
-
+            <FormSection
+              stepNumber={1}
+              title="Datos del Responsable"
+              description="Información de contacto del responsable de la acreditación"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text"
                   placeholder="Nombre"
                   value={formData.responsable_nombre}
-                  onChange={(e) =>
-                    handleResponsableChange("responsable_nombre", e.target.value)
-                  }
+                  onChange={(e) => {
+                    handleResponsableChange("responsable_nombre", e.target.value);
+                    setCurrentStep(1);
+                  }}
                   className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                   required
                 />
                 <input
                   type="text"
-                  placeholder="Apellido"
-                  value={formData.responsable_apellido}
-                  onChange={(e) =>
-                    handleResponsableChange("responsable_apellido", e.target.value)
-                  }
+                  placeholder="Primer Apellido"
+                  value={formData.responsable_primer_apellido}
+                  onChange={(e) => {
+                    handleResponsableChange(
+                      "responsable_primer_apellido",
+                      e.target.value
+                    );
+                    setCurrentStep(1);
+                  }}
                   className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                   required
                 />
                 <input
                   type="text"
-                  placeholder="RUT (ej: 12345678-9)"
-                  value={formData.responsable_rut}
-                  onChange={(e) =>
-                    handleResponsableChange("responsable_rut", e.target.value)
-                  }
+                  placeholder="Segundo Apellido"
+                  value={formData.responsable_segundo_apellido}
+                  onChange={(e) => {
+                    handleResponsableChange(
+                      "responsable_segundo_apellido",
+                      e.target.value
+                    );
+                    setCurrentStep(1);
+                  }}
                   className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 />
                 <input
                   type="email"
-                  placeholder="Correo"
+                  placeholder="Email"
                   value={formData.responsable_email}
-                  onChange={(e) =>
-                    handleResponsableChange("responsable_email", e.target.value)
-                  }
+                  onChange={(e) => {
+                    handleResponsableChange("responsable_email", e.target.value);
+                    setCurrentStep(1);
+                  }}
                   className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                   required
                 />
@@ -356,86 +389,131 @@ export default function AcreditacionPage() {
                   type="tel"
                   placeholder="Teléfono"
                   value={formData.responsable_telefono}
-                  onChange={(e) =>
-                    handleResponsableChange("responsable_telefono", e.target.value)
-                  }
+                  onChange={(e) => {
+                    handleResponsableChange(
+                      "responsable_telefono",
+                      e.target.value
+                    );
+                    setCurrentStep(1);
+                  }}
                   className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                />
+              </div>
+            </FormSection>
+
+            {/* Sección Identificación Institucional */}
+            <FormSection
+              stepNumber={2}
+              title="Identificación Institucional"
+              description="Información de la empresa y categoría de acreditación"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Medio/Empresa"
+                  value={formData.empresa}
+                  onChange={(e) => {
+                    handleResponsableChange("empresa", e.target.value);
+                    setCurrentStep(2);
+                  }}
+                  className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                  required
                 />
 
                 <select
-                  value={formData.medio}
-                  onChange={(e) => handleMedioChange(e.target.value)}
+                  value={formData.area}
+                  onChange={(e) => {
+                    handleAreaChange(e.target.value);
+                    setCurrentStep(2);
+                  }}
                   className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                   required
                 >
-                  <option value="">Selecciona un medio</option>
-                  {MEDIOS.map((medio) => (
-                    <option key={medio} value={medio}>
-                      {medio}
+                  {AREAS.map((area) => (
+                    <option key={area.codigo} value={area.codigo}>
+                      {area.nombre} ({area.cupos} cupos)
                     </option>
                   ))}
                 </select>
               </div>
-            </div>
+
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Cupos disponibles:</strong> {selectedArea?.cupos} |
+                  <strong> Formularios de acreditados:</strong>{" "}
+                  {formData.acreditados.length}
+                </p>
+              </div>
+            </FormSection>
 
             {/* Sección Acreditados */}
-            <div>
-              <h2 className="text-xl font-bold text-[#1e5799] mb-4 flex items-center gap-2">
-                <span className="bg-[#1e5799] text-white px-3 py-1 rounded-full text-sm">
-                  2
-                </span>
-                Acreditados ({formData.acreditados.length})
-              </h2>
-
+            <FormSection
+              stepNumber={3}
+              title="Datos de Acreditados"
+              description={`Complete los datos de los ${formData.acreditados.length} acreditado(s)`}
+            >
               <div className="space-y-6">
                 {formData.acreditados.map((acreditado, index) => (
                   <div
                     key={index}
-                    className="border-2 border-gray-200 rounded-lg p-4 space-y-4"
+                    className="border-2 border-gray-200 rounded-lg p-4 space-y-4 bg-gray-50"
                   >
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-semibold text-gray-700">
-                        Acreditado {index + 1}
-                      </h3>
-                      {formData.acreditados.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeAcreditado(index)}
-                          className="text-red-500 hover:text-red-700 text-sm font-medium"
-                        >
-                          Eliminar
-                        </button>
-                      )}
-                    </div>
+                    <h3 className="font-semibold text-gray-700 text-lg">
+                      Acreditado {index + 1} de {formData.acreditados.length}
+                    </h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <input
                         type="text"
                         placeholder="Nombre"
                         value={acreditado.nombre}
-                        onChange={(e) =>
-                          handleAcreditadoChange(index, "nombre", e.target.value)
-                        }
+                        onChange={(e) => {
+                          handleAcreditadoChange(index, "nombre", e.target.value);
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                         required
                       />
+
                       <input
                         type="text"
-                        placeholder="Apellido"
-                        value={acreditado.apellido}
-                        onChange={(e) =>
-                          handleAcreditadoChange(index, "apellido", e.target.value)
-                        }
+                        placeholder="Primer Apellido"
+                        value={acreditado.primer_apellido}
+                        onChange={(e) => {
+                          handleAcreditadoChange(
+                            index,
+                            "primer_apellido",
+                            e.target.value
+                          );
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                         required
                       />
+
+                      <input
+                        type="text"
+                        placeholder="Segundo Apellido"
+                        value={acreditado.segundo_apellido}
+                        onChange={(e) => {
+                          handleAcreditadoChange(
+                            index,
+                            "segundo_apellido",
+                            e.target.value
+                          );
+                          setCurrentStep(3);
+                        }}
+                        className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                      />
+
                       <input
                         type="text"
                         placeholder="RUT (sin puntos, con guion: 12345678-9)"
                         value={acreditado.rut}
-                        onChange={(e) =>
-                          handleAcreditadoChange(index, "rut", e.target.value)
-                        }
+                        onChange={(e) => {
+                          handleAcreditadoChange(index, "rut", e.target.value);
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                         required
                       />
@@ -444,18 +522,20 @@ export default function AcreditacionPage() {
                         type="email"
                         placeholder="Email"
                         value={acreditado.email}
-                        onChange={(e) =>
-                          handleAcreditadoChange(index, "email", e.target.value)
-                        }
+                        onChange={(e) => {
+                          handleAcreditadoChange(index, "email", e.target.value);
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                         required
                       />
 
                       <select
                         value={acreditado.cargo}
-                        onChange={(e) =>
-                          handleAcreditadoChange(index, "cargo", e.target.value)
-                        }
+                        onChange={(e) => {
+                          handleAcreditadoChange(index, "cargo", e.target.value);
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                         required
                       >
@@ -467,65 +547,101 @@ export default function AcreditacionPage() {
                         ))}
                       </select>
 
-                      <select
+                      <input
+                        type="text"
+                        placeholder="Tipo de credencial (Ej: Carné UC, Acreditación Especial, etc)"
                         value={acreditado.tipo_credencial}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           handleAcreditadoChange(
                             index,
                             "tipo_credencial",
                             e.target.value
-                          )
-                        }
+                          );
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                         required
-                      >
-                        <option value="">Tipo de credencial</option>
-                        {TIPOS_CREDENCIAL.map((tipo) => (
-                          <option key={tipo} value={tipo}>
-                            {tipo}
-                          </option>
-                        ))}
-                      </select>
+                      />
 
                       <input
                         type="text"
                         placeholder="Número de credencial"
                         value={acreditado.numero_credencial}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           handleAcreditadoChange(
                             index,
                             "numero_credencial",
                             e.target.value
-                          )
-                        }
+                          );
+                          setCurrentStep(3);
+                        }}
                         className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                       />
                     </div>
                   </div>
                 ))}
               </div>
-
-              <button
-                type="button"
-                onClick={addAcreditado}
-                className="mt-4 px-4 py-2 bg-[#2989d8] text-white rounded-lg hover:bg-[#1e5799] transition-colors text-sm font-medium"
-              >
-                + Agregar acreditado
-              </button>
-            </div>
+            </FormSection>
 
             {/* Botones */}
             <div className="flex gap-4 pt-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white font-semibold rounded-xl hover:from-[#207cca] hover:to-[#7db9e8] transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white font-semibold rounded-xl hover:from-[#207cca] hover:to-[#7db9e8] transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isSubmitting ? "Enviando..." : "Enviar solicitud"}
+                {isSubmitting ? (
+                  <>
+                    <LoadingSpinner />
+                    Enviando...
+                  </>
+                ) : (
+                  "Enviar solicitud"
+                )}
               </button>
             </div>
           </form>
         </div>
+
+        {/* Modal de Confirmación */}
+        <ConfirmationModal
+          isOpen={showConfirmation}
+          title="Confirmar solicitud de acreditación"
+          message="¿Está seguro de que desea enviar esta solicitud?"
+          details={[
+            {
+              "Responsable": `${formData.responsable_nombre} ${formData.responsable_primer_apellido}`,
+            },
+            {
+              "Empresa": formData.empresa,
+            },
+            {
+              "Área": selectedArea?.nombre || "No seleccionado",
+            },
+            {
+              "Acreditados": formData.acreditados.length,
+            },
+          ]}
+          isLoading={isSubmitting}
+          onConfirm={handleConfirmSubmit}
+          onCancel={() => setShowConfirmation(false)}
+          confirmText="Confirmar envío"
+          cancelText="Cancelar"
+        />
+
+        {/* Toast de Éxito */}
+        {successToast.show && (
+          <SuccessToast
+            title="¡Solicitud enviada!"
+            message="Su solicitud de acreditación ha sido registrada correctamente."
+            details={[
+              `${successToast.acreditados_count} acreditado(s) registrado(s)`,
+              `Empresa: ${formData.empresa}`,
+              `Área: ${selectedArea?.nombre}`,
+            ]}
+            onClose={() => setSuccessToast({ show: false, acreditados_count: 0 })}
+          />
+        )}
 
         <footer className="py-6 text-center mt-8">
           <p className="text-sm text-white/60">
