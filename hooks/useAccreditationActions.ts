@@ -1,5 +1,26 @@
 import { supabase } from "@/lib/supabase";
-import { Acreditacion, Zona } from "@/types";
+import { Zona } from "@/constants/areas";
+
+export interface Acreditacion {
+  id: number;
+  nombre: string;
+  primer_apellido: string;
+  segundo_apellido?: string;
+  rut: string;
+  email: string;
+  cargo: string;
+  tipo_credencial: string;
+  numero_credencial: string;
+  area: string;
+  empresa: string;
+  zona_id?: number;
+  status: "pendiente" | "aprobado" | "rechazado";
+  motivo_rechazo?: string;
+  responsable_nombre?: string;
+  responsable_email?: string;
+  responsable_telefono?: string;
+  created_at: string;
+}
 
 export type Row = Acreditacion;
 
@@ -59,9 +80,9 @@ export function useAccreditationActions({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: r.nombre,
-          apellido: r.apellido,
-          correo: r.correo,
-          zona: r.zona,
+          apellido: r.primer_apellido + (r.segundo_apellido ? ` ${r.segundo_apellido}` : ''),
+          correo: r.email,
+          zona: r.area, // Usando area como zona por ahora
           area: r.area,
         }),
       });
@@ -78,11 +99,11 @@ export function useAccreditationActions({
         return false;
       }
 
-      console.log("✅ Correo enviado exitosamente a:", r.correo);
+      console.log("✅ Correo enviado exitosamente a:", r.email);
       onOpenResult(
         'success',
         "✅ ¡Acreditación aprobada!",
-        `La acreditación de ${r.nombre} ${r.apellido} ha sido aprobada y el correo ha sido enviado exitosamente a ${r.correo}.`
+        `La acreditación de ${r.nombre} ${r.primer_apellido + (r.segundo_apellido ? ` ${r.segundo_apellido}` : '')} ha sido aprobada y el correo ha sido enviado exitosamente a ${r.email}.`
       );
       return true;
     } catch (e) {
@@ -100,7 +121,7 @@ export function useAccreditationActions({
   const ejecutarAprobacion = async (r: Row) => {
     const { error } = await supabase
       .from("acreditaciones")
-      .update({ status: "aprobado", zona: r.zona })
+      .update({ status: "aprobado", zona_id: r.zona_id })
       .eq("id", r.id);
 
     if (error) {
@@ -110,7 +131,7 @@ export function useAccreditationActions({
 
     onSetRows((prev: Row[]) =>
       prev.map((x) =>
-        x.id === r.id ? { ...x, status: "aprobado", zona: r.zona } : x
+        x.id === r.id ? { ...x, status: "aprobado", zona_id: r.zona_id } : x
       )
     );
 
@@ -119,7 +140,7 @@ export function useAccreditationActions({
 
   // Abrir modal de confirmación para aprobar con zona
   const aprobarConZona = (r: Row) => {
-    if (!r.zona) {
+    if (!r.zona_id) {
       onOpenConfirm(
         "Zona no seleccionada",
         "Debes seleccionar una zona antes de aprobar.",
@@ -130,7 +151,7 @@ export function useAccreditationActions({
 
     onOpenConfirm(
       "Confirmar aprobación",
-      `¿Deseas aprobar la acreditación de ${r.nombre} ${r.apellido} en ${r.zona}?\n\nSe enviará un correo de confirmación.`,
+      `¿Deseas aprobar la acreditación de ${r.nombre} ${r.primer_apellido + (r.segundo_apellido ? ` ${r.segundo_apellido}` : '')} en ${r.area}?\n\nSe enviará un correo de confirmación.`,
       async () => {
         await ejecutarAprobacion(r);
       }
@@ -141,7 +162,7 @@ export function useAccreditationActions({
   const eliminarRegistro = (r: Row) => {
     onOpenConfirm(
       "⚠️ Confirmar eliminación",
-      `¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.apellido}?\n\nEsta acción no se puede deshacer.`,
+      `¿Estás seguro de eliminar la acreditación de ${r.nombre} ${r.primer_apellido + (r.segundo_apellido ? ` ${r.segundo_apellido}` : '')}?\n\nEsta acción no se puede deshacer.`,
       async () => {
         const { error } = await supabase
           .from("acreditaciones")
@@ -161,7 +182,7 @@ export function useAccreditationActions({
         onOpenResult(
           'success',
           "✅ Acreditación eliminada",
-          `La acreditación de ${r.nombre} ${r.apellido} ha sido eliminada exitosamente.`
+          `La acreditación de ${r.nombre} ${r.primer_apellido + (r.segundo_apellido ? ` ${r.segundo_apellido}` : '')} ha sido eliminada exitosamente.`
         );
       }
     );

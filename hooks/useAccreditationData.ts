@@ -1,6 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Acreditacion } from "@/types";
+
+export interface Acreditacion {
+  id: number;
+  nombre: string;
+  primer_apellido: string;
+  segundo_apellido?: string;
+  rut: string;
+  email: string;
+  cargo: string;
+  tipo_credencial: string;
+  numero_credencial: string;
+  area: string;
+  empresa: string;
+  zona_id?: number;
+  status: "pendiente" | "aprobado" | "rechazado";
+  motivo_rechazo?: string;
+  responsable_nombre?: string;
+  responsable_email?: string;
+  responsable_telefono?: string;
+  created_at: string;
+}
 
 export type Row = Acreditacion;
 
@@ -21,9 +41,9 @@ export function useAccreditationData() {
     setLoading(true);
 
     let query = supabase
-      .from("acreditaciones")
+      .from("acreditados")
       .select(
-        "id,area,nombre,apellido,rut,correo,empresa,status,created_at,zona"
+        "id,nombre,primer_apellido,segundo_apellido,rut,email,cargo,tipo_credencial,numero_credencial,area,empresa,zona_id,status,motivo_rechazo,responsable_nombre,responsable_email,responsable_telefono,created_at"
       )
       .order("created_at", { ascending: false });
 
@@ -46,7 +66,7 @@ export function useAccreditationData() {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter((r) =>
-      [r.nombre, r.apellido, r.rut, r.correo, r.empresa ?? ""].some((x) =>
+      [r.nombre, r.primer_apellido + (r.segundo_apellido ? ` ${r.segundo_apellido}` : ''), r.rut, r.email, r.empresa ?? ""].some((x) =>
         x.toLowerCase().includes(term)
       )
     );

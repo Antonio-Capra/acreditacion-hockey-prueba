@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed } from "next/font/google";
+import { Montserrat, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["300", "400", "600", "700", "800", "900"],
+});
 
 const barlowCondensed = Barlow_Condensed({
   variable: "--font-barlow-condensed",
@@ -24,8 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+      </head>
       <body
-        className={`${barlowCondensed.variable} antialiased font-sans`}
+        className={`${montserrat.variable} ${barlowCondensed.variable} antialiased font-sans`}
         style={{ fontFamily: 'var(--font-barlow-condensed), sans-serif' }}
         suppressHydrationWarning
       >

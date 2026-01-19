@@ -43,8 +43,25 @@ interface Acreditado {
   numero_credencial: string;
 }
 
-interface AcreditadoData {
-  acreditacion_id: number;
+interface SupabaseAcreditacion {
+  id: number;
+  nombre: string;
+  primer_apellido: string;
+  segundo_apellido?: string;
+  rut: string;
+  email: string;
+  cargo: string;
+  tipo_credencial: string;
+  numero_credencial: string;
+  area: string;
+  empresa: string;
+  zona_id?: number;
+  status: "pendiente" | "aprobado" | "rechazado";
+  motivo_rechazo?: string;
+  responsable_nombre?: string;
+  responsable_email?: string;
+  responsable_telefono?: string;
+  created_at: string;
 }
 
 // Mapeo de códigos de área a nombres
@@ -151,7 +168,7 @@ export default function AdminDashboard() {
 
       if (error) throw error;
 
-      const transformedData = data?.map((a: any) => ({
+      const transformedData = data?.map((a: SupabaseAcreditacion) => ({
         id: a.id,
         nombre: a.nombre,
         primer_apellido: a.primer_apellido,
@@ -534,7 +551,7 @@ export default function AdminDashboard() {
             </div>
             <div className="mt-4 bg-blue-50 border-l-4 border-[#1e5799] p-4 rounded-lg">
               <p className="text-sm text-gray-700">
-                <strong>Tip:</strong> "Punto Ticket (Aprobados)" solo exporta acreditaciones aprobadas. Usa "Punto Ticket (Filtrado)" para exportar según el filtro de estado actual.
+                <strong>Tip:</strong> &quot;Punto Ticket (Aprobados)&quot; solo exporta acreditaciones aprobadas. Usa &quot;Punto Ticket (Filtrado)&quot; para exportar según el filtro de estado actual.
               </p>
             </div>
           </div>

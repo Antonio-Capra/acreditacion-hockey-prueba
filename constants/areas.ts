@@ -21,8 +21,8 @@ export const ZONA_LABEL: Record<string, string> = {
   "Zona 9": "Todas las zonas",
 };
 
-// Importar el tipo desde types
-import type { Zona } from '@/types';
+// Definir el tipo Zona
+export type Zona = keyof typeof ZONA_LABEL;
 
 // Lista de valores internos (lo que se guarda en la BD)
 export const ZONAS: Zona[] = Object.keys(ZONA_LABEL) as Zona[];

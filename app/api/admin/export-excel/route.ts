@@ -31,6 +31,10 @@ interface Zona {
   nombre: string;
 }
 
+interface ExcelRow {
+  [key: string]: string | number | undefined;
+}
+
 export async function GET(request: NextRequest) {
   try {
     console.log("🔄 Iniciando exportación a Excel...");
@@ -98,7 +102,7 @@ export async function GET(request: NextRequest) {
 
     const zonasMap = new Map(zonas?.map((z: Zona) => [z.id, z.nombre]) || []);
 
-    let dataExcel: any[];
+    let dataExcel: ExcelRow[];
     let sheetName: string;
 
     if (format === "puntoticket") {

@@ -175,12 +175,13 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("ERROR EN API:", error);
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       {
-        error: error.message || "Error al procesar la acreditación",
-        details: error,
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : error,
       },
       { status: 500 }
     );

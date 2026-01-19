@@ -3,6 +3,35 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// 🔐 Configuración SEGURA para evitar bloqueos
+const EMAIL_CONFIG = {
+  // ✅ Email verificado AUTOMÁTICAMENTE en Resend (sin configuración)
+  // Este es el único que funciona sin verificación de dominio
+  default: "onboarding@resend.dev",
+  
+  // Email personalizado (solo si verificaste el dominio)
+  verified: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+  
+  // Dominio propio (solo si verificaste en panel Resend)
+  custom: process.env.RESEND_VERIFIED_DOMAIN || null,
+};
+
+// Seleccionar email según ambiente
+const getFromEmail = (): string => {
+  // Si tienes dominio personalizado verificado, úsalo
+  if (EMAIL_CONFIG.custom) {
+    return `Acreditaciones UC <noreply@${EMAIL_CONFIG.custom}>`;
+  }
+  
+  // Si tienes email verificado en Resend, úsalo
+  if (EMAIL_CONFIG.verified && EMAIL_CONFIG.verified !== EMAIL_CONFIG.default) {
+    return `Acreditaciones UC <${EMAIL_CONFIG.verified}>`;
+  }
+  
+  // Por defecto: usar email de Resend que funciona sin verificación
+  return `Acreditaciones UC <${EMAIL_CONFIG.default}>`;
+};
+
 export async function POST(req: Request) {
   try {
     const { to, subject, message, acreditacion_id, estado } = await req.json();
@@ -48,7 +77,7 @@ export async function POST(req: Request) {
     `;
 
     const { error } = await resend.emails.send({
-      from: "acreditacion@accredia.cl",
+      from: getFromEmail(),
       to,
       subject,
       html: emailBody,

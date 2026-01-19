@@ -3,13 +3,55 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --azul-oscuro: #1e5799;
+  --azul-medio: #207cca;
+  --azul-claro: #7db9e8;
+  --azul-mas-claro: #2989d8;
+  --blanco: #ffffff;
+  --font-barlow-condensed: 'Barlow Condensed', sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-barlow-condensed);
   overflow-x: hidden;
+}
+
+/* Estilos del diseño */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hero-overlay {
+  background: linear-gradient(135deg, 
+      rgba(30, 87, 153, 0.45) 0%, 
+      rgba(32, 124, 202, 0.35) 50%,
+      rgba(30, 87, 153, 0.50) 100%);
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 30px rgba(32, 124, 202, 0.6);
+}
+
+.minimal-line {
+  height: 2px;
+  background: linear-gradient(90deg, 
+      transparent 0%, 
+      var(--azul-claro) 50%, 
+      transparent 100%);
 }
 
 /* Animaciones para landing page */
