@@ -19,12 +19,27 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
       <div className="bg-white/90 backdrop-blur-sm p-6 rounded-b-2xl shadow-lg">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <button
-            onClick={() => {
-              const link = document.createElement("a");
-              link.href = `/api/admin/export-excel?format=completo&status=${estadoFilter || "all"}`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+            onClick={async () => {
+              try {
+                const response = await fetch(`/api/admin/export-excel?format=completo&status=${estadoFilter || "all"}`);
+                if (!response.ok) {
+                  const error = await response.json();
+                  setMessage({
+                    type: "error",
+                    text: error.error || "No hay acreditaciones para exportar"
+                  });
+                  return;
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `acreditados_completo_${new Date().toISOString().split("T")[0]}.xlsx`;
+                link.click();
+                window.URL.revokeObjectURL(url);
+              } catch (error) {
+                setMessage({ type: "error", text: "Error al descargar Excel" });
+              }
             }}
             className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
           >
@@ -60,12 +75,27 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
             <span className="relative">Punto Ticket (Aprobados)</span>
           </button>
           <button
-            onClick={() => {
-              const link = document.createElement("a");
-              link.href = `/api/admin/export-excel?format=puntoticket&status=${estadoFilter || "all"}`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+            onClick={async () => {
+              try {
+                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=${estadoFilter || "all"}`);
+                if (!response.ok) {
+                  const error = await response.json();
+                  setMessage({
+                    type: "error",
+                    text: error.error || "No hay acreditaciones para exportar con el filtro actual"
+                  });
+                  return;
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `acreditados_puntoticket_filtrado_${new Date().toISOString().split("T")[0]}.xlsx`;
+                link.click();
+                window.URL.revokeObjectURL(url);
+              } catch (error) {
+                setMessage({ type: "error", text: "Error al descargar Excel" });
+              }
             }}
             className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
           >
