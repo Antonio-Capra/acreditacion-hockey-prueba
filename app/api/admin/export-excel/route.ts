@@ -17,6 +17,9 @@ interface Acreditado {
   zona_id?: number;
   status: string;
   responsable_nombre?: string;
+  responsable_primer_apellido?: string;
+  responsable_segundo_apellido?: string;
+  responsable_rut?: string;
   responsable_email?: string;
   responsable_telefono?: string;
 }
@@ -120,6 +123,9 @@ export async function GET(request: NextRequest) {
         Zona: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
         Estado: a.status.charAt(0).toUpperCase() + a.status.slice(1),
         "Responsable": a.responsable_nombre || "",
+        "Primer Apellido Responsable": a.responsable_primer_apellido || "",
+        "Segundo Apellido Responsable": a.responsable_segundo_apellido || "",
+        "RUT Responsable": a.responsable_rut || "",
         "Email Responsable": a.responsable_email || "",
         "Teléfono Responsable": a.responsable_telefono || "",
       }));

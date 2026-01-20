@@ -1,1 +1,1 @@
-export { AREAS, ZONA_LABEL, ZONAS } from './areas';
+// Archivo de exportaciones de constantes - actualmente vacío

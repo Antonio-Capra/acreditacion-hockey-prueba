@@ -79,6 +79,9 @@ export default function AdminDashboard() {
           status,
           motivo_rechazo,
           responsable_nombre,
+          responsable_primer_apellido,
+          responsable_segundo_apellido,
+          responsable_rut,
           responsable_email,
           responsable_telefono,
           created_at
@@ -104,6 +107,9 @@ export default function AdminDashboard() {
         status: a.status,
         motivo_rechazo: a.motivo_rechazo,
         responsable_nombre: a.responsable_nombre,
+        responsable_primer_apellido: a.responsable_primer_apellido,
+        responsable_segundo_apellido: a.responsable_segundo_apellido,
+        responsable_rut: a.responsable_rut,
         responsable_email: a.responsable_email,
         responsable_telefono: a.responsable_telefono,
         created_at: a.created_at,
@@ -469,6 +475,18 @@ export default function AdminDashboard() {
                     <div>
                       <label className="text-sm font-medium text-gray-600">Nombre</label>
                       <p className="text-base font-semibold">{selectedAcreditacion.responsable_nombre}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Primer Apellido</label>
+                      <p className="text-base font-semibold">{selectedAcreditacion.responsable_primer_apellido || "-"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Segundo Apellido</label>
+                      <p className="text-base font-semibold">{selectedAcreditacion.responsable_segundo_apellido || "-"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">RUT</label>
+                      <p className="text-base font-semibold">{selectedAcreditacion.responsable_rut || "-"}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Email</label>

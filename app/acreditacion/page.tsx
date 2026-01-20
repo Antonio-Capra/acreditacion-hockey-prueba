@@ -7,7 +7,6 @@ import DisclaimerModal from "@/components/acreditacion/Disclaimer";
 import FormSection from "@/components/acreditacion/FormSection";
 import ProgressIndicator from "@/components/common/ProgressIndicator";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
-import SuccessToast from "@/components/common/SuccessToast";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
 import AcreditadoRow from "@/components/acreditacion/AcreditadoRow";
@@ -29,6 +28,7 @@ interface FormData {
   responsable_nombre: string;
   responsable_primer_apellido: string;
   responsable_segundo_apellido: string;
+  responsable_rut: string;
   responsable_email: string;
   responsable_telefono: string;
   empresa: string;
@@ -56,6 +56,7 @@ export default function AcreditacionPage() {
     responsable_nombre: "",
     responsable_primer_apellido: "",
     responsable_segundo_apellido: "",
+    responsable_rut: "",
     responsable_email: "",
     responsable_telefono: "",
     empresa: "",
@@ -66,7 +67,7 @@ export default function AcreditacionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [successToast, setSuccessToast] = useState<{
+  const [successModal, setSuccessModal] = useState<{
     show: boolean;
     acreditados_count: number;
   }>({ show: false, acreditados_count: 0 });
@@ -77,6 +78,23 @@ export default function AcreditacionPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   const selectedArea = areas.find((a) => a.codigo === formData.area);
+
+  // Calcular el paso actual basado en el progreso del formulario
+  React.useEffect(() => {
+    let step = 1;
+    
+    // Si hay empresa y área, estamos en paso 2
+    if (formData.empresa?.trim() && formData.area) {
+      step = 2;
+    }
+    
+    // Si hay al menos un acreditado con datos básicos, estamos en paso 3
+    if (formData.acreditados.some(a => a.nombre?.trim() && a.primer_apellido?.trim() && a.rut?.trim())) {
+      step = 3;
+    }
+    
+    setCurrentStep(step);
+  }, [formData]);
 
   const handleResponsableChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -145,6 +163,9 @@ export default function AcreditacionPage() {
     if (!formData.responsable_primer_apellido?.trim()) {
       return "Complete el primer apellido del responsable";
     }
+    if (!formData.responsable_rut?.trim()) {
+      return "Complete el RUT del responsable";
+    }
     if (!formData.responsable_email?.trim()) {
       return "Complete el email del responsable";
     }
@@ -195,6 +216,7 @@ export default function AcreditacionPage() {
       responsable_nombre: "",
       responsable_primer_apellido: "",
       responsable_segundo_apellido: "",
+      responsable_rut: "",
       responsable_email: "",
       responsable_telefono: "",
       empresa: "",
@@ -205,6 +227,11 @@ export default function AcreditacionPage() {
     setCurrentStep(1);
   };
 
+  const handleSuccessModalClose = () => {
+    setSuccessModal({ show: false, acreditados_count: 0 });
+    resetForm();
+  };
+
   const confirmSubmit = async () => {
     setShowConfirmation(false);
     setIsSubmitting(true);
@@ -213,14 +240,8 @@ export default function AcreditacionPage() {
       const result = await submitAcreditacion(formData);
       
       if (result.success) {
-        setSuccessToast({ show: true, acreditados_count: formData.acreditados.length });
+        setSuccessModal({ show: true, acreditados_count: formData.acreditados.length });
         setSubmissionStatus({ type: "success", message: "Acreditación enviada exitosamente" });
-
-        // Reset form after successful submission
-        setTimeout(() => {
-          resetForm();
-          setSuccessToast({ show: false, acreditados_count: 0 });
-        }, 3000); // Give time to see the success message
       } else if (result.cuposError) {
         // Modal is already shown by the hook, no need to do anything else
       }
@@ -293,7 +314,6 @@ export default function AcreditacionPage() {
                 value={formData.responsable_nombre}
                 onChange={(e) => {
                   handleResponsableChange("responsable_nombre", e.target.value);
-                  setCurrentStep(1);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
@@ -304,7 +324,6 @@ export default function AcreditacionPage() {
                 value={formData.responsable_primer_apellido}
                 onChange={(e) => {
                   handleResponsableChange("responsable_primer_apellido", e.target.value);
-                  setCurrentStep(1);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
@@ -315,9 +334,18 @@ export default function AcreditacionPage() {
                 value={formData.responsable_segundo_apellido}
                 onChange={(e) => {
                   handleResponsableChange("responsable_segundo_apellido", e.target.value);
-                  setCurrentStep(1);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+              />
+              <input
+                type="text"
+                placeholder="RUT"
+                value={formData.responsable_rut}
+                onChange={(e) => {
+                  handleResponsableChange("responsable_rut", e.target.value);
+                }}
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                required
               />
               <input
                 type="email"
@@ -325,7 +353,6 @@ export default function AcreditacionPage() {
                 value={formData.responsable_email}
                 onChange={(e) => {
                   handleResponsableChange("responsable_email", e.target.value);
-                  setCurrentStep(1);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
@@ -336,7 +363,6 @@ export default function AcreditacionPage() {
                 value={formData.responsable_telefono}
                 onChange={(e) => {
                   handleResponsableChange("responsable_telefono", e.target.value);
-                  setCurrentStep(1);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
               />
@@ -356,7 +382,6 @@ export default function AcreditacionPage() {
                 value={formData.empresa}
                 onChange={(e) => {
                   handleResponsableChange("empresa", e.target.value);
-                  setCurrentStep(2);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
@@ -366,7 +391,6 @@ export default function AcreditacionPage() {
                 value={formData.area}
                 onChange={(e) => {
                   handleAreaChange(e.target.value);
-                  setCurrentStep(2);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
@@ -453,18 +477,26 @@ export default function AcreditacionPage() {
         message={`¿Desea enviar la acreditación para ${formData.acreditados.length} persona(s)?`}
       />
 
-      {successToast.show && (
-        <SuccessToast
-          title="¡Solicitud enviada!"
-          message="Su solicitud de acreditación ha sido registrada correctamente."
-          details={[
-            `${successToast.acreditados_count} acreditado(s) registrado(s)`,
-            `Empresa: ${formData.empresa}`,
-            `Área: ${selectedArea?.nombre}`,
-          ]}
-          onClose={() => setSuccessToast({ show: false, acreditados_count: 0 })}
-        />
-      )}
+      <Modal
+        isOpen={successModal.show}
+        type="success"
+        title="¡Solicitud enviada exitosamente!"
+        message="Su solicitud de acreditación ha sido registrada correctamente."
+        buttons={[
+          {
+            label: "Aceptar",
+            onClick: handleSuccessModalClose,
+            variant: "primary",
+          },
+        ]}
+        onClose={handleSuccessModalClose}
+      >
+        <div className="mt-4 space-y-2 text-sm text-gray-600">
+          <p><strong>Empresa:</strong> {formData.empresa}</p>
+          <p><strong>Área:</strong> {selectedArea?.nombre}</p>
+          <p><strong>Acreditados registrados:</strong> {successModal.acreditados_count}</p>
+        </div>
+      </Modal>
 
       {cuposError?.show && (
         <Modal

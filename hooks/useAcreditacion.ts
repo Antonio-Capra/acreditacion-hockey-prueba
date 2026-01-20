@@ -24,6 +24,7 @@ interface FormData {
   responsable_nombre: string;
   responsable_primer_apellido: string;
   responsable_segundo_apellido: string;
+  responsable_rut: string;
   responsable_email: string;
   responsable_telefono: string;
   empresa: string;
@@ -64,30 +65,12 @@ export function useAcreditacion() {
       setLoading(true);
       setError(null);
 
-      // Try to fetch from Supabase first
-      const { data, error } = await supabase
-        .from('areas_prensa')
-        .select('*')
-        .order('codigo');
-
-      if (error) {
-        // If Supabase fails, use fallback data
-        console.warn('Error fetching areas from Supabase, using fallback data:', error.message);
-        setAreas(FALLBACK_AREAS);
-      } else {
-        // Map Supabase data to match the expected Area interface
-        const mappedAreas = (data || []).map((area: any) => ({
-          codigo: area.codigo,
-          nombre: area.nombre || area.codigo, // Use nombre if available, otherwise use codigo
-          cupos: area.cupo_maximo || area.cupos || 0
-        }));
-        setAreas(mappedAreas.length > 0 ? mappedAreas : FALLBACK_AREAS);
-      }
+      // Use fallback data directly
+      setAreas(FALLBACK_AREAS);
     } catch (err) {
       // If any error occurs, use fallback data
       console.warn('Error fetching areas, using fallback data:', err);
       setAreas(FALLBACK_AREAS);
-      setError(null); // Don't show error since we have fallback
     } finally {
       setLoading(false);
     }
@@ -108,6 +91,9 @@ export function useAcreditacion() {
       if (!formData.responsable_email?.trim()) {
         throw new Error('El email del responsable es requerido');
       }
+      if (!formData.responsable_rut?.trim()) {
+        throw new Error('El RUT del responsable es requerido');
+      }
       if (!formData.empresa?.trim()) {
         throw new Error('El nombre de la empresa es requerido');
       }
@@ -122,6 +108,7 @@ export function useAcreditacion() {
         responsable_nombre: formData.responsable_nombre.trim(),
         responsable_primer_apellido: formData.responsable_primer_apellido.trim(),
         responsable_segundo_apellido: formData.responsable_segundo_apellido?.trim() || '',
+        responsable_rut: formData.responsable_rut.trim(),
         responsable_email: formData.responsable_email.trim(),
         responsable_telefono: formData.responsable_telefono?.trim() || '',
         empresa: formData.empresa.trim(),

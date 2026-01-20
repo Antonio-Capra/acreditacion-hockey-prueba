@@ -16,6 +16,7 @@ interface AccreditacionRequest {
   responsable_nombre: string;
   responsable_primer_apellido: string;
   responsable_segundo_apellido: string;
+  responsable_rut: string;
   responsable_email: string;
   responsable_telefono: string;
   empresa: string;
@@ -46,17 +47,20 @@ export async function POST(req: Request) {
 
   try {
     const data: AccreditacionRequest = await req.json();
-    const { 
-      responsable_nombre, 
-      responsable_email, 
+    const {
+      responsable_nombre,
+      responsable_primer_apellido,
+      responsable_segundo_apellido,
+      responsable_rut,
+      responsable_email,
       responsable_telefono,
       empresa,
       area,
-      acreditados 
+      acreditados
     } = data;
 
     // Validaciones básicas
-    if (!responsable_email || !responsable_nombre || !empresa || !area || !acreditados.length) {
+    if (!responsable_email || !responsable_nombre || !responsable_rut || !empresa || !area || !acreditados.length) {
       return NextResponse.json(
         { error: "Datos incompletos" },
         { status: 400 }
@@ -150,6 +154,9 @@ export async function POST(req: Request) {
       empresa: empresa,
       status: "pendiente",
       responsable_nombre,
+      responsable_primer_apellido,
+      responsable_segundo_apellido,
+      responsable_rut,
       responsable_email,
       responsable_telefono,
     }));

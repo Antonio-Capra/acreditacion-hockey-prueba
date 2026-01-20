@@ -141,19 +141,19 @@ export default function LandingPage() {
               {/* Separador */}
               <div className="mt-4 pt-4 border-t border-white border-opacity-20 text-center">
                   <div className="flex justify-center gap-5 text-white">
-                      <a href="https://www.facebook.com/cruzados.cl/?locale=es_LA" className="transition-all duration-300 hover:scale-110" 
+                      <a href="https://www.facebook.com/cruzados.cl/?locale=es_LA" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110" 
                           style={{color: 'var(--azul-claro)'}}>
                           <i className="fab fa-facebook text-lg"></i>
                       </a>
-                      <a href="https://x.com/Cruzados" className="transition-all duration-300 hover:scale-110"
+                      <a href="https://x.com/Cruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
                           style={{color: 'var(--azul-claro)'}}>
                           <i className="fab fa-twitter text-lg"></i>
                       </a>
-                      <a href="https://www.instagram.com/cruzados_oficial/?hl=es-la" className="transition-all duration-300 hover:scale-110"
+                      <a href="https://www.instagram.com/cruzados_oficial/?hl=es-la" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
                           style={{color: 'var(--azul-claro)'}}>
                           <i className="fab fa-instagram text-lg"></i>
                       </a>
-                      <a href="https://www.youtube.com/user/OficialCruzados" className="transition-all duration-300 hover:scale-110"
+                      <a href="https://www.youtube.com/user/OficialCruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
                           style={{color: 'var(--azul-claro)'}}>
                           <i className="fab fa-youtube text-lg"></i>
                       </a>

@@ -18,6 +18,9 @@ export interface Acreditacion {
   status: "pendiente" | "aprobado" | "rechazado";
   motivo_rechazo?: string;
   responsable_nombre?: string;
+  responsable_primer_apellido?: string;
+  responsable_segundo_apellido?: string;
+  responsable_rut?: string;
   responsable_email?: string;
   responsable_telefono?: string;
   created_at: string;
