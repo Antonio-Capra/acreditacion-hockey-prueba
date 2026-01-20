@@ -374,7 +374,7 @@ export default function AcreditacionPage() {
                 <option value="">Seleccionar Área</option>
                 {areas.map((area) => (
                   <option key={area.codigo} value={area.codigo}>
-                    {area.nombre} ({area.cupos} cupos)
+                    {area.nombre} ({area.cupos} {area.cupos === 1 ? 'cupo' : 'cupos'})
                   </option>
                 ))}
               </select>
@@ -383,7 +383,7 @@ export default function AcreditacionPage() {
             {selectedArea && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.cupos}
+                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
                 </p>
               </div>
             )}

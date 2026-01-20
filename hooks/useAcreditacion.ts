@@ -75,7 +75,13 @@ export function useAcreditacion() {
         console.warn('Error fetching areas from Supabase, using fallback data:', error.message);
         setAreas(FALLBACK_AREAS);
       } else {
-        setAreas(data || FALLBACK_AREAS);
+        // Map Supabase data to match the expected Area interface
+        const mappedAreas = (data || []).map((area: any) => ({
+          codigo: area.codigo,
+          nombre: area.nombre || area.codigo, // Use nombre if available, otherwise use codigo
+          cupos: area.cupo_maximo || area.cupos || 0
+        }));
+        setAreas(mappedAreas.length > 0 ? mappedAreas : FALLBACK_AREAS);
       }
     } catch (err) {
       // If any error occurs, use fallback data
