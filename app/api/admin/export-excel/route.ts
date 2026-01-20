@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
         Apellido: a.primer_apellido + (a.segundo_apellido ? ` ${a.segundo_apellido}` : ""),
         RUT: a.rut,
         Empresa: a.empresa,
-        "Área Claro Arena/Cruzados": a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
-        Acreditación: a.status.charAt(0).toUpperCase() + a.status.slice(1),
+        "Área Claro Arena/Cruzados": "Cruzados",
+        Acreditación: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
         Patente: "", // Campo vacío para que lo llenen
       }));
       sheetName = "Punto Ticket";

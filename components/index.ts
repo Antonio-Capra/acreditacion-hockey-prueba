@@ -5,4 +5,3 @@ export { default as IconoFlotanteAdmin } from './common/BotonesFlotantes/IconoFl
 export { default as Modal } from './common/Modal';
 export { default as LoadingSpinner } from './common/LoadingSpinner';
 export { default as Disclaimer } from './acreditacion/Disclaimer';
-export { default as AcreditacionMasiva } from './acreditacion/AcreditacionMasiva';

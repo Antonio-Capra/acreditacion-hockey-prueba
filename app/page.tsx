@@ -83,9 +83,9 @@ export default function LandingPage() {
                         <span className="absolute inset-0 w-full h-full transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
                             style={{background: `linear-gradient(135deg, var(--azul-medio) 0%, var(--azul-mas-claro) 100%)`}}>
                         </span>
-                        <i className="fas fa-ticket-alt relative z-10 text-sm"></i>
-                        <span className="relative z-10">Acreditarse Ahora</span>
-                        <i className="fas fa-arrow-right relative z-10 text-sm group-hover:translate-x-2 transition-transform duration-300"></i>
+                        <i className="fas fa-ticket-alt relative z-10 text-xl group-hover:translate-x-1 transition-transform duration-300"></i>
+                        <span className="relative z-10 text-xl">Acreditarse Ahora</span>
+                        <i className="fas fa-arrow-right relative z-10 text-xl group-hover:translate-x-2 transition-transform duration-300"></i>
                     </Link>
                 </div>
 
@@ -133,7 +133,7 @@ export default function LandingPage() {
                   {/* Copyright dinámico */}
                   <div className="text-center md:text-right">
                       <span className="text-xs text-white opacity-80">
-                          © {new Date().getFullYear()} Universidad Católica. Todos los derechos reservados.
+                          © {new Date().getFullYear()} Desarrolado por Accredia para Universidad Católica. © Todos los derechos reservados.
                       </span>
                   </div>
               </div>
