@@ -23,6 +23,14 @@ interface AccreditacionRequest {
   acreditados: Acreditado[];
 }
 
+// Fallback areas data in case Supabase table doesn't exist
+const FALLBACK_AREAS = [
+  { id: 1, codigo: "prensa", cupo_maximo: 50, evento_id: 1 },
+  { id: 2, codigo: "seguridad", cupo_maximo: 30, evento_id: 1 },
+  { id: 3, codigo: "produccion", cupo_maximo: 40, evento_id: 1 },
+  { id: 4, codigo: "catering", cupo_maximo: 20, evento_id: 1 },
+];
+
 export async function POST(req: Request) {
   // Cliente anónimo para INSERT
   const supabaseAnon = createClient(
@@ -56,12 +64,23 @@ export async function POST(req: Request) {
     }
 
     // 1. Obtener información de áreas
-    const { data: areasData, error: areasError } = await supabaseAdmin
-      .from("areas_prensa")
-      .select("id, codigo, cupo_maximo")
-      .eq("evento_id", 1);
+    let areasData;
+    try {
+      const { data, error: areasError } = await supabaseAdmin
+        .from("areas_prensa")
+        .select("id, codigo, cupo_maximo")
+        .eq("evento_id", 1);
 
-    if (areasError) throw areasError;
+      if (areasError) {
+        console.warn("Error al acceder a la tabla areas_prensa, usando datos de fallback:", areasError.message);
+        areasData = FALLBACK_AREAS;
+      } else {
+        areasData = data || FALLBACK_AREAS;
+      }
+    } catch (err) {
+      console.warn("Error al consultar áreas, usando datos de fallback:", err);
+      areasData = FALLBACK_AREAS;
+    }
 
     // 2. Validar cupos para CADA acreditado
     // IMPORTANTE: Contar existentes PERO considerar que estamos insertando múltiples

@@ -66,7 +66,7 @@ export function useAcreditacion() {
 
       // Try to fetch from Supabase first
       const { data, error } = await supabase
-        .from('areas')
+        .from('areas_prensa')
         .select('*')
         .order('codigo');
 
