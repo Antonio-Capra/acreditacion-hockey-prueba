@@ -192,11 +192,8 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("RESEND OK:", data);
-
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("ERROR send-approval:", err);
     return NextResponse.json(
       { error: "Error interno en send-approval" },
       { status: 500 }

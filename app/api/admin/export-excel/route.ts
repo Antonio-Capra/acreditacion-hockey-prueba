@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 interface Acreditado {
   id: number;
   nombre: string;
@@ -36,15 +31,15 @@ interface ExcelRow {
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    console.log("🔄 Iniciando exportación a Excel...");
-    console.log("📍 URL completa:", request.url);
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
+  try {
     const { searchParams } = new URL(request.url);
     const format = searchParams.get("format") || "completo"; // "completo" o "puntoticket"
     const statusFilter = searchParams.get("status") || "all"; // "all", "aprobada", "pendiente", "rechazada"
-
-    console.log(`📋 Parámetros recibidos:`, { format, statusFilter });
 
     // Construir query
     let query = supabaseAdmin
@@ -54,32 +49,23 @@ export async function GET(request: NextRequest) {
 
     // Aplicar filtro de estado si no es "all"
     if (statusFilter !== "all") {
-      console.log(`🔍 Aplicando filtro de status: "${statusFilter}"`);
       query = query.eq("status", statusFilter);
-    } else {
-      console.log(`🔍 Sin filtro de status (mostrando todos)`);
     }
 
     const { data: acreditados, error: acreditadosError } = await query;
 
     if (acreditadosError) {
-      console.error("❌ Error en query:", acreditadosError);
       throw new Error(`Error al obtener acreditados: ${acreditadosError.message}`);
     }
 
-    console.log(`📊 Registros encontrados: ${acreditados?.length || 0}`);
-    console.log(`🔍 Filtros aplicados - Status: "${statusFilter}", Formato: "${format}"`);
-
     if (!acreditados || acreditados.length === 0) {
       const msg = statusFilter === "aprobada" 
-        ? "⚠️ No hay acreditaciones APROBADAS aún. Debes aprobar algunas acreditaciones primero para exportarlas."
+        ? "No hay acreditaciones APROBADAS aún. Debes aprobar algunas acreditaciones primero para exportarlas."
         : statusFilter === "pendiente"
-        ? "⚠️ No hay acreditaciones PENDIENTES."
+        ? "No hay acreditaciones PENDIENTES."
         : statusFilter === "rechazada"
-        ? "⚠️ No hay acreditaciones RECHAZADAS."
-        : "⚠️ No hay acreditaciones para exportar.";
-      
-      console.log(`⚠️ ${msg}`);
+        ? "No hay acreditaciones RECHAZADAS."
+        : "No hay acreditaciones para exportar.";
       
       return NextResponse.json(
         { 
@@ -140,8 +126,6 @@ export async function GET(request: NextRequest) {
       sheetName = "Acreditados";
     }
 
-    console.log(`📊 Generando Excel con ${dataExcel.length} registros (formato: ${format})...`);
-
     // Crear workbook
     const ws = XLSX.utils.json_to_sheet(dataExcel);
     const wb = XLSX.utils.book_new();
@@ -167,10 +151,8 @@ export async function GET(request: NextRequest) {
       `attachment; filename="acreditados_${format}_${new Date().toISOString().split("T")[0]}.xlsx"`
     );
 
-    console.log("✅ Excel generado exitosamente");
     return response;
   } catch (error) {
-    console.error("❌ Error en exportación:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Error al generar Excel",

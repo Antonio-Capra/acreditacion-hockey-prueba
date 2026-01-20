@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 // GET: Obtener medios por evento
 export async function GET(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   try {
     const { searchParams } = new URL(req.url);
     const eventoId = searchParams.get('evento_id');
@@ -39,6 +39,11 @@ export async function GET(req: Request) {
 
 // POST: Crear nuevo medio
 export async function POST(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   try {
     const body = await req.json();
     const { evento_id, nombre, cupo_total } = body;
@@ -75,6 +80,11 @@ export async function POST(req: Request) {
 
 // PATCH: Actualizar cupos disponibles
 export async function PATCH(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   try {
     const body = await req.json();
     const { medio_id, cupo_disponible } = body;

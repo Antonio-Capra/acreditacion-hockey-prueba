@@ -92,9 +92,6 @@ export function useAcreditacion() {
       setLoading(true);
       setError(null);
 
-      console.log('=== SUBMITTING FORM DATA ===');
-      console.log('FormData received:', JSON.stringify(formData, null, 2));
-
       // Validar que todos los campos requeridos estén presentes
       if (!formData.responsable_nombre?.trim()) {
         throw new Error('El nombre del responsable es requerido');
@@ -134,8 +131,6 @@ export function useAcreditacion() {
           numero_credencial: a.numero_credencial?.trim() || '',
         })),
       };
-
-      console.log('Payload to send:', JSON.stringify(payload, null, 2));
 
       const response = await fetch('/api/acreditaciones/prensa', {
         method: 'POST',
@@ -193,10 +188,8 @@ export function useAcreditacion() {
       }
 
       const result = await response.json();
-      console.log('Success response:', result);
       return { success: true };
     } catch (err) {
-      console.error('Submit error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al enviar';
       setError(errorMessage);
       throw err;

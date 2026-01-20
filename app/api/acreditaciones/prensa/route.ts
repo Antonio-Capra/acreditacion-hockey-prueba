@@ -23,24 +23,23 @@ interface AccreditacionRequest {
   acreditados: Acreditado[];
 }
 
-// Cliente anónimo para INSERT
-const supabaseAnon = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// Cliente con service role para SELECT (sin restricciones RLS)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
+  // Cliente anónimo para INSERT
+  const supabaseAnon = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Cliente con service role para SELECT (sin restricciones RLS)
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   try {
     const data: AccreditacionRequest = await req.json();
     const { 
       responsable_nombre, 
-      responsable_primer_apellido, 
       responsable_email, 
       responsable_telefono,
       empresa,
@@ -48,18 +47,8 @@ export async function POST(req: Request) {
       acreditados 
     } = data;
 
-    console.log("\n========== API POST /acreditaciones/prensa ==========");
-    console.log(`⏰ ${new Date().toISOString()}`);
-    console.log(`REQUEST RECIBIDO:`);
-    console.log(`  - Responsable: ${responsable_nombre}`);
-    console.log(`  - Empresa: "${empresa}"`);
-    console.log(`  - Área: "${area}"`);
-    console.log(`  - Acreditados: ${acreditados?.length}`);
-    console.log("===================================================\n");
-
     // Validaciones básicas
     if (!responsable_email || !responsable_nombre || !empresa || !area || !acreditados.length) {
-      console.log("VALIDACIÓN FALLIDA: datos incompletos");
       return NextResponse.json(
         { error: "Datos incompletos" },
         { status: 400 }
@@ -112,20 +101,7 @@ export async function POST(req: Request) {
     const currentCount = (countAll || 0) - (countRechazados || 0);
     const totalAfterInsert = currentCount + acreditados.length;
 
-    console.log("=== VALIDACIÓN DE CUPOS ===");
-    console.log(`Empresa: "${empresa}"`);
-    console.log(`Área: "${area}" (Máximo: ${areaRecord.cupo_maximo})`);
-    console.log(`Total en BD: ${countAll || 0}`);
-    console.log(`Rechazados: ${countRechazados || 0}`);
-    console.log(`Válidos (total - rechazados): ${currentCount}`);
-    console.log(`Nuevos a insertar: ${acreditados.length}`);
-    console.log(`Total después de insertar: ${totalAfterInsert}`);
-    console.log(`LÍMITE MÁXIMO: ${areaRecord.cupo_maximo}`);
-    console.log(`¿Permitir?: ${totalAfterInsert} <= ${areaRecord.cupo_maximo} = ${totalAfterInsert <= areaRecord.cupo_maximo}`);
-    console.log("=========================");
-
     if (totalAfterInsert > areaRecord.cupo_maximo) {
-      console.log(`❌ VALIDACIÓN FALLIDA: Total (${totalAfterInsert}) > Máximo (${areaRecord.cupo_maximo})`);
       return NextResponse.json(
         {
           error: `No hay cupos disponibles para ${empresa} en el área ${area}. Máximo: ${areaRecord.cupo_maximo}, Acreditados existentes: ${currentCount}, Solicitados: ${acreditados.length}, Total: ${totalAfterInsert}`,
@@ -159,13 +135,11 @@ export async function POST(req: Request) {
       responsable_telefono,
     }));
 
-    const { data: insertedData, error: insertError } = await supabaseAnon
+    const { error: insertError } = await supabaseAnon
       .from("acreditados")
       .insert(acreditadosToInsert);
 
     if (insertError) throw insertError;
-
-    console.log("ACREDITADOS INSERTADOS");
 
     return NextResponse.json(
       {
@@ -176,7 +150,6 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("ERROR EN API:", error);
     const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       {

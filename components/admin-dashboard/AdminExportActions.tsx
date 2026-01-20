@@ -50,7 +50,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.download = `acreditados_puntoticket_${new Date().toISOString().split("T")[0]}.xlsx`;
                 link.click();
                 window.URL.revokeObjectURL(url);
-              } catch (error) {
+              } catch {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               }
             }}

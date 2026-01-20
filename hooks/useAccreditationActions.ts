@@ -99,7 +99,6 @@ export function useAccreditationActions({
         return false;
       }
 
-      console.log("✅ Correo enviado exitosamente a:", r.email);
       onOpenResult(
         'success',
         "✅ ¡Acreditación aprobada!",
@@ -107,7 +106,6 @@ export function useAccreditationActions({
       );
       return true;
     } catch (e) {
-      console.error("Error enviando correo de aprobación:", e);
       onOpenResult(
         'error',
         "⚠️ Error al enviar correo",

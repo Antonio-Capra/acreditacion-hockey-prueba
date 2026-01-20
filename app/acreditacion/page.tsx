@@ -52,13 +52,6 @@ function createEmptyAcreditado(): Acreditado {
 export default function AcreditacionPage() {
   const { areas, loading: areasLoading, error: areasError, cuposError, closeCuposError, submitAcreditacion } = useAcreditacion();
   
-  // Debug: Log cuposError changes (remove in production)
-  // React.useEffect(() => {
-  //   console.log('🔍 cuposError state changed:', cuposError);
-  //   if (cuposError === null) {
-  //     console.log('🔄 cuposError reset to null');
-  //   }
-  // }, [cuposError]);
   const [formData, setFormData] = useState<FormData>({
     responsable_nombre: "",
     responsable_primer_apellido: "",
@@ -145,28 +138,20 @@ export default function AcreditacionPage() {
   };
 
   const validateForm = () => {
-    console.log('=== FORM VALIDATION ===');
-    console.log('FormData:', formData);
-
     // Validaciones básicas
     if (!formData.responsable_nombre?.trim()) {
-      console.log('VALIDATION FAILED: responsable_nombre is empty');
       return "Complete el nombre del responsable";
     }
     if (!formData.responsable_primer_apellido?.trim()) {
-      console.log('VALIDATION FAILED: responsable_primer_apellido is empty');
       return "Complete el primer apellido del responsable";
     }
     if (!formData.responsable_email?.trim()) {
-      console.log('VALIDATION FAILED: responsable_email is empty');
       return "Complete el email del responsable";
     }
     if (!formData.empresa?.trim()) {
-      console.log('VALIDATION FAILED: empresa is empty');
       return "Complete el nombre de la empresa";
     }
     if (!formData.area?.trim()) {
-      console.log('VALIDATION FAILED: area is empty');
       return "Seleccione un área";
     }
 
@@ -174,46 +159,34 @@ export default function AcreditacionPage() {
     for (let i = 0; i < formData.acreditados.length; i++) {
       const acreditado = formData.acreditados[i];
       if (!acreditado.nombre?.trim()) {
-        console.log(`VALIDATION FAILED: acreditado ${i + 1} nombre is empty`);
         return `Complete el nombre del acreditado ${i + 1}`;
       }
       if (!acreditado.primer_apellido?.trim()) {
-        console.log(`VALIDATION FAILED: acreditado ${i + 1} primer_apellido is empty`);
         return `Complete el primer apellido del acreditado ${i + 1}`;
       }
       if (!acreditado.email?.trim()) {
-        console.log(`VALIDATION FAILED: acreditado ${i + 1} email is empty`);
         return `Complete el email del acreditado ${i + 1}`;
       }
       if (!acreditado.cargo?.trim()) {
-        console.log(`VALIDATION FAILED: acreditado ${i + 1} cargo is empty`);
         return `Seleccione el cargo del acreditado ${i + 1}`;
       }
       if (!acreditado.tipo_credencial?.trim()) {
-        console.log(`VALIDATION FAILED: acreditado ${i + 1} tipo_credencial is empty`);
         return `Complete el tipo de credencial del acreditado ${i + 1}`;
       }
     }
 
-    console.log('VALIDATION PASSED');
     return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('=== FORM SUBMIT ATTEMPT ===');
-    console.log('Current formData state:', formData);
-    console.log('showDisclaimer:', showDisclaimer);
-
     const validationError = validateForm();
     if (validationError) {
-      console.log('Validation failed:', validationError);
       setSubmissionStatus({ type: "error", message: validationError });
       return;
     }
 
-    console.log('Validation passed, showing confirmation');
     setShowConfirmation(true);
   };
 
@@ -236,9 +209,6 @@ export default function AcreditacionPage() {
     setShowConfirmation(false);
     setIsSubmitting(true);
 
-    console.log('=== CONFIRM SUBMIT ===');
-    console.log('Current formData:', formData);
-
     try {
       const result = await submitAcreditacion(formData);
       
@@ -253,11 +223,9 @@ export default function AcreditacionPage() {
         }, 3000); // Give time to see the success message
       } else if (result.cuposError) {
         // Modal is already shown by the hook, no need to do anything else
-        console.log('Cupos error modal shown');
       }
 
     } catch (error) {
-      console.error('Submit error:', error);
       setSubmissionStatus({ type: "error", message: "Error al enviar la acreditación" });
     } finally {
       setIsSubmitting(false);
