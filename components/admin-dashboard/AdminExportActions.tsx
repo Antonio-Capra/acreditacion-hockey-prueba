@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
+
 interface AdminExportActionsProps {
   estadoFilter: string;
   setMessage: (message: { type: "success" | "error"; text: string } | null) => void;
 }
 
 export default function AdminExportActions({ estadoFilter, setMessage }: AdminExportActionsProps) {
+  const [isExportingCompleto, setIsExportingCompleto] = useState(false);
+  const [isExportingPuntoTicket, setIsExportingPuntoTicket] = useState(false);
+  const [isExportingPuntoTicketFiltrado, setIsExportingPuntoTicketFiltrado] = useState(false);
+
   return (
     <div className="mb-6">
       {/* Encabezado del Panel */}
@@ -20,6 +26,9 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <button
             onClick={async () => {
+              if (isExportingCompleto) return; // Prevenir múltiples clics
+
+              setIsExportingCompleto(true);
               try {
                 const response = await fetch(`/api/admin/export-excel?format=completo&status=${estadoFilter || "all"}`);
                 if (!response.ok) {
@@ -37,19 +46,33 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.download = `acreditados_completo_${new Date().toISOString().split("T")[0]}.xlsx`;
                 link.click();
                 window.URL.revokeObjectURL(url);
+                setMessage({ type: "success", text: "Excel completo descargado exitosamente" });
               } catch (error) {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
+              } finally {
+                setIsExportingCompleto(false);
               }
             }}
-            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+            disabled={isExportingCompleto}
+            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
           >
             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-            <span className="relative">Excel Completo</span>
+            {isExportingCompleto ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="relative">Generando...</span>
+              </>
+            ) : (
+              <span className="relative">Excel Completo</span>
+            )}
           </button>
           <button
             onClick={async () => {
+              if (isExportingPuntoTicket) return; // Prevenir múltiples clics
+
+              setIsExportingPuntoTicket(true);
               try {
-                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=aprobada`);
+                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=aprobado`);
                 if (!response.ok) {
                   const error = await response.json();
                   setMessage({
@@ -65,17 +88,31 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.download = `acreditados_puntoticket_${new Date().toISOString().split("T")[0]}.xlsx`;
                 link.click();
                 window.URL.revokeObjectURL(url);
-              } catch {
+                setMessage({ type: "success", text: "Excel Punto Ticket descargado exitosamente" });
+              } catch (error) {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
+              } finally {
+                setIsExportingPuntoTicket(false);
               }
             }}
-            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+            disabled={isExportingPuntoTicket}
+            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
           >
             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-            <span className="relative">Punto Ticket (Aprobados)</span>
+            {isExportingPuntoTicket ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="relative">Generando...</span>
+              </>
+            ) : (
+              <span className="relative">Punto Ticket (Aprobados)</span>
+            )}
           </button>
           <button
             onClick={async () => {
+              if (isExportingPuntoTicketFiltrado) return; // Prevenir múltiples clics
+
+              setIsExportingPuntoTicketFiltrado(true);
               try {
                 const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=${estadoFilter || "all"}`);
                 if (!response.ok) {
@@ -93,14 +130,25 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.download = `acreditados_puntoticket_filtrado_${new Date().toISOString().split("T")[0]}.xlsx`;
                 link.click();
                 window.URL.revokeObjectURL(url);
+                setMessage({ type: "success", text: "Excel Punto Ticket filtrado descargado exitosamente" });
               } catch (error) {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
+              } finally {
+                setIsExportingPuntoTicketFiltrado(false);
               }
             }}
-            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+            disabled={isExportingPuntoTicketFiltrado}
+            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
           >
             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-            <span className="relative">Punto Ticket (Filtrado)</span>
+            {isExportingPuntoTicketFiltrado ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="relative">Generando...</span>
+              </>
+            ) : (
+              <span className="relative">Punto Ticket (Filtrado)</span>
+            )}
           </button>
         </div>
         <div className="bg-blue-50 border-l-4 border-[#1e5799] p-4 rounded-lg">
