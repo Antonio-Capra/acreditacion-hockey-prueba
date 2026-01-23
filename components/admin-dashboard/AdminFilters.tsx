@@ -51,7 +51,7 @@ export default function AdminFilters({
             >
               <option value="">Todos</option>
               <option value="pendiente">Pendiente</option>
-              <option value="aprobada">Aprobada</option>
+              <option value="aprobado">Aprobado</option>
               <option value="rechazada">Rechazada</option>
             </select>
           </div>

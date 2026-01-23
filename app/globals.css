@@ -16,6 +16,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-barlow-condensed);
   overflow-x: hidden;
+  font-size: 20px;
 }
 
 /* Estilos del diseño */

@@ -207,7 +207,11 @@ export default function AdminDashboard() {
       });
       setSuccessModal({ isOpen: true, message: successMessage });
 
-      await fetchAcreditaciones();
+      // Update local state instead of refetching
+      setAcreditaciones(prev => prev.map(a => 
+        a.id === selectedAcreditacion.id ? { ...a, status: newEstado } : a
+      ));
+
       setIsModalOpen(false);
     } catch {
       setMessage({ type: "error", text: "Error al actualizar estado" });
@@ -234,7 +238,10 @@ export default function AdminDashboard() {
       const successMessage = "Acreditación eliminada exitosamente";
       setMessage({ type: "success", text: successMessage });
       setSuccessModal({ isOpen: true, message: successMessage });
-      await fetchAcreditaciones();
+      
+      // Update local state instead of refetching
+      setAcreditaciones(prev => prev.filter(a => a.id !== selectedAcreditacion.id));
+      
       setIsModalOpen(false);
     } catch {
       setMessage({ type: "error", text: "Error al eliminar" });
@@ -273,7 +280,11 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       setMessage({ type: "success", text: "Zona asignada correctamente" });
-      fetchAcreditaciones();
+      
+      // Update local state instead of refetching
+      setAcreditaciones(prev => prev.map(a => 
+        a.id === selectedAcreditacion.id ? { ...a, zona_id: zonaId } : a
+      ));
 
       setTimeout(() => {
         setMessage(null);
@@ -285,6 +296,92 @@ export default function AdminDashboard() {
         type: "error",
         text: error instanceof Error ? error.message : "Error al asignar zona",
       });
+    }
+  };
+
+  const assignZonaDirect = async (acred: Acreditacion, zonaId: number | null) => {
+    try {
+      const { error } = await supabase
+        .from("acreditados")
+        .update({ zona_id: zonaId, updated_at: new Date().toISOString() })
+        .eq("id", acred.id);
+
+      if (error) throw error;
+
+      setMessage({ type: "success", text: zonaId ? "Zona asignada correctamente" : "Zona removida correctamente" });
+      
+      // Update local state instead of refetching
+      setAcreditaciones(prev => prev.map(a => 
+        a.id === acred.id ? { ...a, zona_id: zonaId } : a
+      ));
+
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al asignar zona",
+      });
+    }
+  };
+
+  const updateEstadoDirect = async (acred: Acreditacion, newEstado: "pendiente" | "aprobado" | "rechazado") => {
+    try {
+      const { error: updateError } = await supabase
+        .from("acreditados")
+        .update({ status: newEstado })
+        .eq("id", acred.id);
+
+      if (updateError) throw updateError;
+
+      // Send email
+      if (newEstado === "aprobado") {
+        const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
+        const areaNombre = AREA_NAMES[acred.area] || acred.area;
+        await fetch("/api/send-approval", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nombre: acred.nombre,
+            apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
+            correo: acred.email,
+            zona: zonaNombre,
+            area: areaNombre,
+          }),
+        });
+      } else if (newEstado === "rechazado") {
+        const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
+        const areaNombre = AREA_NAMES[acred.area] || acred.area;
+        await fetch("/api/send-rejection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nombre: acred.nombre,
+            apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
+            correo: acred.email,
+            zona: zonaNombre,
+            area: areaNombre,
+          }),
+        });
+      }
+
+      const successMessage = `Acreditación cambiada a ${newEstado} exitosamente`;
+      setMessage({
+        type: "success",
+        text: successMessage,
+      });
+
+      // Update local state instead of refetching
+      setAcreditaciones(prev => prev.map(a => 
+        a.id === acred.id ? { ...a, status: newEstado } : a
+      ));
+
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+    } catch {
+      setMessage({ type: "error", text: "Error al actualizar estado" });
     }
   };
 
@@ -313,13 +410,14 @@ export default function AdminDashboard() {
     fetchAcreditaciones,
     openDetail,
     handleAsignZona,
+    assignZonaDirect,
     updateEstado,
+    updateEstadoDirect,
   };
 
   return (
     <AdminProvider value={contextValue}>
       <div className="bg-gradient-to-br from-[#1e5799] via-[#2989d8] to-[#7db9e8] min-h-screen">
-        <BotonFlotante />
         <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
@@ -505,6 +603,7 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-bold text-[#1e5799] mb-3">Información Adicional</h3>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                   <p><strong>Fecha Solicitud:</strong> {new Date(selectedAcreditacion.created_at).toLocaleDateString("es-CL")}</p>
+                  <p><strong>Zona Asignada:</strong> {selectedAcreditacion.zona_id ? zonas.find(z => z.id === selectedAcreditacion.zona_id)?.nombre || "Desconocida" : "Sin asignar"}</p>
                   <p><strong>Estado:</strong> <span className="capitalize font-bold">{selectedAcreditacion.status}</span></p>
                   {selectedAcreditacion.motivo_rechazo && (
                     <p><strong>Motivo Rechazo:</strong> {selectedAcreditacion.motivo_rechazo}</p>
@@ -512,10 +611,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Asignación de Zona */}
+              {/* Modificar Zona */}
               <div className="border-2 border-blue-300 rounded-lg">
                 <h3 className="text-lg font-bold text-white bg-gradient-to-r from-[#1e5799] to-[#2989d8] px-4 py-3 rounded-t-lg">
-                  Asignación de Zona
+                  Modificar Zona Asignada
                 </h3>
                 <div className="bg-blue-50 p-4">
                   <div className="mb-3">
@@ -537,7 +636,7 @@ export default function AdminDashboard() {
                       onChange={(e) => handleAsignZona(Number(e.target.value))}
                       className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-[#1e5799] focus:outline-none bg-white font-medium text-base"
                     >
-                      <option value="">Seleccionar zona...</option>
+                      <option value="">Sin asignar</option>
                       {zonas.map((zona) => (
                         <option key={zona.id} value={zona.id}>
                           {zona.nombre}

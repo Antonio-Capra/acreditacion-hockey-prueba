@@ -13,6 +13,19 @@ import AcreditadoRow from "@/components/acreditacion/AcreditadoRow";
 import { useAcreditacion } from "@/hooks/useAcreditacion";
 import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
 
+// Lista de canales predefinidos (actualizar con los nombres reales)
+const CANALES = [
+  "Canal 13",
+  "TVN",
+  "Mega",
+  "Chilevisión",
+  "La Red",
+  "CNN Chile",
+  "T13",
+  "24 Horas",
+  "Otros"
+];
+
 interface Acreditado {
   nombre: string;
   primer_apellido: string;
@@ -32,6 +45,7 @@ interface FormData {
   responsable_email: string;
   responsable_telefono: string;
   empresa: string;
+  empresa_personalizada: string;
   area: string;
   acreditados: Acreditado[];
 }
@@ -60,6 +74,7 @@ export default function AcreditacionPage() {
     responsable_email: "",
     responsable_telefono: "",
     empresa: "",
+    empresa_personalizada: "",
     area: "",
     acreditados: [createEmptyAcreditado()],
   });
@@ -79,17 +94,25 @@ export default function AcreditacionPage() {
 
   const selectedArea = areas.find((a) => a.codigo === formData.area);
 
+  const getEmpresaDisplay = () => {
+    if (formData.empresa === "Otros") {
+      return formData.empresa_personalizada;
+    }
+    return formData.empresa;
+  };
+
   // Calcular el paso actual basado en el progreso del formulario
   React.useEffect(() => {
     let step = 1;
     
-    // Si hay empresa y área, estamos en paso 2
-    if (formData.empresa?.trim() && formData.area) {
+    // Si hay empresa seleccionada (y si es Otros, personalizada), estamos en paso 2
+    const empresaValida = formData.empresa && (formData.empresa !== "Otros" || formData.empresa_personalizada?.trim());
+    if (empresaValida) {
       step = 2;
     }
     
-    // Si hay al menos un acreditado con datos básicos, estamos en paso 3
-    if (formData.acreditados.some(a => a.nombre?.trim() && a.primer_apellido?.trim() && a.rut?.trim())) {
+    // Si hay área seleccionada, estamos en paso 3
+    if (empresaValida && formData.area) {
       step = 3;
     }
     
@@ -100,6 +123,21 @@ export default function AcreditacionPage() {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleEmpresaChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      empresa: value,
+      empresa_personalizada: value === "Otros" ? prev.empresa_personalizada : "",
+    }));
+  };
+
+  const handleEmpresaPersonalizadaChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      empresa_personalizada: value,
     }));
   };
 
@@ -170,7 +208,10 @@ export default function AcreditacionPage() {
       return "Complete el email del responsable";
     }
     if (!formData.empresa?.trim()) {
-      return "Complete el nombre de la empresa";
+      return "Seleccione un medio/empresa";
+    }
+    if (formData.empresa === "Otros" && !formData.empresa_personalizada?.trim()) {
+      return "Complete el nombre del medio/empresa";
     }
     if (!formData.area?.trim()) {
       return "Seleccione un área";
@@ -220,6 +261,7 @@ export default function AcreditacionPage() {
       responsable_email: "",
       responsable_telefono: "",
       empresa: "",
+      empresa_personalizada: "",
       area: "",
       acreditados: [createEmptyAcreditado()],
     });
@@ -237,7 +279,13 @@ export default function AcreditacionPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await submitAcreditacion(formData);
+      const formDataToSend = { ...formData };
+      delete (formDataToSend as any).empresa_personalizada;
+      if (formData.empresa === "Otros") {
+        formDataToSend.empresa = `Otros: ${formData.empresa_personalizada}`;
+      }
+
+      const result = await submitAcreditacion(formDataToSend);
       
       if (result.success) {
         setSuccessModal({ show: true, acreditados_count: formData.acreditados.length });
@@ -271,10 +319,10 @@ export default function AcreditacionPage() {
 
       <div className="container mx-auto px-4 max-w-4xl">
         <header className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">
             Acreditación Prensa
           </h1>
-          <p className="text-white/80 mt-2">
+          <p className="text-white/80 mt-2 text-lg">
             Universidad Católica vs Deportes Concepción - Claro Arena
           </p>
         </header>
@@ -366,27 +414,39 @@ export default function AcreditacionPage() {
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
               />
+              <select
+                value={formData.empresa}
+                onChange={(e) => handleEmpresaChange(e.target.value)}
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                required
+              >
+                <option value="">Seleccionar Medio/Empresa</option>
+                {CANALES.map((canal) => (
+                  <option key={canal} value={canal}>
+                    {canal}
+                  </option>
+                ))}
+              </select>
+              {formData.empresa === "Otros" && (
+                <input
+                  type="text"
+                  placeholder="Nombre del Medio/Empresa"
+                  value={formData.empresa_personalizada}
+                  onChange={(e) => handleEmpresaPersonalizadaChange(e.target.value)}
+                  className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                  required
+                />
+              )}
             </div>
           </FormSection>
 
-          {/* Sección Identificación Institucional */}
+          {/* Sección Cupos por área del medio */}
           <FormSection
             stepNumber={2}
-            title="Identificación Institucional"
-            description="Información de la empresa y categoría de acreditación"
+            title="Cupos por área del medio"
+            description="Seleccione el área para la que solicita cupos"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Medio/Empresa"
-                value={formData.empresa}
-                onChange={(e) => {
-                  handleResponsableChange("empresa", e.target.value);
-                }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                required
-              />
-
               <select
                 value={formData.area}
                 onChange={(e) => {
@@ -492,7 +552,7 @@ export default function AcreditacionPage() {
         onClose={handleSuccessModalClose}
       >
         <div className="mt-4 space-y-2 text-sm text-gray-600">
-          <p><strong>Empresa:</strong> {formData.empresa}</p>
+          <p><strong>Empresa:</strong> {getEmpresaDisplay()}</p>
           <p><strong>Área:</strong> {selectedArea?.nombre}</p>
           <p><strong>Acreditados registrados:</strong> {successModal.acreditados_count}</p>
         </div>
@@ -503,12 +563,7 @@ export default function AcreditacionPage() {
           isOpen={cuposError.show}
           type="error"
           title="Cupos Agotados"
-          message={`No hay cupos disponibles para la empresa "${cuposError.empresa}" en el área "${cuposError.area}".
-          
-Cupos máximos: ${cuposError.maximo}
-Ya acreditados: ${cuposError.existentes}
-Intentó registrar: ${cuposError.solicitados}
-Total resultante: ${cuposError.existentes + cuposError.solicitados} (excede el límite)`}
+          message={`No hay cupos disponibles.\n\nEmpresa: ${cuposError.empresa}\nÁrea: ${cuposError.area}\nCupos máximos: ${cuposError.maximo}\nYa acreditados: ${cuposError.existentes}\nIntentó registrar: ${cuposError.solicitados}\nTotal resultante: ${cuposError.existentes + cuposError.solicitados} (excede el límite)`}
           buttons={[
             {
               label: "Entendido",

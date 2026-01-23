@@ -89,7 +89,9 @@ interface AdminContextType {
   fetchAcreditaciones: () => void;
   openDetail: (acred: Acreditacion) => void;
   handleAsignZona: (zonaId: number) => void;
+  assignZonaDirect: (acred: Acreditacion, zonaId: number | null) => void;
   updateEstado: (newEstado: "pendiente" | "aprobado" | "rechazado") => void;
+  updateEstadoDirect: (acred: Acreditacion, newEstado: "pendiente" | "aprobado" | "rechazado") => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);

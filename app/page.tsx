@@ -30,7 +30,7 @@ export default function LandingPage() {
         <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-                backgroundImage: "url('/UCimg/UCtoroz.jpg')",
+                backgroundImage: "url('/UCimg/ClaroArena.png')",
                 backgroundPosition: 'center',
                 backgroundSize: 'cover'
             }}
@@ -51,14 +51,14 @@ export default function LandingPage() {
                 </div>
 
                 {/* Título compacto */}
-                <h1 className="text-2xl md:text-4xl font-bold mb-2 leading-tight">
+                <h1 className="text-3xl md:text-5xl font-bold mb-2 leading-tight">
                     <span className="block text-white drop-shadow-2xl">Universidad Católica</span>
                 </h1>
 
                 {/* VS y rival en una línea */}
                 <div className="flex items-center gap-3">
-                    <span className="text-lg md:text-xl font-light tracking-wide" style={{color: 'var(--azul-claro)'}}>vs</span>
-                    <h2 className="text-lg md:text-2xl font-medium text-white opacity-90">
+                    <span className="text-xl md:text-2xl font-light tracking-wide" style={{color: 'var(--azul-claro)'}}>vs</span>
+                    <h2 className="text-xl md:text-3xl font-medium text-white opacity-90">
                         Deportes Concepción
                     </h2>
                 </div>
@@ -75,7 +75,7 @@ export default function LandingPage() {
                         href="/acreditacion"
                         prefetch={true}
                         onClick={handleNavigate}
-                        className="group relative inline-flex items-center gap-2 px-8 py-3 text-white text-sm md:text-base font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 btn-glow overflow-hidden"
+                        className="group relative inline-flex items-center gap-2 px-8 py-3 text-white text-base md:text-xl font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 btn-glow overflow-hidden"
                         style={{
                             background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
                             border: `1px solid var(--azul-mas-claro)`
@@ -83,17 +83,17 @@ export default function LandingPage() {
                         <span className="absolute inset-0 w-full h-full transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
                             style={{background: `linear-gradient(135deg, var(--azul-medio) 0%, var(--azul-mas-claro) 100%)`}}>
                         </span>
-                        <i className="fas fa-ticket-alt relative z-10 text-xl group-hover:translate-x-1 transition-transform duration-300"></i>
-                        <span className="relative z-10 text-xl">Acreditarse Ahora</span>
-                        <i className="fas fa-arrow-right relative z-10 text-xl group-hover:translate-x-2 transition-transform duration-300"></i>
+                        <i className="fas fa-ticket-alt relative z-10 text-2xl group-hover:translate-x-1 transition-transform duration-300"></i>
+                        <span className="relative z-10 text-2xl">Acredítate: haz clic aquí</span>
+                        <i className="fas fa-arrow-right relative z-10 text-2xl group-hover:translate-x-2 transition-transform duration-300"></i>
                     </Link>
                 </div>
 
                 {/* Información en línea horizontal - minimalista */}
-                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-xs md:text-sm">
+                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-sm md:text-base">
                     {/* Fecha */}
                     <div className="flex items-center gap-2">
-                        <i className="fas fa-calendar-alt text-sm" style={{color: 'var(--azul-claro)'}}></i>
+                        <i className="fas fa-calendar-alt text-base" style={{color: 'var(--azul-claro)'}}></i>
                         <span className="font-light">Sábado 25 Enero</span>
                     </div>
 
@@ -102,7 +102,7 @@ export default function LandingPage() {
 
                     {/* Hora */}
                     <div className="flex items-center gap-2">
-                        <i className="fas fa-clock text-sm" style={{color: 'var(--azul-claro)'}}></i>
+                        <i className="fas fa-clock text-base" style={{color: 'var(--azul-claro)'}}></i>
                         <span className="font-light">18:00 hrs</span>
                     </div>
 
@@ -111,8 +111,8 @@ export default function LandingPage() {
 
                     {/* Estadio */}
                     <div className="flex items-center gap-2">
-                        <i className="fas fa-map-marker-alt text-sm" style={{color: 'var(--azul-claro)'}}></i>
-                        <span className="font-light">San Carlos de Apoquindo</span>
+                        <i className="fas fa-map-marker-alt text-base" style={{color: 'var(--azul-claro)'}}></i>
+                        <span className="font-light">Claro Arena</span>
                     </div>
                 </div>
             </div>
@@ -126,13 +126,13 @@ export default function LandingPage() {
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   {/* Logo o Nombre */}
                   <div className="flex items-center gap-3">
-                      <i className="fas fa-shield-alt text-xl" style={{color: 'var(--azul-claro)'}}></i>
-                      <span className="text-base font-semibold">Club Deportivo Universidad Católica</span>
+                      <i className="fas fa-shield-alt text-2xl" style={{color: 'var(--azul-claro)'}}></i>
+                      <span className="text-lg font-semibold">Club Deportivo Universidad Católica</span>
                   </div>
 
                   {/* Copyright dinámico */}
                   <div className="text-center md:text-right">
-                      <span className="text-xs text-white opacity-80">
+                      <span className="text-sm text-white opacity-80">
                           © {new Date().getFullYear()} Desarrolado por Accredia para Universidad Católica. © Todos los derechos reservados.
                       </span>
                   </div>
@@ -143,11 +143,11 @@ export default function LandingPage() {
                   <div className="flex justify-center gap-5 text-white">
                       <a href="https://www.facebook.com/cruzados.cl/?locale=es_LA" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110" 
                           style={{color: 'var(--azul-claro)'}}>
-                          <i className="fab fa-facebook text-lg"></i>
+                          <i className="fab fa-facebook text-xl"></i>
                       </a>
                       <a href="https://x.com/Cruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
                           style={{color: 'var(--azul-claro)'}}>
-                          <i className="fab fa-twitter text-lg"></i>
+                          <i className="fab fa-twitter text-xl"></i>
                       </a>
                       <a href="https://www.instagram.com/cruzados_oficial/?hl=es-la" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
                           style={{color: 'var(--azul-claro)'}}>

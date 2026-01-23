@@ -149,7 +149,7 @@ const Modal: React.FC<ModalProps> = ({
           <h2 className="text-3xl font-bold text-gray-900 mb-2">{title}</h2>
 
           {/* Mensaje */}
-          <p className="text-gray-600 mb-6">{message}</p>
+          <p className="text-gray-600 mb-6 whitespace-pre-line">{message}</p>
 
           {/* Contenido personalizado */}
           {children && <div className="w-full mb-6">{children}</div>}

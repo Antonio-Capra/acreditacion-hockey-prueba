@@ -35,12 +35,12 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white px-6 py-4">
-          <h2 className="text-xl font-bold">Términos y Condiciones de Acreditación</h2>
+          <h2 className="text-2xl font-bold">Términos y Condiciones de Acreditación</h2>
         </div>
 
         {/* Content */}
         <div className="px-6 py-4">
-          <p className="text-gray-600 mb-4 text-sm">
+          <p className="text-gray-600 mb-4 text-base">
             Antes de continuar, por favor revise completamente los términos y condiciones para el proceso de acreditación.
           </p>
 
@@ -50,11 +50,11 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
             onScroll={handleScroll}
             className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-[#1e5799]/30 scrollbar-track-gray-100 scrollbar-thumb-rounded-full hover:scrollbar-thumb-[#1e5799]/50 transition-colors"
           >
-            <div className="space-y-4 text-sm text-gray-700 pr-2">
+            <div className="space-y-4 text-base text-gray-700 pr-2">
               <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-blue-800 flex items-center gap-2">
-                    <span className="text-lg">📋</span>
+                    <span className="text-xl">📋</span>
                     <span>Proceso de Acreditación</span>
                   </p>
                   <p className="text-blue-700 leading-relaxed">
@@ -66,7 +66,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
               <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-yellow-800 flex items-center gap-2">
-                    <span className="text-lg">⏰</span>
+                    <span className="text-xl">⏰</span>
                     <span>Plazo de Acreditación</span>
                   </p>
                   <p className="text-yellow-700 leading-relaxed">
@@ -78,7 +78,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
               <div className="bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-red-800 flex items-center gap-2">
-                    <span className="text-lg">⚠️</span>
+                    <span className="text-xl">⚠️</span>
                     <span>Restricciones de Cupos</span>
                   </p>
                   <p className="text-red-700 leading-relaxed">
@@ -90,7 +90,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
               <div className="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-green-800 flex items-center gap-2">
-                    <span className="text-lg">📞</span>
+                    <span className="text-xl">📞</span>
                     <span>Excepciones y Consultas</span>
                   </p>
                   <p className="text-green-700 leading-relaxed">
@@ -106,7 +106,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
             <button
               onClick={onAccept}
               disabled={!canAccept}
-              className={`flex-1 px-6 py-3 font-semibold rounded-xl transition-all duration-300 ${
+              className={`flex-1 px-6 py-4 font-semibold rounded-xl transition-all duration-300 text-lg ${
                 canAccept
                   ? 'bg-gradient-to-r from-[#1e5799] to-[#2989d8] hover:from-[#2989d8] hover:to-[#3c9de5] text-white shadow-lg hover:shadow-xl active:scale-95'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
