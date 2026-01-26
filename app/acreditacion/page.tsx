@@ -15,14 +15,63 @@ import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
 
 // Lista de canales predefinidos (actualizar con los nombres reales)
 const CANALES = [
-  "Canal 13",
+  "ESPN Chile",
+  "DNews Internacional",
+  "DSport (DirecTV)",
+  "Photosport",
+  "EFE",
+  "Redgol",
+  "La Hora",
+  "Publimetro",
   "TVN",
   "Mega",
+  "Canal 13",
   "Chilevisión",
-  "La Red",
+  "ADN",
+  "Cooperativa",
+  "Agricultura",
+  "BioBio",
+  "Mediabanco",
+  "Frencuancia Cruzada",
+  "La Tercera",
+  "El Mercurio",
+  "LUN",
+  "La Segunda",
+  "Agencia JyE",
+  "Campeonato Chileno",
+  "Dwos",
+  "La Cuarta",
+  "Pasión de Hincha",
+  "RadioSport",
+  "Liga Sport",
+  "Imagen Virtual",
+  "Radio del Lago",
+  "Minuto 90",
+  "As Chile",
+  "En Cancha",
+  "Mundo Cracks",
+  "Xpress",
+  "Sabes Deportes",
+  "DLT",
+  "Balong",
   "CNN Chile",
-  "T13",
-  "24 Horas",
+  "Sifup",
+  "Espacio Cruzado",
+  "Graficapress",
+  "SepuTV",
+  "Señal Deportiva",
+  "Agencia UNO",
+  "Rumbo Deportivo",
+  "En el Camarín",
+  "Radio Portales",
+  "Todo es Cancha",
+  "Picados TV",
+  "Touch TV",
+  "Radio Santiago",
+  "EMOL",
+  "El Mercurio Valparaíso",
+  "Tribuna Andes",
+  "Al Aire Libre punto CL.",
   "Otros"
 ];
 
@@ -280,6 +329,7 @@ export default function AcreditacionPage() {
 
     try {
       const formDataToSend = { ...formData };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (formDataToSend as any).empresa_personalizada;
       if (formData.empresa === "Otros") {
         formDataToSend.empresa = `Otros: ${formData.empresa_personalizada}`;
@@ -294,7 +344,7 @@ export default function AcreditacionPage() {
         // Modal is already shown by the hook, no need to do anything else
       }
 
-    } catch (error) {
+    } catch (_error) {
       setSubmissionStatus({ type: "error", message: "Error al enviar la acreditación" });
     } finally {
       setIsSubmitting(false);
@@ -323,7 +373,7 @@ export default function AcreditacionPage() {
             Acreditación Prensa
           </h1>
           <p className="text-white/80 mt-2 text-lg">
-            Universidad Católica vs Deportes Concepción - Claro Arena
+            Universidad Católica vs Deportes Concepción - Domingo 8 de Febrero 2026, Claro Arena
           </p>
         </header>
 
@@ -334,7 +384,7 @@ export default function AcreditacionPage() {
           <ProgressIndicator
             currentStep={currentStep}
             totalSteps={3}
-            stepLabels={["Responsable", "Institución", "Acreditados"]}
+            stepLabels={["Responsable", "Cupos", "Acreditados"]}
           />
 
           {submissionStatus.type && (

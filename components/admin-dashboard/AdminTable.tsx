@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import AdminRow from "./AdminRow";
 import { Acreditacion } from "./AdminContext";
+import ConfirmationModal from "@/components/common/ConfirmationModal";
 
 interface AdminTableProps {
   filteredAcreditaciones: Acreditacion[];
@@ -16,8 +18,18 @@ export default function AdminTable({
   ESTADO_COLORS,
   onOpenDetail,
 }: AdminTableProps) {
+  const [confirmActionModal, setConfirmActionModal] = useState<{ isOpen: boolean; type: "aprobado" | "rechazado" | null; message: string; onConfirm: () => void }>({ isOpen: false, type: null, message: "", onConfirm: () => {} });
+
+  const openConfirmModal = (type: "aprobado" | "rechazado", message: string, onConfirm: () => void) => {
+    setConfirmActionModal({ isOpen: true, type, message, onConfirm });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmActionModal({ isOpen: false, type: null, message: "", onConfirm: () => {} });
+  };
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden mt-16">
+    <>
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden mt-16">
       {/* Header de la Tabla */}
       <div className="bg-gradient-to-r from-[#1e5799] to-[#2989d8] px-6 py-5">
         <h2 className="text-xl font-bold text-white flex items-center justify-between">
@@ -53,6 +65,7 @@ export default function AdminTable({
                 AREA_NAMES={AREA_NAMES}
                 ESTADO_COLORS={ESTADO_COLORS}
                 onOpenDetail={onOpenDetail}
+                onConfirmAction={openConfirmModal}
               />
             ))}
           </tbody>
@@ -64,6 +77,17 @@ export default function AdminTable({
           No hay acreditaciones que coincidan con los filtros
         </div>
       )}
-    </div>
+      </div>
+      <ConfirmationModal
+        isOpen={confirmActionModal.isOpen}
+        title={confirmActionModal.type === "aprobado" ? "Confirmar Aprobación" : "Confirmar Rechazo"}
+        message={confirmActionModal.message}
+        onConfirm={() => {
+          confirmActionModal.onConfirm();
+          closeConfirmModal();
+        }}
+        onCancel={closeConfirmModal}
+      />
+    </>
   );
 }

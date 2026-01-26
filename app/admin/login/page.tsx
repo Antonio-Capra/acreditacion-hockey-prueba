@@ -180,7 +180,7 @@ export default function AdminLoginPage() {
           {/* Footer */}
           <div className="mt-6 pt-6 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-500">
-              Sistema de Acreditación - Desafío Internacional
+              Sistema de Acreditación - Cruzados
             </p>
           </div>
         </div>

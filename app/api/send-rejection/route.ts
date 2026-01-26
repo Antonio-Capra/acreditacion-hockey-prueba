@@ -39,7 +39,7 @@ const getFromEmail = (): string => {
 
 export async function POST(req: Request) {
   try {
-    const { nombre, apellido, correo, zona, area } = await req.json();
+    const { nombre, apellido, correo } = await req.json();
 
     if (!correo) {
       return NextResponse.json(
@@ -55,9 +55,10 @@ export async function POST(req: Request) {
     // 🔐 Email validado y seguro
     const from = getFromEmail();
 
-    const { data, error } = await resend.emails.send({
+    const { data: _data, error } = await resend.emails.send({
       from,
       to: toEmail,
+      replyTo: "antoniocaprab@gmail.com",
       subject: "❌ Tu acreditación ha sido rechazada",
       html: `
         <!DOCTYPE html>
@@ -98,52 +99,20 @@ export async function POST(req: Request) {
 
                       <!-- Saludo -->
                       <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0; line-height: 1.6;">
-                        Hola <strong>${nombre} ${apellido}</strong>,
+                        Estimado <strong>${nombre} ${apellido}</strong>,
                       </p>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
-                        Lamentablemente, tu solicitud de acreditación ha sido <strong style="color: #dc2626;">rechazada</strong>.
+                        Debido a la capacidad limitada de espacios disponibles en prensa para el partido Universidad Católica vs Deportes Concepción a disputarse el domingo 8 de febrero a las 20:00 horas en el Claro Arena, lamentamos informarle que su(s) acreditación(ones) ha(n) sido rechazada(s).
                       </p>
 
-                      <!-- Información en tarjetas -->
-                      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
-                        <tr>
-                          <td style="padding: 20px; background-color: #fef2f2; border-left: 4px solid #dc2626; border-radius: 8px; margin-bottom: 15px;">
-                            <p style="margin: 0 0 8px 0; color: #991b1b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                              Área Solicitada
-                            </p>
-                            <p style="margin: 0; color: #dc2626; font-size: 18px; font-weight: 700;">
-                              ${area}
-                            </p>
-                          </td>
-                        </tr>
-                        <tr><td style="height: 15px;"></td></tr>
-                        <tr>
-                          <td style="padding: 20px; background-color: #fef3c7; border-left: 4px solid #e8b543; border-radius: 8px;">
-                            <p style="margin: 0 0 8px 0; color: #92400e; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                              Zona Solicitada
-                            </p>
-                            <p style="margin: 0; color: #78350f; font-size: 18px; font-weight: 700;">
-                              ${zona ?? "N/A"}
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
+                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
+                        Agradecemos su interés y comprensión.
+                      </p>
 
-                      <!-- Instrucciones -->
-                      <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                        <p style="margin: 0 0 10px 0; color: #991b1b; font-weight: 600; font-size: 15px;">
-                          📋 Para apelar o más información:
-                        </p>
-                        <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: 14px; line-height: 1.8;">
-                          <li>Contacta a comunicaciones@cruzados.cl</li>
-                          <li>Indica tu nombre completo y motivo de la solicitud</li>
-                          <li>Responde a este correo con tus dudas</li>
-                        </ul>
-                      </div>
-
-                      <p style="font-size: 16px; color: #4b5563; margin: 0; line-height: 1.6;">
-                        Gracias por tu interés en el evento.
+                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
+                        Saludos cordiales,<br>
+                        Área de Prensa – Cruzados.
                       </p>
                     </td>
                   </tr>
@@ -193,7 +162,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Error interno en send-rejection" },
       { status: 500 }

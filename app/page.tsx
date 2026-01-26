@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -30,7 +31,7 @@ export default function LandingPage() {
         <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-                backgroundImage: "url('/UCimg/ClaroArena.png')",
+                backgroundImage: "url('/UCimg/Claro.jpg')",
                 backgroundPosition: 'center',
                 backgroundSize: 'cover'
             }}
@@ -42,12 +43,52 @@ export default function LandingPage() {
         {/* Content - Layout con centro libre */}
         <div className="relative z-10 container mx-auto px-4 h-screen flex flex-col justify-between py-8">
             
-            {/* Top Section - Solo título pequeño arriba a la izquierda */}
+            {/* Top Section - Título con badge e info del evento */}
             <div className="text-left text-white pt-4 pl-4 md:pl-8">
-                {/* Badge Superior */}
-                <div className="inline-block mb-3 px-4 py-1.5 glassmorphism rounded-full text-xs font-semibold uppercase tracking-widest">
-                    <i className="fas fa-futbol mr-2" style={{color: 'var(--azul-claro)'}}></i>
-                    Partido Oficial
+                {/* Badge Superior e Info del Evento en línea */}
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+                    {/* Badge Superior */}
+                    <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
+                        style={{
+                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                            border: `1px solid var(--azul-mas-claro)`
+                    }}>
+                        <i className="fas fa-futbol mr-2" style={{color: 'white'}}></i>
+                        Partido Oficial
+                    </div>
+
+                    {/* Información del evento - al lado del badge */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm md:text-base">
+                        {/* Fecha */}
+                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
+                            style={{
+                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                            border: `1px solid var(--azul-mas-claro)`
+                        }}>
+                            <i className="fas fa-calendar-alt text-base mr-2" style={{color: 'white'}}></i>
+                            <span className="font-medium">Domingo 8 Febrero</span>
+                        </div>
+
+                        {/* Hora */}
+                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
+                            style={{
+                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                            border: `1px solid var(--azul-mas-claro)`
+                        }}>
+                            <i className="fas fa-clock text-base mr-2" style={{color: 'white'}}></i>
+                            <span className="font-medium">18:00 hrs</span>
+                        </div>
+
+                        {/* Estadio */}
+                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
+                            style={{
+                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                            border: `1px solid var(--azul-mas-claro)`
+                        }}>
+                            <i className="fas fa-map-marker-alt text-base mr-2" style={{color: 'white'}}></i>
+                            <span className="font-medium">Claro Arena</span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Título compacto */}
@@ -58,7 +99,7 @@ export default function LandingPage() {
                 {/* VS y rival en una línea */}
                 <div className="flex items-center gap-3">
                     <span className="text-xl md:text-2xl font-light tracking-wide" style={{color: 'var(--azul-claro)'}}>vs</span>
-                    <h2 className="text-xl md:text-3xl font-medium text-white opacity-90">
+                    <h2 className="text-xl md:text-3xl font-bold text-white opacity-90">
                         Deportes Concepción
                     </h2>
                 </div>
@@ -68,6 +109,37 @@ export default function LandingPage() {
 
             {/* Bottom Section - Todo el evento abajo */}
             <div className="text-white pb-6">
+                
+                {/* Shields Section */}
+                <div className="flex items-center justify-center gap-8 sm:gap-16 md:gap-20 mb-12">
+                  {/* Universidad Católica */}
+                  <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                    <Image
+                      src="/UCimg/UCEscudo2.png"
+                      alt="Escudo Universidad Católica"
+                      width={300}
+                      height={300}
+                      className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain"
+                    />
+                  </div>
+
+                  {/* VS */}
+                  <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-white drop-shadow-lg">
+                    VS
+                  </div>
+
+                  {/* Deportes Concepción */}
+                  <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                    <Image
+                      src="/UCimg/EscudoConce.png"
+                      alt="Escudo Deportes Concepción"
+                      width={300}
+                      height={300}
+                      className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain"
+                    />
+                    
+                  </div>
+                </div>
                 
                 {/* CTA Principal - Más elegante */}
                 <div className="text-center mb-6">
@@ -87,33 +159,6 @@ export default function LandingPage() {
                         <span className="relative z-10 text-2xl">Acredítate: haz clic aquí</span>
                         <i className="fas fa-arrow-right relative z-10 text-2xl group-hover:translate-x-2 transition-transform duration-300"></i>
                     </Link>
-                </div>
-
-                {/* Información en línea horizontal - minimalista */}
-                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-sm md:text-base">
-                    {/* Fecha */}
-                    <div className="flex items-center gap-2">
-                        <i className="fas fa-calendar-alt text-base" style={{color: 'var(--azul-claro)'}}></i>
-                        <span className="font-light">Sábado 25 Enero</span>
-                    </div>
-
-                    {/* Separador */}
-                    <div className="hidden md:block w-1 h-1 rounded-full bg-white opacity-50"></div>
-
-                    {/* Hora */}
-                    <div className="flex items-center gap-2">
-                        <i className="fas fa-clock text-base" style={{color: 'var(--azul-claro)'}}></i>
-                        <span className="font-light">18:00 hrs</span>
-                    </div>
-
-                    {/* Separador */}
-                    <div className="hidden md:block w-1 h-1 rounded-full bg-white opacity-50"></div>
-
-                    {/* Estadio */}
-                    <div className="flex items-center gap-2">
-                        <i className="fas fa-map-marker-alt text-base" style={{color: 'var(--azul-claro)'}}></i>
-                        <span className="font-light">Claro Arena</span>
-                    </div>
                 </div>
             </div>
         </div>

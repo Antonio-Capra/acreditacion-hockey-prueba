@@ -70,7 +70,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
                     <span>Plazo de Acreditación</span>
                   </p>
                   <p className="text-yellow-700 leading-relaxed">
-                    Desde el lunes 13 de enero hasta el 17 de enero a las 18:00 hrs, sin excepción. No se aceptarán solicitudes fuera de plazo.
+                    Desde el lunes 26 de enero hasta el 05 de febrero a las 18:00 hrs, sin excepción. No se aceptarán solicitudes fuera de plazo.
                   </p>
                 </div>
               </div>

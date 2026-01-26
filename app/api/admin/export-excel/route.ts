@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as ExcelJS from "exceljs";
+import * as XLSX from 'xlsx';
 import { createClient } from "@supabase/supabase-js";
 
 interface Acreditado {
@@ -29,10 +30,6 @@ interface Zona {
   nombre: string;
 }
 
-interface ExcelRow {
-  [key: string]: string | number | undefined;
-}
-
 export async function GET(request: NextRequest) {
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,132 +38,62 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const format = searchParams.get("format") || "completo"; // "completo" o "puntoticket"
-    const statusFilter = searchParams.get("status") || "all"; // "all", "aprobado", "pendiente", "rechazado"
+    const format = searchParams.get("format") || "completo";
+    const statusFilter = searchParams.get("status") || "all";
 
-    // Construir query
-    let query = supabaseAdmin
-      .from("acreditados")
-      .select("*")
-      .eq("evento_id", 1);
-
-    // Aplicar filtro de estado si no es "all"
+    let query = supabaseAdmin.from("acreditados").select("*").eq("evento_id", 1);
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter);
     }
 
     const { data: acreditados, error: acreditadosError } = await query;
 
-    if (acreditadosError) {
-      throw new Error(`Error al obtener acreditados: ${acreditadosError.message}`);
-    }
-
+    if (acreditadosError) throw new Error(acreditadosError.message);
     if (!acreditados || acreditados.length === 0) {
-      const msg = statusFilter === "aprobado"
-        ? "No hay acreditaciones APROBADAS aún. Debes aprobar algunas acreditaciones primero para exportarlas."
-        : statusFilter === "pendiente"
-        ? "No hay acreditaciones PENDIENTES."
-        : statusFilter === "rechazado"
-        ? "No hay acreditaciones RECHAZADAS."
-        : "No hay acreditaciones para exportar.";
-
-      return NextResponse.json(
-        {
-          error: msg,
-          suggestion: "Cambia el filtro de estado en el dashboard o aprueba algunas acreditaciones primero."
-        },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "No hay datos para exportar" }, { status: 404 });
     }
 
-    // Obtener zonas para mapear zona_id a nombre
-    const { data: zonas, error: zonasError } = await supabaseAdmin
-      .from("zonas_acreditacion")
-      .select("id, nombre")
-      .eq("evento_id", 1);
-
-    if (zonasError) {
-      console.warn("⚠️ Error al obtener zonas:", zonasError.message);
-    }
-
+    const { data: zonas } = await supabaseAdmin.from("zonas_acreditacion").select("id, nombre").eq("evento_id", 1);
     const zonasMap = new Map(zonas?.map((z: Zona) => [z.id, z.nombre]) || []);
 
-    // Crear workbook con ExcelJS
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Acreditados');
+    const dateStr = new Date().toISOString().split("T")[0];
 
+    // --- CASO 1: PUNTO TICKET (CSV PLANO) ---
     if (format === "puntoticket") {
-      // Formato específico para Punto Ticket con 7 columnas simplificadas
-      worksheet.columns = [
-        { key: 'nombre', header: 'Nombre', width: 20 },
-        { key: 'apellido', header: 'Apellido', width: 30 },
-        { key: 'rut', header: 'RUT', width: 18 },
-        { key: 'empresa', header: 'Empresa', width: 25 },
-        { key: 'area', header: 'Área', width: 20 },
-        { key: 'acreditacion', header: 'Acreditación', width: 15 },
-        { key: 'patente', header: 'Patente', width: 15 },
-      ];
+      const csvData = acreditados.map((a: Acreditado) => ({
+        Nombre: a.nombre,
+        Apellido: `${a.primer_apellido}${a.segundo_apellido ? ` ${a.segundo_apellido}` : ''}`,
+        RUT: a.rut,
+        Empresa: a.empresa,
+        Área: "CRUZADOS",
+        Acreditación: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
+        Patente: "",
+      }));
 
-      // Estilo de cabecera
-      worksheet.getRow(1).eachCell((cell) => {
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF1E5799' } // Azul #1E5799
-        };
-        cell.font = {
-          color: { argb: 'FFFFFFFF' }, // Blanco
-          bold: true,
-          size: 10,
-          name: 'Arial'
-        };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      const ws = XLSX.utils.json_to_sheet(csvData);
+      const csvContent = XLSX.utils.sheet_to_csv(ws);
+      
+      // El secreto: BOM + Codificación explícita a Uint8Array
+      const encoder = new TextEncoder();
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      const csvUint8 = encoder.encode(csvContent);
+      const combined = new Uint8Array(bom.length + csvUint8.length);
+      combined.set(bom);
+      combined.set(csvUint8, bom.length);
+
+      return new NextResponse(combined, {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="acreditados_puntoticket_${dateStr}.csv"`,
+        },
       });
+    } 
 
-      // Altura de fila de cabecera
-      worksheet.getRow(1).height = 30;
+    // --- CASO 2: COMPLETO (EXCEL REAL) ---
+    else {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Acreditados');
 
-      // Agregar datos
-      acreditados.forEach((acreditado: Acreditado) => {
-        const apellidoCompleto = `${acreditado.primer_apellido}${acreditado.segundo_apellido ? ` ${acreditado.segundo_apellido}` : ''}`;
-
-        worksheet.addRow({
-          nombre: acreditado.nombre,
-          apellido: apellidoCompleto,
-          rut: acreditado.rut,
-          empresa: acreditado.empresa,
-          area: "CRUZADOS",
-          acreditacion: acreditado.zona_id ? zonasMap.get(acreditado.zona_id) || "Sin asignar" : "Sin asignar",
-          patente: "",
-        });
-      });
-
-      // Aplicar estilos a todas las celdas de datos
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) { // Saltar cabecera
-          row.eachCell((cell) => {
-            cell.font = {
-              name: 'Arial',
-              size: 10
-            };
-            cell.border = {
-              top: { style: 'thin' },
-              left: { style: 'thin' },
-              bottom: { style: 'thin' },
-              right: { style: 'thin' }
-            };
-          });
-        }
-      });
-
-      // Activar filtros automáticos
-      worksheet.autoFilter = {
-        from: 'A1',
-        to: 'G1' // Hasta la columna G (7 columnas)
-      };
-
-    } else {
-      // Formato completo con toda la información
       worksheet.columns = [
         { key: 'nombre', header: 'Nombre', width: 20 },
         { key: 'primerApellido', header: 'Primer Apellido', width: 20 },
@@ -188,95 +115,43 @@ export async function GET(request: NextRequest) {
         { key: 'responsableTelefono', header: 'Teléfono Responsable', width: 20 },
       ];
 
-      // Estilo de cabecera
-      worksheet.getRow(1).eachCell((cell) => {
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF1E5799' } // Azul #1E5799
-        };
-        cell.font = {
-          color: { argb: 'FFFFFFFF' }, // Blanco
-          bold: true,
-          size: 10,
-          name: 'Arial'
-        };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-      });
+      // Estilo rápido cabecera
+      worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E5799' } };
+      worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' }, bold: true };
 
-      // Altura de fila de cabecera
-      worksheet.getRow(1).height = 30;
-
-      // Agregar datos
-      acreditados.forEach((acreditado: Acreditado) => {
+      acreditados.forEach((a: Acreditado) => {
         worksheet.addRow({
-          nombre: acreditado.nombre,
-          primerApellido: acreditado.primer_apellido,
-          segundoApellido: acreditado.segundo_apellido || "",
-          rut: acreditado.rut,
-          email: acreditado.email,
-          cargo: acreditado.cargo,
-          tipoCredencial: acreditado.tipo_credencial,
-          numeroCredencial: acreditado.numero_credencial || "",
-          empresa: acreditado.empresa,
-          area: acreditado.area,
-          zona: acreditado.zona_id ? zonasMap.get(acreditado.zona_id) || "Sin asignar" : "Sin asignar",
-          estado: acreditado.status.charAt(0).toUpperCase() + acreditado.status.slice(1),
-          responsableNombre: acreditado.responsable_nombre || "",
-          responsablePrimerApellido: acreditado.responsable_primer_apellido || "",
-          responsableSegundoApellido: acreditado.responsable_segundo_apellido || "",
-          responsableRut: acreditado.responsable_rut || "",
-          responsableEmail: acreditado.responsable_email || "",
-          responsableTelefono: acreditado.responsable_telefono || "",
+          nombre: a.nombre,
+          primerApellido: a.primer_apellido,
+          segundoApellido: a.segundo_apellido || "",
+          rut: a.rut,
+          email: a.email,
+          cargo: a.cargo,
+          tipoCredencial: a.tipo_credencial,
+          numeroCredencial: a.numero_credencial || "",
+          empresa: a.empresa,
+          area: a.area,
+          zona: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
+          estado: a.status.charAt(0).toUpperCase() + a.status.slice(1),
+          responsableNombre: a.responsable_nombre || "",
+          responsablePrimerApellido: a.responsable_primer_apellido || "",
+          responsableSegundoApellido: a.responsable_segundo_apellido || "",
+          responsableRut: a.responsable_rut || "",
+          responsableEmail: a.responsable_email || "",
+          responsableTelefono: a.responsable_telefono || "",
         });
       });
 
-      // Aplicar estilos a todas las celdas de datos
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) { // Saltar cabecera
-          row.eachCell((cell) => {
-            cell.font = {
-              name: 'Arial',
-              size: 10
-            };
-            cell.border = {
-              top: { style: 'thin' },
-              left: { style: 'thin' },
-              bottom: { style: 'thin' },
-              right: { style: 'thin' }
-            };
-          });
-        }
+      const buffer = await workbook.xlsx.writeBuffer();
+      return new NextResponse(new Uint8Array(buffer as ArrayBuffer), {
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Disposition": `attachment; filename="acreditados_completo_${dateStr}.xlsx"`,
+        },
       });
-
-      // Activar filtros automáticos
-      worksheet.autoFilter = {
-        from: 'A1',
-        to: 'R1' // Hasta la columna R (18 columnas)
-      };
     }
-
-    // Generar buffer
-    const buffer = await workbook.xlsx.writeBuffer();
-
-    // Crear respuesta con headers para descarga
-    const response = new NextResponse(buffer);
-    response.headers.set(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    response.headers.set(
-      "Content-Disposition",
-      `attachment; filename="acreditados_${format}_${new Date().toISOString().split("T")[0]}.xlsx"`
-    );
-
-    return response;
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Error al generar Excel",
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error desconocido";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

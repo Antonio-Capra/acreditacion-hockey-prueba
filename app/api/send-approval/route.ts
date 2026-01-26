@@ -55,9 +55,84 @@ export async function POST(req: Request) {
     // 🔐 Email validado y seguro
     const from = getFromEmail();
 
-    const { data, error } = await resend.emails.send({
+    // Determinar instrucciones según la zona
+    const instruccionesAcceso = zona === "Cancha" 
+      ? `
+        <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Acceso Reporteros Gráficos:</h3>
+        <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+          Primero deben acreditarse en Prensa (al sur de la mampara del Hall Central de la Tribuna Livingstone; en caso de que este punto aún no se encuentre habilitado al momento de su llegada, deberán registrarse y retirar su pulsera en Acreditación Staff, al norte de la misma mampara). Luego, deberán trasladarse por fuera del estadio a Logística Norte, donde se encuentra el paso a cancha.
+        </p>
+        <p style="margin: 0 0 15px 0; color: #dc2626; font-weight: 600; line-height: 1.6;">
+          ¡Atención! El ingreso a cancha debe realizarse portando el peto. Ningún reportero gráfico puede acceder a la zona de exclusión durante ni después del partido.
+        </p>
+      `
+      : `
+        <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Acceso: Acreditación Prensa</h3>
+        <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+          Al sur de la mampara del Hall Central de la Tribuna Livingstone (En caso de que este punto aún no se encuentre habilitado al momento de su llegada, deberán registrarse y retirar su pulsera en Acreditación Staff, al norte de la misma mampara).
+        </p>
+        <p style="margin: 0 0 15px 0; color: #dc2626; font-weight: 600; line-height: 1.6;">
+          ¡Atención! Acreditados en Zona 2, sin caseta radial, deberán ubicarse en los pupitres del Piso 6, en el lugar asignado para su medio, sin posibilidad de cambio. Los únicos ascensores que llegan a ese sector son el 2 (sector Sala de Prensa) y el 5.
+        </p>
+      `;
+
+    const informacionComun = `
+      <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Información General</h3>
+      <p style="margin: 0 0 10px 0; color: #4b5563; line-height: 1.6;">
+        <strong>Apertura de puertas:</strong> 18:00 hrs.<br>
+        <strong>Cierre de ingreso de prensa:</strong> 19:30 hrs. (sin excepciones).
+      </p>
+      <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+        Les recomendamos trasladarse e ingresar al recinto con tiempo y anticipación, además de planificar su viaje.
+      </p>
+
+      <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Requisitos de ingreso</h3>
+      <ul style="margin: 0 0 15px 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+        <li>Registro Nacional de Hinchas (RNH).</li>
+        <li>Cédula de Identidad o Pasaporte vigente.</li>
+        <li>Credenciales 2026 emitidas por: ANFP, Círculo de Periodistas Deportivos o Unión de Reporteros Gráficos y Camarógrafos de Chile.</li>
+        <li>Reporteros gráficos: peto oficial obligatorio.</li>
+        <li>Pulsera identificatoria entregada al ingreso, en la zona de acreditación (define la zona autorizada para ejercer la labor).</li>
+      </ul>
+
+      <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Normas de cobertura</h3>
+      <ul style="margin: 0 0 15px 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+        <li>No está permitido grabar imágenes de cancha desde la tribuna, ni realizar despachos en vivo desde el interior del Claro Arena.</li>
+        <li>Los equipos técnicos de medios radiales (con o sin caseta de transmisión) deben instalar su equipamiento y cableado desde las 17:00 hrs.</li>
+        <li>Los RUT quedarán cargados en el sistema de control de acceso. Cada acreditado deberá presentar su cédula de identidad, la cual se validará con Asistente Digital Personal en el acceso.</li>
+        <li>La Sala de Prensa estará habilitada y disponible para el trabajo de los medios. En este espacio se llevarán a cabo las conferencias postpartido de ambos directores técnicos. Las declaraciones de los jugadores se realizarán en la Zona Mixta. Ambas instancias estarán ubicadas en el primer nivel del edificio Livingstone.</li>
+      </ul>
+
+      <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+        Dudas o consultas previas, contactar al Área de Comunicaciones de Cruzados, al correo palarcon@cruzados.cl.
+      </p>
+      <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+        Por favor compartir estas indicaciones de cobertura con sus profesionales.
+      </p>
+
+      <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Estacionamientos</h3>
+      <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+        Para Medios de Comunicación contamos con un cupo limitado de estacionamientos en Estacionamiento República de Honduras. Se les enviará Ticket de Estacionamiento a quienes lo hayan solicitado conforme a las indicaciones de acreditación, y bajo la distribución y los criterios propios del Área de Comunicaciones. Ningún auto puede ingresar al recinto sin su respectivo ticket.
+      </p>
+      <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+        El acceso vehicular exclusivo habilitado será por: República de Honduras.
+      </p>
+      <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
+        Recuerden utilizar únicamente los estacionamientos designados, respetando siempre las vías de acceso y la tranquilidad del vecindario.
+      </p>
+
+      <p style="margin: 0 0 15px 0; color: #dc2626; font-weight: 600; line-height: 1.6;">
+        ***Solicitamos a todos los acreditados mantener un comportamiento respetuoso con colegas, staff y público durante toda su permanencia en el Claro Arena. El buen desarrollo de la jornada depende también de la colaboración y profesionalismo de cada uno.
+      </p>
+      <p style="margin: 0 0 15px 0; color: #dc2626; font-weight: 600; line-height: 1.6;">
+        ***El incumplimiento de cualquiera de las disposiciones o instrucciones del club durante el partido facultará a Universidad Católica a evaluar la participación del/de la profesional en futuros procesos de acreditación.
+      </p>
+    `;
+
+    const { data: _data, error } = await resend.emails.send({
       from,
       to: toEmail,
+      replyTo: "antoniocaprab@gmail.com",
       subject: "✅ Tu acreditación ha sido aprobada",
       html: `
         <!DOCTYPE html>
@@ -101,8 +176,16 @@ export async function POST(req: Request) {
                         Hola <strong>${nombre} ${apellido}</strong>,
                       </p>
 
-                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
+                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
                         Nos complace informarte que tu solicitud de acreditación ha sido <strong style="color: #10b981;">aprobada exitosamente</strong>.
+                      </p>
+
+                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
+                        <strong>Su solicitud de acreditación para el partido Universidad Católica vs. Deportes Concepción a disputarse el domingo 8 de febrero a las 20:00 horas en el Claro Arena, ha sido aceptada.</strong>
+                      </p>
+
+                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
+                        <strong>Ingreso acreditados: Su zona corresponde a: ${zona ?? "Por confirmar"}</strong>
                       </p>
 
                       <!-- Información en tarjetas -->
@@ -130,16 +213,17 @@ export async function POST(req: Request) {
                         </tr>
                       </table>
 
-                      <!-- Instrucciones -->
-                      <div style="background-color: #eff6ff; border-left: 4px solid #1e5799; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                      <!-- Instrucciones de Acceso -->
+                      <div style="background-color: #eff6ff; border-left: 4px solid #1e5799; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                         <p style="margin: 0 0 10px 0; color: #0c4a6e; font-weight: 600; font-size: 15px;">
-                          📋 Próximos pasos:
+                          📋 Instrucciones de Acceso:
                         </p>
-                        <ul style="margin: 0; padding-left: 20px; color: #1e5799; font-size: 14px; line-height: 1.8;">
-                          <li>Guarda este correo como comprobante</li>
-                          <li>Presentate en el evento con tu documento de identidad</li>
-                          <li>Dirígete a la zona de acreditaciones para recoger tu credencial</li>
-                        </ul>
+                        ${instruccionesAcceso}
+                      </div>
+
+                      <!-- Información General -->
+                      <div style="background-color: #f9fafb; border-left: 4px solid #6b7280; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                        ${informacionComun}
                       </div>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0; line-height: 1.6;">
@@ -193,7 +277,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Error interno en send-approval" },
       { status: 500 }

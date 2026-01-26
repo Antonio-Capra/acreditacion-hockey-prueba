@@ -47,7 +47,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.click();
                 window.URL.revokeObjectURL(url);
                 setMessage({ type: "success", text: "Excel completo descargado exitosamente" });
-              } catch (error) {
+              } catch (_error) {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
                 setIsExportingCompleto(false);
@@ -85,11 +85,11 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `acreditados_puntoticket_${new Date().toISOString().split("T")[0]}.xlsx`;
+                link.download = `acreditados_puntoticket_${new Date().toISOString().split("T")[0]}.csv`;
                 link.click();
                 window.URL.revokeObjectURL(url);
-                setMessage({ type: "success", text: "Excel Punto Ticket descargado exitosamente" });
-              } catch (error) {
+                setMessage({ type: "success", text: "CSV Punto Ticket descargado exitosamente" });
+              } catch (_error) {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
                 setIsExportingPuntoTicket(false);
@@ -127,11 +127,11 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `acreditados_puntoticket_filtrado_${new Date().toISOString().split("T")[0]}.xlsx`;
+                link.download = `acreditados_puntoticket_filtrado_${new Date().toISOString().split("T")[0]}.csv`;
                 link.click();
                 window.URL.revokeObjectURL(url);
-                setMessage({ type: "success", text: "Excel Punto Ticket filtrado descargado exitosamente" });
-              } catch (error) {
+                setMessage({ type: "success", text: "CSV Punto Ticket filtrado descargado exitosamente" });
+              } catch (_error) {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
                 setIsExportingPuntoTicketFiltrado(false);

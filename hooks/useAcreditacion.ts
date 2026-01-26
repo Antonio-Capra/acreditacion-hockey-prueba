@@ -134,7 +134,7 @@ export function useAcreditacion() {
       });
 
       if (!response.ok) {
-        let errorData: any = {};
+        let errorData: { error?: string } = {};
         let errorMessage = `Error del servidor: ${response.status}`;
         
         try {

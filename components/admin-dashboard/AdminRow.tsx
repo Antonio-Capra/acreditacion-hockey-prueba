@@ -10,6 +10,7 @@ interface AdminRowProps {
   AREA_NAMES: Record<string, string>;
   ESTADO_COLORS: Record<string, string>;
   onOpenDetail: (acred: Acreditacion) => void;
+  onConfirmAction: (type: "aprobado" | "rechazado", message: string, onConfirm: () => void) => void;
 }
 
 export default function AdminRow({
@@ -18,6 +19,7 @@ export default function AdminRow({
   AREA_NAMES,
   ESTADO_COLORS,
   onOpenDetail,
+  onConfirmAction,
 }: AdminRowProps) {
   const { zonas, assignZonaDirect, updateEstadoDirect } = useAdmin();
   const [showZonaDropdown, setShowZonaDropdown] = useState(false);
@@ -51,6 +53,14 @@ export default function AdminRow({
     e.preventDefault();
     e.stopPropagation();
     handleZonaSelect(zonaId);
+  };
+
+  const handleApproveClick = () => {
+    onConfirmAction("aprobado", `¿Estás seguro de que quieres aprobar la acreditación de ${acred.nombre} ${acred.primer_apellido} de ${acred.empresa}?`, () => updateEstadoDirect(acred, "aprobado"));
+  };
+
+  const handleRejectClick = () => {
+    onConfirmAction("rechazado", `¿Estás seguro de que quieres rechazar la acreditación de ${acred.nombre} ${acred.primer_apellido} de ${acred.empresa}?`, () => updateEstadoDirect(acred, "rechazado"));
   };
 
   const currentZonaName = acred.zona_id 
@@ -143,7 +153,7 @@ export default function AdminRow({
           <button
             type="button"
             title="Aprobar solicitud"
-            onClick={() => updateEstadoDirect(acred, "aprobado")}
+            onClick={handleApproveClick}
             disabled={acred.status === "aprobado"}
             className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -152,7 +162,7 @@ export default function AdminRow({
           <button
             type="button"
             title="Rechazar solicitud"
-            onClick={() => updateEstadoDirect(acred, "rechazado")}
+            onClick={handleRejectClick}
             disabled={acred.status === "rechazado"}
             className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >

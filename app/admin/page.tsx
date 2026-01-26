@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
-import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
 import { AdminProvider, AdminStats, AdminFilters, AdminExportActions, AdminTable, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
@@ -23,6 +22,7 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [zonas, setZonas] = useState<Array<{ id: number; nombre: string }>>([]);
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+  const [confirmActionModal, setConfirmActionModal] = useState<{ isOpen: boolean; type: "aprobado" | "rechazado" | null; message: string }>({ isOpen: false, type: null, message: "" });
   const [successModal, setSuccessModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
   const router = useRouter();
 
@@ -220,6 +220,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApproveClick = () => {
+    if (!selectedAcreditacion) return;
+    setConfirmActionModal({
+      isOpen: true,
+      type: "aprobado",
+      message: `¿Estás seguro de que quieres aprobar la acreditación de ${selectedAcreditacion.nombre} ${selectedAcreditacion.primer_apellido} de ${selectedAcreditacion.empresa}?`
+    });
+  };
+
+  const handleRejectClick = () => {
+    if (!selectedAcreditacion) return;
+    setConfirmActionModal({
+      isOpen: true,
+      type: "rechazado",
+      message: `¿Estás seguro de que quieres rechazar la acreditación de ${selectedAcreditacion.nombre} ${selectedAcreditacion.primer_apellido} de ${selectedAcreditacion.empresa}?`
+    });
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmActionModal.type) {
+      updateEstado(confirmActionModal.type);
+      setConfirmActionModal({ isOpen: false, type: null, message: "" });
+    }
+  };
+
+  const handleCancelAction = () => {
+    setConfirmActionModal({ isOpen: false, type: null, message: "" });
+  };
+
   // Delete acreditacion
   const deleteAcreditacion = async () => {
     if (!selectedAcreditacion) return;
@@ -312,7 +341,7 @@ export default function AdminDashboard() {
       
       // Update local state instead of refetching
       setAcreditaciones(prev => prev.map(a => 
-        a.id === acred.id ? { ...a, zona_id: zonaId } : a
+        a.id === acred.id ? { ...a, zona_id: zonaId ?? undefined } : a
       ));
 
       setTimeout(() => {
@@ -659,14 +688,14 @@ export default function AdminDashboard() {
                     Pendiente
                   </button>
                   <button
-                    onClick={() => updateEstado("aprobado")}
+                    onClick={handleApproveClick}
                     disabled={isProcessing || selectedAcreditacion.status === "aprobado"}
                     className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Aprobar
                   </button>
                   <button
-                    onClick={() => updateEstado("rechazado")}
+                    onClick={handleRejectClick}
                     disabled={isProcessing || selectedAcreditacion.status === "rechazado"}
                     className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -702,6 +731,16 @@ export default function AdminDashboard() {
         cancelText="Cancelar"
         onConfirm={deleteAcreditacion}
         onCancel={() => setConfirmDeleteModal(false)}
+        isLoading={isProcessing}
+      />
+
+      {/* Modal de confirmación para aprobar/rechazar */}
+      <ConfirmationModal
+        isOpen={confirmActionModal.isOpen}
+        title={confirmActionModal.type === "aprobado" ? "Confirmar Aprobación" : "Confirmar Rechazo"}
+        message={confirmActionModal.message}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCancelAction}
         isLoading={isProcessing}
       />
 
