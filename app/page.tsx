@@ -26,7 +26,7 @@ export default function LandingPage() {
       <BotonFlotante />
 
       {/* Hero Section con Background */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -41,24 +41,24 @@ export default function LandingPage() {
         <div className="absolute inset-0 hero-overlay"></div>
 
         {/* Content - Layout con centro libre */}
-        <div className="relative z-10 container mx-auto px-4 h-screen flex flex-col justify-between py-8">
+        <div className="relative z-10 container mx-auto px-4 min-h-screen max-w-screen-xl flex flex-col flex-grow justify-around gap-y-8 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20">
             
             {/* Top Section - Título con badge e info del evento */}
-            <div className="text-left text-white pt-4 pl-4 md:pl-8">
+            <div className="text-left text-white pt-4 pl-2 sm:pl-4 md:pl-8">
                 {/* Badge Superior e Info del Evento en línea */}
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                    {/* Badge Superior */}
-                    <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
-                        style={{
-                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                            border: `1px solid var(--azul-mas-claro)`
-                    }}>
-                        <i className="fas fa-futbol mr-2" style={{color: 'white'}}></i>
-                        Partido Oficial
-                    </div>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
+                    {/* Grupo de badge e info del evento */}
+                    <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base lg:text-lg">
+                        {/* Badge Superior */}
+                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
+                            style={{
+                                background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                border: `1px solid var(--azul-mas-claro)`
+                        }}>
+                            <i className="fas fa-futbol mr-2" style={{color: 'white'}}></i>
+                            Partido Oficial
+                        </div>
 
-                    {/* Información del evento - al lado del badge */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm md:text-base">
                         {/* Fecha */}
                         <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
                             style={{
@@ -92,14 +92,14 @@ export default function LandingPage() {
                 </div>
 
                 {/* Título compacto */}
-                <h1 className="text-3xl md:text-5xl font-bold mb-2 leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 leading-tight">
                     <span className="block text-white drop-shadow-2xl">Universidad Católica</span>
                 </h1>
 
                 {/* VS y rival en una línea */}
-                <div className="flex items-center gap-3">
-                    <span className="text-xl md:text-2xl font-light tracking-wide" style={{color: 'var(--azul-claro)'}}>vs</span>
-                    <h2 className="text-xl md:text-3xl font-bold text-white opacity-90">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light tracking-wide" style={{color: 'var(--azul-claro)'}}>vs</span>
+                    <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white opacity-90">
                         Deportes Concepción
                     </h2>
                 </div>
@@ -108,37 +108,36 @@ export default function LandingPage() {
             {/* Centro completamente vacío - aquí está la cara del jugador */}
 
             {/* Bottom Section - Todo el evento abajo */}
-            <div className="text-white pb-6">
+            <div className="text-white pb-6 flex flex-col items-center w-full">
                 
                 {/* Shields Section */}
-                <div className="flex items-center justify-center gap-8 sm:gap-16 md:gap-20 mb-12">
+                <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-12 lg:gap-16 xl:gap-20 mb-4 sm:mb-8 w-full">
                   {/* Universidad Católica */}
-                  <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
-                    <Image
-                      src="/UCimg/UCEscudo2.png"
-                      alt="Escudo Universidad Católica"
-                      width={300}
-                      height={300}
-                      className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain"
-                    />
-                  </div>
+                                    <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                                        <Image
+                                                        src="/UCimg/UCEscudo2.png"
+                                                        alt="Escudo Universidad Católica"
+                                                        width={300}
+                                                        height={300}
+                                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                        />
+                                    </div>
 
                   {/* VS */}
-                  <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-white drop-shadow-lg">
-                    VS
-                  </div>
+                                    <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white drop-shadow-lg">
+                                        VS
+                                    </div>
 
                   {/* Deportes Concepción */}
-                  <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
-                    <Image
-                      src="/UCimg/EscudoConce.png"
-                      alt="Escudo Deportes Concepción"
-                      width={300}
-                      height={300}
-                      className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain"
-                    />
-                    
-                  </div>
+                                    <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                                        <Image
+                                                        src="/UCimg/EscudoConce.png"
+                                                        alt="Escudo Deportes Concepción"
+                                                        width={300}
+                                                        height={300}
+                                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                        />
+                                    </div>
                 </div>
                 
                 {/* CTA Principal - Más elegante */}
@@ -147,7 +146,7 @@ export default function LandingPage() {
                         href="/acreditacion"
                         prefetch={true}
                         onClick={handleNavigate}
-                        className="group relative inline-flex items-center gap-2 px-8 py-3 text-white text-base md:text-xl font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 btn-glow overflow-hidden"
+                        className="group relative inline-flex items-center gap-2 px-6 sm:px-8 py-2 sm:py-3 text-white text-sm sm:text-base md:text-xl font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 btn-glow overflow-hidden"
                         style={{
                             background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
                             border: `1px solid var(--azul-mas-claro)`
@@ -155,9 +154,9 @@ export default function LandingPage() {
                         <span className="absolute inset-0 w-full h-full transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
                             style={{background: `linear-gradient(135deg, var(--azul-medio) 0%, var(--azul-mas-claro) 100%)`}}>
                         </span>
-                        <i className="fas fa-ticket-alt relative z-10 text-2xl group-hover:translate-x-1 transition-transform duration-300"></i>
-                        <span className="relative z-10 text-2xl">Acredítate: haz clic aquí</span>
-                        <i className="fas fa-arrow-right relative z-10 text-2xl group-hover:translate-x-2 transition-transform duration-300"></i>
+                        <i className="fas fa-ticket-alt relative z-10 text-lg sm:text-xl md:text-2xl group-hover:translate-x-1 transition-transform duration-300"></i>
+                        <span className="relative z-10 text-lg sm:text-xl md:text-2xl">Acredítate: haz clic aquí</span>
+                        <i className="fas fa-arrow-right relative z-10 text-lg sm:text-xl md:text-2xl group-hover:translate-x-2 transition-transform duration-300"></i>
                     </Link>
                 </div>
             </div>
