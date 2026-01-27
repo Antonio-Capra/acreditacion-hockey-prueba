@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     const { error } = await resend.emails.send({
       from,
       to: toEmail,
-      replyTo: "antoniocaprab@gmail.com",
+      replyTo: "palarcon@cruzados.cl",
       subject: "❌ Tu acreditación ha sido rechazada",
       html: `
         <!DOCTYPE html>
