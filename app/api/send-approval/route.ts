@@ -129,7 +129,7 @@ export async function POST(req: Request) {
       </p>
     `;
 
-    const { data: _data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from,
       to: toEmail,
       replyTo: "antoniocaprab@gmail.com",
@@ -273,7 +273,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (_err) {
+  } catch {
     return NextResponse.json(
       { error: "Error interno en send-approval" },
       { status: 500 }

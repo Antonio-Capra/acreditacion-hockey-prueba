@@ -1,7 +1,6 @@
 // app/page.tsx
 "use client";
 import Link from "next/link";
-import Head from "next/head";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -22,7 +21,7 @@ export default function LandingPage() {
     return (
         <>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Special+Gothic+Condensed+One&display=swap');
+                {`@import url("https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Special+Gothic+Condensed+One&display=swap");`}
             </style>
             <div className="relative min-h-screen">
                 {isNavigating && <LoadingSpinner message="Cargando..." />}
@@ -175,9 +174,9 @@ export default function LandingPage() {
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                             {/* Logos y unión */}
                             <div className="flex items-center gap-4">
-                                <img src="/UCimg/LogoUC.png" alt="Logo Cruzados" className="h-10 w-auto object-contain" />
+                                <Image src="/UCimg/LogoUC.png" alt="Logo Cruzados" width={80} height={40} className="h-10 w-auto object-contain" />
                                 <span className="text-md font-extrabold select-none drop-shadow-lg" style={{ fontFamily: "Special Gothic Condensed One", color: 'var(--azul-claro)' }}>&</span>
-                                <img src="/UCimg/ClaroArenaL.png" alt="Logo Claro Arena" className="h-10 w-auto object-contain" />
+                                <Image src="/UCimg/ClaroArenaL.png" alt="Logo Claro Arena" width={80} height={40} className="h-10 w-auto object-contain" />
                             </div>
 
                             {/* Copyright dinámico */}

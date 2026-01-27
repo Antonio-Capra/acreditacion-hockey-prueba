@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     // 🔐 Email validado y seguro
     const from = getFromEmail();
 
-    const { data: _data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from,
       to: toEmail,
       replyTo: "antoniocaprab@gmail.com",
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (_err) {
+  } catch {
     return NextResponse.json(
       { error: "Error interno en send-rejection" },
       { status: 500 }

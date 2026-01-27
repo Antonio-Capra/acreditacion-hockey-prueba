@@ -113,7 +113,7 @@ function createEmptyAcreditado(): Acreditado {
 }
 
 export default function AcreditacionPage() {
-  const { areas, loading: areasLoading, error: areasError, cuposError, closeCuposError, submitAcreditacion } = useAcreditacion();
+  const { areas, loading: areasLoading, cuposError, closeCuposError, submitAcreditacion, error: areasError } = useAcreditacion();
   
   const [formData, setFormData] = useState<FormData>({
     responsable_nombre: "",
@@ -344,8 +344,12 @@ export default function AcreditacionPage() {
         // Modal is already shown by the hook, no need to do anything else
       }
 
-    } catch (_error) {
-      setSubmissionStatus({ type: "error", message: "Error al enviar la acreditación" });
+    } catch (err) {
+      let msg = "Error al enviar la acreditación";
+      if (err instanceof Error && err.message.includes("23505")) {
+        msg = "Ya existe una acreditación para este RUT, empresa y área en este evento.";
+      }
+      setSubmissionStatus({ type: "error", message: msg });
     } finally {
       setIsSubmitting(false);
     }
@@ -512,7 +516,7 @@ export default function AcreditacionPage() {
                 <option value="">Seleccionar Área</option>
                 {areas.map((area) => (
                   <option key={area.codigo} value={area.codigo}>
-                    {area.codigo === 'VISITA'
+                    {area.codigo === 'H'
                       ? area.nombre
                       : `${area.nombre} (${area.cupos} ${area.cupos === 1 ? 'cupo' : 'cupos'})`}
                   </option>
@@ -523,7 +527,7 @@ export default function AcreditacionPage() {
             {selectedArea && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.codigo === 'VISITA' ? 9 : selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
+                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
                 </p>
               </div>
             )}
@@ -537,7 +541,7 @@ export default function AcreditacionPage() {
           >
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
-                Acreditaciones a registrar: {formData.acreditados.length} de {selectedArea?.codigo === 'VISITA' ? 9 : selectedArea?.cupos || 0} disponibles.
+                Acreditaciones a registrar: {formData.acreditados.length} de {selectedArea?.cupos || 0} disponibles.
               </p>
             </div>
             {formData.acreditados.length < (selectedArea?.cupos || 0) && (

@@ -47,7 +47,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.click();
                 window.URL.revokeObjectURL(url);
                 setMessage({ type: "success", text: "Excel completo descargado exitosamente" });
-              } catch (_error) {
+              } catch {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
                 setIsExportingCompleto(false);
@@ -89,7 +89,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.click();
                 window.URL.revokeObjectURL(url);
                 setMessage({ type: "success", text: "CSV Punto Ticket descargado exitosamente" });
-              } catch (_error) {
+              } catch {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
                 setIsExportingPuntoTicket(false);
@@ -131,7 +131,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 link.click();
                 window.URL.revokeObjectURL(url);
                 setMessage({ type: "success", text: "CSV Punto Ticket filtrado descargado exitosamente" });
-              } catch (_error) {
+              } catch {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
                 setIsExportingPuntoTicketFiltrado(false);

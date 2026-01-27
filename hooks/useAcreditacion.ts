@@ -41,7 +41,7 @@ const FALLBACK_AREAS: Area[] = [
   { codigo: "E", nombre: "Medios Escritos", cupos: 2 },
   { codigo: "F", nombre: "Agencias", cupos: 1 },
   { codigo: "G", nombre: "Reportero gráfico cancha", cupos: 1 },
-    { codigo: "VISITA", nombre: "Equipo de Comunicaciones Club Visita", cupos: 9 }, // cupos: 9, pero no mostrar en el select
+    { codigo: "H", nombre: "Equipo de Comunicaciones Club Visita", cupos: 9 }, // cupos: 9, pero no mostrar en el select
 ];
 
 export function useAcreditacion() {
