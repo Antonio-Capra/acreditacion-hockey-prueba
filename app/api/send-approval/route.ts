@@ -181,11 +181,7 @@ export async function POST(req: Request) {
                       </p>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
-                        <strong>Su solicitud de acreditación para el partido Universidad Católica vs. Deportes Concepción a disputarse el domingo 8 de febrero a las 20:00 horas en el Claro Arena, ha sido aceptada.</strong>
-                      </p>
-
-                      <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
-                        <strong>Ingreso acreditados: Su zona corresponde a: ${zona ?? "Por confirmar"}</strong>
+                        <strong>Su solicitud de acreditación para el partido Universidad Católica vs. Deportes Concepción a disputarse el domingo 8 de febrero a las 20:30 horas en el Claro Arena, ha sido aceptada.</strong>
                       </p>
 
                       <!-- Información en tarjetas -->

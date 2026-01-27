@@ -40,7 +40,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
 
         {/* Content */}
         <div className="px-6 py-4">
-          <p className="text-gray-600 mb-4 text-base">
+          <p className="text-gray-600 mb-4 text-xl md:text-2xl">
             Antes de continuar, por favor revise completamente los términos y condiciones para el proceso de acreditación.
           </p>
 
@@ -50,11 +50,11 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
             onScroll={handleScroll}
             className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-[#1e5799]/30 scrollbar-track-gray-100 scrollbar-thumb-rounded-full hover:scrollbar-thumb-[#1e5799]/50 transition-colors"
           >
-            <div className="space-y-4 text-base text-gray-700 pr-2">
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm">
+            <div className="space-y-4 text-xl md:text-2xl text-gray-700 pr-2">
+              <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-blue-800 flex items-center gap-2">
-                    <span className="text-xl">📋</span>
+                    <span className="text-3xl">📋</span>
                     <span>Proceso de Acreditación</span>
                   </p>
                   <p className="text-blue-700 leading-relaxed">
@@ -63,34 +63,34 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
                 </div>
               </div>
 
-              <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 shadow-sm">
+              <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-yellow-800 flex items-center gap-2">
-                    <span className="text-xl">⏰</span>
+                    <span className="text-3xl">⏰</span>
                     <span>Plazo de Acreditación</span>
                   </p>
                   <p className="text-yellow-700 leading-relaxed">
-                    Desde el lunes 26 de enero hasta el 05 de febrero a las 18:00 hrs, sin excepción. No se aceptarán solicitudes fuera de plazo.
+                    Desde el lunes 02 de febrero, hasta el jueves 05 a las 12:30 horas; sin excepción. No se aceptarán solicitudes fuera de plazo.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm">
+              <div className="bg-red-50 p-6 rounded-xl border border-red-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-red-800 flex items-center gap-2">
-                    <span className="text-xl">⚠️</span>
+                    <span className="text-3xl">⚠️</span>
                     <span>Restricciones de Cupos</span>
                   </p>
                   <p className="text-red-700 leading-relaxed">
-                    Cruzados no aceptará solicitudes con más inscritos que el número indicado en los cupos.
+                    Cruzados no aceptará solicitudes con más inscritos que el cupo asignado según corresponda a su tipo de medio.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm">
+              <div className="bg-green-50 p-6 rounded-xl border border-green-200 shadow-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-green-800 flex items-center gap-2">
-                    <span className="text-xl">📞</span>
+                    <span className="text-3xl">📞</span>
                     <span>Excepciones y Consultas</span>
                   </p>
                   <p className="text-green-700 leading-relaxed">

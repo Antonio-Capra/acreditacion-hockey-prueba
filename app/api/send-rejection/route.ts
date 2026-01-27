@@ -103,7 +103,7 @@ export async function POST(req: Request) {
                       </p>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
-                        Debido a la capacidad limitada de espacios disponibles en prensa para el partido Universidad Católica vs Deportes Concepción a disputarse el domingo 8 de febrero a las 20:00 horas en el Claro Arena, lamentamos informarle que su(s) acreditación(ones) ha(n) sido rechazada(s).
+                        Debido a la capacidad limitada de espacios disponibles en prensa para el partido Universidad Católica vs Deportes Concepción a disputarse el domingo 8 de febrero a las 20:30 horas en el Claro Arena, lamentamos informarle que su(s) acreditación(ones) ha(n) sido rechazada(s).
                       </p>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">

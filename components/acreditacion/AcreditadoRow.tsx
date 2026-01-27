@@ -88,9 +88,16 @@ export default function AcreditadoRow({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input
           type="text"
-          placeholder="RUT"
+          placeholder="RUT (sin puntos, con guion. Ej: 18274356-7)"
           value={acreditado.rut}
-          onChange={(e) => onChange(index, "rut", e.target.value)}
+          pattern="^[0-9]{7,8}-[0-9kK]{1}$"
+          title="RUT sin puntos, con guion. Ej: 18274356-7"
+          onChange={(e) => {
+            // Solo permitir números, guion y k/K, y quitar puntos automáticamente
+            let value = e.target.value.replace(/\./g, "");
+            value = value.replace(/[^0-9kK\-]/g, "");
+            onChange(index, "rut", value);
+          }}
           className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
           required
         />
@@ -120,14 +127,17 @@ export default function AcreditadoRow({
           ))}
         </select>
 
-        <input
-          type="text"
-          placeholder="Tipo de Credencial"
+        <select
           value={acreditado.tipo_credencial}
           onChange={(e) => onChange(index, "tipo_credencial", e.target.value)}
           className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
           required
-        />
+        >
+          <option value="">Seleccionar Tipo de Credencial</option>
+          <option value="Credencial ANFP">Credencial ANFP</option>
+          <option value="Círculo de Periodistas Deportivo">Círculo de Periodistas Deportivo</option>
+          <option value="Unión de Reporteros Gráficos">Unión de Reporteros Gráficos</option>
+        </select>
 
         <input
           type="text"

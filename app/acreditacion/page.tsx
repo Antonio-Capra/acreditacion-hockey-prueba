@@ -437,10 +437,14 @@ export default function AcreditacionPage() {
               />
               <input
                 type="text"
-                placeholder="RUT"
+                placeholder="RUT (sin puntos, con guion. Ej: 18274356-7)"
                 value={formData.responsable_rut}
+                pattern="^[0-9]{7,8}-[0-9kK]{1}$"
+                title="RUT sin puntos, con guion. Ej: 18274356-7"
                 onChange={(e) => {
-                  handleResponsableChange("responsable_rut", e.target.value);
+                  let value = e.target.value.replace(/\./g, "");
+                  value = value.replace(/[^0-9kK\-]/g, "");
+                  handleResponsableChange("responsable_rut", value);
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
@@ -493,8 +497,8 @@ export default function AcreditacionPage() {
           {/* Sección Cupos por área del medio */}
           <FormSection
             stepNumber={2}
-            title="Cupos por área del medio"
-            description="Seleccione el área para la que solicita cupos"
+            title="Seleccione la categoría a la que corresponde su medio"
+            description="Esta elección le asignará la cantidad de cupos que puede solicitar"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <select
@@ -508,7 +512,9 @@ export default function AcreditacionPage() {
                 <option value="">Seleccionar Área</option>
                 {areas.map((area) => (
                   <option key={area.codigo} value={area.codigo}>
-                    {area.nombre} ({area.cupos} {area.cupos === 1 ? 'cupo' : 'cupos'})
+                    {area.codigo === 'VISITA'
+                      ? area.nombre
+                      : `${area.nombre} (${area.cupos} ${area.cupos === 1 ? 'cupo' : 'cupos'})`}
                   </option>
                 ))}
               </select>
@@ -517,7 +523,7 @@ export default function AcreditacionPage() {
             {selectedArea && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
+                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.codigo === 'VISITA' ? 9 : selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
                 </p>
               </div>
             )}
@@ -531,7 +537,7 @@ export default function AcreditacionPage() {
           >
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
-                Acreditaciones a registrar: {formData.acreditados.length} de {selectedArea?.cupos || 0} disponibles.
+                Acreditaciones a registrar: {formData.acreditados.length} de {selectedArea?.codigo === 'VISITA' ? 9 : selectedArea?.cupos || 0} disponibles.
               </p>
             </div>
             {formData.acreditados.length < (selectedArea?.cupos || 0) && (
@@ -601,10 +607,13 @@ export default function AcreditacionPage() {
         ]}
         onClose={handleSuccessModalClose}
       >
-        <div className="mt-4 space-y-2 text-sm text-gray-600">
-          <p><strong>Empresa:</strong> {getEmpresaDisplay()}</p>
-          <p><strong>Área:</strong> {selectedArea?.nombre}</p>
-          <p><strong>Acreditados registrados:</strong> {successModal.acreditados_count}</p>
+        <div className="mt-4 space-y-3 text-lg md:text-xl text-gray-800">
+          <p className="text-red-700 font-bold text-lg md:text-xl">
+            La solicitud de acreditación no garantiza la obtención de la misma. La resolución será informada vía correo electrónico.
+          </p>
+          <p><span className="font-semibold">Empresa:</span> {getEmpresaDisplay()}</p>
+          <p><span className="font-semibold">Área:</span> {selectedArea?.nombre}</p>
+          <p><span className="font-semibold">Acreditados registrados:</span> {successModal.acreditados_count}</p>
         </div>
       </Modal>
 

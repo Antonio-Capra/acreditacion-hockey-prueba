@@ -1,6 +1,7 @@
 // app/page.tsx
 "use client";
 import Link from "next/link";
+import Head from "next/head";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -9,203 +10,209 @@ import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotan
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function LandingPage() {
-  const [isNavigating, setIsNavigating] = useState(false);
-  const router = useRouter();
+    const [isNavigating, setIsNavigating] = useState(false);
+    const router = useRouter();
 
-  const handleNavigate = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    setIsNavigating(true);
-    router.push("/acreditacion");
-  };
+    const handleNavigate = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        setIsNavigating(true);
+        router.push("/acreditacion");
+    };
 
-  return (
-    <div className="relative min-h-screen">
-      {isNavigating && <LoadingSpinner message="Cargando..." />}
+    return (
+        <>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Special+Gothic+Condensed+One&display=swap');
+            </style>
+            <div className="relative min-h-screen">
+                {isNavigating && <LoadingSpinner message="Cargando..." />}
 
-      <IconoFlotanteAdmin />
-      <BotonFlotante />
+                <IconoFlotanteAdmin />
+                <BotonFlotante />
 
-      {/* Hero Section con Background */}
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
-        <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-                backgroundImage: "url('/UCimg/Claro.jpg')",
-                backgroundPosition: 'center',
-                backgroundSize: 'cover'
-            }}
-        ></div>
-        
-        {/* Overlay oscuro */}
-        <div className="absolute inset-0 hero-overlay"></div>
+                {/* Hero Section con Background */}
+                <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+                    {/* Background Image */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                            backgroundImage: "url('/UCimg/Claro.jpg')",
+                            backgroundPosition: 'center',
+                            backgroundSize: 'cover'
+                        }}
+                    ></div>
 
-        {/* Content - Layout con centro libre */}
-        <div className="relative z-10 container mx-auto px-4 min-h-screen max-w-screen-xl flex flex-col flex-grow justify-around gap-y-8 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20">
-            
-            {/* Top Section - Título con badge e info del evento */}
-            <div className="text-left text-white pt-4 pl-2 sm:pl-4 md:pl-8">
-                {/* Badge Superior e Info del Evento en línea */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
-                    {/* Grupo de badge e info del evento */}
-                    <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base lg:text-lg">
-                        {/* Badge Superior */}
-                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
-                            style={{
-                                background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                                border: `1px solid var(--azul-mas-claro)`
-                        }}>
-                            <i className="fas fa-futbol mr-2" style={{color: 'white'}}></i>
-                            Partido Oficial
+                    {/* Overlay oscuro */}
+                    <div className="absolute inset-0 hero-overlay"></div>
+
+                    {/* Content - Layout con centro libre */}
+                    <div className="relative z-10 container mx-auto px-4 min-h-screen max-w-screen-xl flex flex-col flex-grow justify-around gap-y-8 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20">
+
+                        {/* Top Section - Título con badge e info del evento */}
+                        <div className="text-left text-white pt-4 pl-2 sm:pl-4 md:pl-8">
+                            {/* Badge Superior e Info del Evento en línea */}
+                            <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-3 sm:mb-6">
+                                {/* Grupo de badge e info del evento */}
+                                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base md:text-lg lg:text-xl">
+                                    {/* Badge Superior */}
+                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
+                                        style={{
+                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                            border: `2px solid var(--azul-mas-claro)`
+                                        }}>
+                                        <i className="fas fa-futbol mr-3" style={{ color: 'white', fontSize: '1.4em' }}></i>
+                                        Liga de Primera Mercado Libre
+                                    </div>
+
+                                    {/* Fecha */}
+                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
+                                        style={{
+                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                            border: `2px solid var(--azul-mas-claro)`
+                                        }}>
+                                        <i className="fas fa-calendar-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
+                                        <span className="font-semibold">Domingo 8 Febrero</span>
+                                    </div>
+
+                                    {/* Hora */}
+                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
+                                        style={{
+                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                            border: `2px solid var(--azul-mas-claro)`
+                                        }}>
+                                        <i className="fas fa-clock mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
+                                        <span className="font-semibold">20:30 hrs</span>
+                                    </div>
+
+                                    {/* Estadio */}
+                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
+                                        style={{
+                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                            border: `2px solid var(--azul-mas-claro)`
+                                        }}>
+                                        <i className="fas fa-map-marker-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
+                                        <span className="font-semibold">Claro Arena</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Título compacto */}
+                            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 leading-tight">
+                                <span className="block text-white drop-shadow-2xl">Universidad Católica</span>
+                            </h1>
+
+                            {/* VS y rival en una línea */}
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light tracking-wide" style={{ color: 'var(--azul-claro)' }}>vs</span>
+                                <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white opacity-90">
+                                    Deportes Concepción
+                                </h2>
+                            </div>
                         </div>
 
-                        {/* Fecha */}
-                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
-                            style={{
-                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                            border: `1px solid var(--azul-mas-claro)`
-                        }}>
-                            <i className="fas fa-calendar-alt text-base mr-2" style={{color: 'white'}}></i>
-                            <span className="font-medium">Domingo 8 Febrero</span>
-                        </div>
+                        {/* Centro completamente vacío - aquí está la cara del jugador */}
 
-                        {/* Hora */}
-                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
-                            style={{
-                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                            border: `1px solid var(--azul-mas-claro)`
-                        }}>
-                            <i className="fas fa-clock text-base mr-2" style={{color: 'white'}}></i>
-                            <span className="font-medium">18:00 hrs</span>
-                        </div>
+                        {/* Bottom Section - Todo el evento abajo */}
+                        <div className="text-white pb-6 flex flex-col items-center w-full">
 
-                        {/* Estadio */}
-                        <div className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
-                            style={{
-                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                            border: `1px solid var(--azul-mas-claro)`
-                        }}>
-                            <i className="fas fa-map-marker-alt text-base mr-2" style={{color: 'white'}}></i>
-                            <span className="font-medium">Claro Arena</span>
+                            {/* Shields Section */}
+                            <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-12 lg:gap-16 xl:gap-20 mb-4 sm:mb-8 w-full">
+                                {/* Universidad Católica */}
+                                <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                                    <Image
+                                        src="/UCimg/EscudoUC1.png"
+                                        alt="Escudo Universidad Católica"
+                                        width={300}
+                                        height={300}
+                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                    />
+                                </div>
+
+                                {/* VS */}
+                                <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white drop-shadow-lg">
+                                    VS
+                                </div>
+
+                                {/* Deportes Concepción */}
+                                <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                                    <Image
+                                        src="/UCimg/EscudoConce.png"
+                                        alt="Escudo Deportes Concepción"
+                                        width={300}
+                                        height={300}
+                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* CTA Principal - Más elegante */}
+                            <div className="text-center mb-6">
+                                <Link
+                                    href="/acreditacion"
+                                    prefetch={true}
+                                    onClick={handleNavigate}
+                                    className="group relative inline-flex items-center gap-2 px-6 sm:px-8 py-2 sm:py-3 text-white text-sm sm:text-base md:text-xl font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 btn-glow overflow-hidden"
+                                    style={{
+                                        background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                        border: `1px solid var(--azul-mas-claro)`
+                                    }}>
+                                    <span className="absolute inset-0 w-full h-full transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+                                        style={{ background: `linear-gradient(135deg, var(--azul-medio) 0%, var(--azul-mas-claro) 100%)` }}>
+                                    </span>
+                                    <i className="fas fa-ticket-alt relative z-10 text-lg sm:text-xl md:text-2xl group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span className="relative z-10 text-lg sm:text-xl md:text-2xl">Acredítate: haz clic aquí</span>
+                                    <i className="fas fa-arrow-right relative z-10 text-lg sm:text-xl md:text-2xl group-hover:translate-x-2 transition-transform duration-300"></i>
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                {/* Título compacto */}
-                <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 leading-tight">
-                    <span className="block text-white drop-shadow-2xl">Universidad Católica</span>
-                </h1>
+                {/* Footer Minimalista */}
+                <footer className="relative text-white py-6"
+                    style={{ background: 'linear-gradient(180deg, rgba(30, 87, 153, 0.95) 0%, var(--azul-oscuro) 100%)' }}>
+                    <div className="container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                            {/* Logos y unión */}
+                            <div className="flex items-center gap-4">
+                                <img src="/UCimg/LogoUC.png" alt="Logo Cruzados" className="h-10 w-auto object-contain" />
+                                <span className="text-md font-extrabold select-none drop-shadow-lg" style={{ fontFamily: "Special Gothic Condensed One", color: 'var(--azul-claro)' }}>&</span>
+                                <img src="/UCimg/ClaroArenaL.png" alt="Logo Claro Arena" className="h-10 w-auto object-contain" />
+                            </div>
 
-                {/* VS y rival en una línea */}
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light tracking-wide" style={{color: 'var(--azul-claro)'}}>vs</span>
-                    <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white opacity-90">
-                        Deportes Concepción
-                    </h2>
-                </div>
+                            {/* Copyright dinámico */}
+                            <div className="text-center md:text-right">
+                                <span className="text-sm text-white opacity-80">
+                                    © {new Date().getFullYear()} Desarrolado por Accredia para Cruzados. © Todos los derechos reservados.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Separador */}
+                        <div className="mt-4 pt-4 border-t border-white border-opacity-20 text-center">
+                            <div className="flex justify-center gap-5 text-white">
+                                <a href="https://www.facebook.com/cruzados.cl/?locale=es_LA" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
+                                    style={{ color: 'var(--azul-claro)' }}>
+                                    <i className="fab fa-facebook text-xl"></i>
+                                </a>
+                                <a href="https://x.com/Cruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
+                                    style={{ color: 'var(--azul-claro)' }}>
+                                    <i className="fab fa-twitter text-xl"></i>
+                                </a>
+                                <a href="https://www.instagram.com/cruzados_oficial/?hl=es-la" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
+                                    style={{ color: 'var(--azul-claro)' }}>
+                                    <i className="fab fa-instagram text-lg"></i>
+                                </a>
+                                <a href="https://www.youtube.com/user/OficialCruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
+                                    style={{ color: 'var(--azul-claro)' }}>
+                                    <i className="fab fa-youtube text-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
             </div>
-
-            {/* Centro completamente vacío - aquí está la cara del jugador */}
-
-            {/* Bottom Section - Todo el evento abajo */}
-            <div className="text-white pb-6 flex flex-col items-center w-full">
-                
-                {/* Shields Section */}
-                <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-12 lg:gap-16 xl:gap-20 mb-4 sm:mb-8 w-full">
-                  {/* Universidad Católica */}
-                                    <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
-                                        <Image
-                                                        src="/UCimg/UCEscudo2.png"
-                                                        alt="Escudo Universidad Católica"
-                                                        width={300}
-                                                        height={300}
-                                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
-                                        />
-                                    </div>
-
-                  {/* VS */}
-                                    <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white drop-shadow-lg">
-                                        VS
-                                    </div>
-
-                  {/* Deportes Concepción */}
-                                    <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
-                                        <Image
-                                                        src="/UCimg/EscudoConce.png"
-                                                        alt="Escudo Deportes Concepción"
-                                                        width={300}
-                                                        height={300}
-                                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
-                                        />
-                                    </div>
-                </div>
-                
-                {/* CTA Principal - Más elegante */}
-                <div className="text-center mb-6">
-                    <Link
-                        href="/acreditacion"
-                        prefetch={true}
-                        onClick={handleNavigate}
-                        className="group relative inline-flex items-center gap-2 px-6 sm:px-8 py-2 sm:py-3 text-white text-sm sm:text-base md:text-xl font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 btn-glow overflow-hidden"
-                        style={{
-                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                            border: `1px solid var(--azul-mas-claro)`
-                        }}>
-                        <span className="absolute inset-0 w-full h-full transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                            style={{background: `linear-gradient(135deg, var(--azul-medio) 0%, var(--azul-mas-claro) 100%)`}}>
-                        </span>
-                        <i className="fas fa-ticket-alt relative z-10 text-lg sm:text-xl md:text-2xl group-hover:translate-x-1 transition-transform duration-300"></i>
-                        <span className="relative z-10 text-lg sm:text-xl md:text-2xl">Acredítate: haz clic aquí</span>
-                        <i className="fas fa-arrow-right relative z-10 text-lg sm:text-xl md:text-2xl group-hover:translate-x-2 transition-transform duration-300"></i>
-                    </Link>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      {/* Footer Minimalista */}
-      <footer className="relative text-white py-6"
-          style={{background: 'linear-gradient(180deg, rgba(30, 87, 153, 0.95) 0%, var(--azul-oscuro) 100%)'}}>
-          <div className="container mx-auto px-4">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  {/* Logo o Nombre */}
-                  <div className="flex items-center gap-3">
-                      <i className="fas fa-shield-alt text-2xl" style={{color: 'var(--azul-claro)'}}></i>
-                      <span className="text-lg font-semibold">Club Deportivo Universidad Católica</span>
-                  </div>
-
-                  {/* Copyright dinámico */}
-                  <div className="text-center md:text-right">
-                      <span className="text-sm text-white opacity-80">
-                          © {new Date().getFullYear()} Desarrolado por Accredia para Universidad Católica. © Todos los derechos reservados.
-                      </span>
-                  </div>
-              </div>
-
-              {/* Separador */}
-              <div className="mt-4 pt-4 border-t border-white border-opacity-20 text-center">
-                  <div className="flex justify-center gap-5 text-white">
-                      <a href="https://www.facebook.com/cruzados.cl/?locale=es_LA" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110" 
-                          style={{color: 'var(--azul-claro)'}}>
-                          <i className="fab fa-facebook text-xl"></i>
-                      </a>
-                      <a href="https://x.com/Cruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
-                          style={{color: 'var(--azul-claro)'}}>
-                          <i className="fab fa-twitter text-xl"></i>
-                      </a>
-                      <a href="https://www.instagram.com/cruzados_oficial/?hl=es-la" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
-                          style={{color: 'var(--azul-claro)'}}>
-                          <i className="fab fa-instagram text-lg"></i>
-                      </a>
-                      <a href="https://www.youtube.com/user/OficialCruzados" target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110"
-                          style={{color: 'var(--azul-claro)'}}>
-                          <i className="fab fa-youtube text-lg"></i>
-                      </a>
-                  </div>
-              </div>
-          </div>
-      </footer>
-    </div>
-  );
+        </>
+    );
 }
 
