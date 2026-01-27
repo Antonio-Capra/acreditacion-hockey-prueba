@@ -32,14 +32,14 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] md:overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white px-6 py-4">
           <h2 className="text-2xl font-bold">Términos y Condiciones de Acreditación</h2>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 flex-1 min-h-0 flex flex-col">
           <p className="text-gray-600 mb-4 text-xl md:text-2xl">
             Antes de continuar, por favor revise completamente los términos y condiciones para el proceso de acreditación.
           </p>
@@ -48,7 +48,7 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
           <div
             ref={contentRef}
             onScroll={handleScroll}
-            className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-[#1e5799]/30 scrollbar-track-gray-100 scrollbar-thumb-rounded-full hover:scrollbar-thumb-[#1e5799]/50 transition-colors"
+            className="max-h-60 md:max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-[#1e5799]/30 scrollbar-track-gray-100 scrollbar-thumb-rounded-full hover:scrollbar-thumb-[#1e5799]/50 transition-colors pb-28 md:pb-0"
           >
             <div className="space-y-4 text-xl md:text-2xl text-gray-700 pr-2">
               <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
@@ -101,8 +101,8 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="flex gap-3 mt-6">
+          {/* Action Button - sticky for mobile */}
+          <div className="flex gap-3 mt-6 md:static fixed left-0 right-0 bottom-0 bg-white md:bg-transparent p-4 md:p-0 z-20 border-t md:border-0">
             <button
               onClick={onAccept}
               disabled={!canAccept}
