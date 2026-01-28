@@ -356,7 +356,7 @@ export default function AcreditacionPage() {
   };
 
   if (areasLoading) {
-    return <LoadingSpinner message="Cargando áreas..." />;
+    return <LoadingSpinner message="Cargando..." />;
   }
 
   if (areasError) {

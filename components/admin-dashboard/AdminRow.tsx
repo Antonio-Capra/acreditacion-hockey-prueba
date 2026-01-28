@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Acreditacion } from "./AdminContext";
 import { useAdmin } from "./AdminContext";
+import { ButtonSpinner } from "../common";
 
 interface AdminRowProps {
   acreditacion: Acreditacion;
@@ -22,6 +23,7 @@ export default function AdminRow({
   onConfirmAction,
 }: AdminRowProps) {
   const { zonas, assignZonaDirect, updateEstadoDirect } = useAdmin();
+  const [loadingAction, setLoadingAction] = useState<"aprobado" | "rechazado" | null>(null);
   const [showZonaDropdown, setShowZonaDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,11 +58,27 @@ export default function AdminRow({
   };
 
   const handleApproveClick = () => {
-    onConfirmAction("aprobado", `¿Estás seguro de que quieres aprobar la acreditación de ${acred.nombre} ${acred.primer_apellido} de ${acred.empresa}?`, () => updateEstadoDirect(acred, "aprobado"));
+    onConfirmAction(
+      "aprobado",
+      `¿Estás seguro de que quieres aprobar la acreditación de ${acred.nombre} ${acred.primer_apellido} de ${acred.empresa}?`,
+      async () => {
+        setLoadingAction("aprobado");
+        await Promise.resolve(updateEstadoDirect(acred, "aprobado"));
+        setLoadingAction(null);
+      }
+    );
   };
 
   const handleRejectClick = () => {
-    onConfirmAction("rechazado", `¿Estás seguro de que quieres rechazar la acreditación de ${acred.nombre} ${acred.primer_apellido} de ${acred.empresa}?`, () => updateEstadoDirect(acred, "rechazado"));
+    onConfirmAction(
+      "rechazado",
+      `¿Estás seguro de que quieres rechazar la acreditación de ${acred.nombre} ${acred.primer_apellido} de ${acred.empresa}?`,
+      async () => {
+        setLoadingAction("rechazado");
+        await Promise.resolve(updateEstadoDirect(acred, "rechazado"));
+        setLoadingAction(null);
+      }
+    );
   };
 
   const currentZonaName = acred.zona_id 
@@ -154,19 +172,27 @@ export default function AdminRow({
             type="button"
             title="Aprobar solicitud"
             onClick={handleApproveClick}
-            disabled={acred.status === "aprobado"}
-            className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={acred.status === "aprobado" || loadingAction !== null}
+            className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[2rem]"
           >
-            ✓
+            {loadingAction === "aprobado" ? (
+              <ButtonSpinner size={16} />
+            ) : (
+              "✓"
+            )}
           </button>
           <button
             type="button"
             title="Rechazar solicitud"
             onClick={handleRejectClick}
-            disabled={acred.status === "rechazado"}
-            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={acred.status === "rechazado" || loadingAction !== null}
+            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[2rem]"
           >
-            ✕
+            {loadingAction === "rechazado" ? (
+              <ButtonSpinner size={16} />
+            ) : (
+              "✕"
+            )}
           </button>
         </div>
       </td>

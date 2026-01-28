@@ -5,3 +5,4 @@ export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as ProgressIndicator } from './ProgressIndicator';
 export { default as Modal } from './Modal';
 export { default as ConfirmationModal } from './ConfirmationModal';
+export { default as ButtonSpinner } from './ButtonSpinner';
