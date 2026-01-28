@@ -48,62 +48,59 @@ export default function LandingPage() {
                     <div className="relative z-10 container mx-auto px-4 min-h-screen max-w-screen-xl flex flex-col flex-grow justify-around gap-y-8 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20">
 
                         {/* Top Section - Título con badge e info del evento */}
-                        <div className="text-left text-white pt-4 pl-2 sm:pl-4 md:pl-8">
-                            {/* Badge Superior e Info del Evento en línea */}
-                            <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-3 sm:mb-6">
-                                {/* Grupo de badge e info del evento */}
-                                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base md:text-lg lg:text-xl">
-                                    {/* Badge Superior */}
-                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
-                                        style={{
-                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                                            border: `2px solid var(--azul-mas-claro)`
-                                        }}>
-                                        <i className="fas fa-futbol mr-3" style={{ color: 'white', fontSize: '1.4em' }}></i>
-                                        Liga de Primera Mercado Libre
-                                    </div>
+                        <div className="flex flex-col items-center sm:items-start text-white pt-4 pl-2 sm:pl-4 md:pl-8 w-full">
+                            {/* Badge Superior e Info del Evento en mobile: apilado, en desktop: fila */}
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-4 md:gap-6 mb-3 sm:mb-6 w-full">
+                                {/* Badge Superior */}
+                                <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2 mb-1 sm:mb-0"
+                                    style={{
+                                        background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                        border: `2px solid var(--azul-mas-claro)`
+                                    }}>
+                                    <i className="fas fa-futbol mr-3" style={{ color: 'white', fontSize: '1.4em' }}></i>
+                                    Liga de Primera Mercado Libre
+                                </div>
 
-                                    {/* Fecha */}
-                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
-                                        style={{
-                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                                            border: `2px solid var(--azul-mas-claro)`
-                                        }}>
-                                        <i className="fas fa-calendar-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                        <span className="font-semibold">Domingo 8 Febrero</span>
-                                    </div>
+                                {/* Fecha */}
+                                <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2 mb-1 sm:mb-0"
+                                    style={{
+                                        background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                        border: `2px solid var(--azul-mas-claro)`
+                                    }}>
+                                    <i className="fas fa-calendar-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
+                                    <span className="font-semibold">Domingo 8 Febrero</span>
+                                </div>
 
-                                    {/* Hora */}
-                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
-                                        style={{
-                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                                            border: `2px solid var(--azul-mas-claro)`
-                                        }}>
-                                        <i className="fas fa-clock mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                        <span className="font-semibold">20:30 hrs</span>
-                                    </div>
+                                {/* Hora */}
+                                <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2 mb-1 sm:mb-0"
+                                    style={{
+                                        background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                        border: `2px solid var(--azul-mas-claro)`
+                                    }}>
+                                    <i className="fas fa-clock mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
+                                    <span className="font-semibold">20:30 hrs</span>
+                                </div>
 
-                                    {/* Estadio */}
-                                    <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
-                                        style={{
-                                            background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
-                                            border: `2px solid var(--azul-mas-claro)`
-                                        }}>
-                                        <i className="fas fa-map-marker-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                        <span className="font-semibold">Claro Arena</span>
-                                    </div>
+                                {/* Estadio */}
+                                <div className="inline-block px-4 py-1.5 rounded-full font-bold uppercase tracking-widest shadow-lg border-2"
+                                    style={{
+                                        background: `linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%)`,
+                                        border: `2px solid var(--azul-mas-claro)`
+                                    }}>
+                                    <i className="fas fa-map-marker-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
+                                    <span className="font-semibold">Claro Arena</span>
                                 </div>
                             </div>
 
                             {/* Título compacto */}
-                            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 leading-tight">
+                            <h1 className="text-center sm:text-left text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-2 leading-tight w-full">
                                 <span className="block text-white drop-shadow-2xl">Universidad Católica</span>
                             </h1>
 
                             {/* VS y rival en una línea */}
-                            <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 w-full justify-center sm:justify-start">
                                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light tracking-wide" style={{ color: 'var(--azul-claro)' }}>vs</span>
-                                <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white opacity-90">
+                                <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white opacity-90">
                                     Deportes Concepción
                                 </h2>
                             </div>
