@@ -172,7 +172,6 @@ export default function LandingPage() {
                             {/* Logos y unión */}
                             <div className="flex items-center gap-4">
                                 <Image src="/UCimg/LogoUC.png" alt="Logo Cruzados" width={80} height={40} className="h-10 w-auto object-contain" />
-                                <span className="text-md font-extrabold select-none drop-shadow-lg" style={{ fontFamily: "Special Gothic Condensed One", color: 'var(--azul-claro)' }}>&</span>
                                 <Image src="/UCimg/ClaroArenaL.png" alt="Logo Claro Arena" width={80} height={40} className="h-10 w-auto object-contain" />
                             </div>
 

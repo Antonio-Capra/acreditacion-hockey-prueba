@@ -7,7 +7,7 @@ interface ConfirmationModalProps {
   isOpen: boolean;
   title: string;
   message: string;
-  details?: { [key: string]: string | number }[];
+  details?: Array<Record<string, string | number>>;
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;

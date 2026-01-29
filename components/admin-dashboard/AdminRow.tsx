@@ -12,6 +12,10 @@ interface AdminRowProps {
   ESTADO_COLORS: Record<string, string>;
   onOpenDetail: (acred: Acreditacion) => void;
   onConfirmAction: (type: "aprobado" | "rechazado", message: string, onConfirm: () => void) => void;
+  onConfirmEmail: (acred: Acreditacion, onConfirm: () => void) => void;
+  onEmailError: (message: string) => void;
+  isSelected: boolean;
+  onSelectionChange: (id: number, selected: boolean) => void;
 }
 
 export default function AdminRow({
@@ -21,6 +25,10 @@ export default function AdminRow({
   ESTADO_COLORS,
   onOpenDetail,
   onConfirmAction,
+  onConfirmEmail,
+  onEmailError,
+  isSelected,
+  onSelectionChange,
 }: AdminRowProps) {
   const { zonas, assignZonaDirect, updateEstadoDirect, sendApprovalEmail, sendRejectionEmail } = useAdmin();
   const [loadingAction, setLoadingAction] = useState<"aprobado" | "rechazado" | "email" | null>(null);
@@ -81,14 +89,21 @@ export default function AdminRow({
     );
   };
 
-  const handleSendEmail = async () => {
-    setLoadingAction("email");
-    if (acred.status === "aprobado") {
-      await sendApprovalEmail(acred);
-    } else if (acred.status === "rechazado") {
-      await sendRejectionEmail(acred);
-    }
-    setLoadingAction(null);
+  const handleSendEmail = () => {
+    const emailType = acred.status === "aprobado" ? "aprobación" : "rechazo";
+    onConfirmEmail(acred, async () => {
+      setLoadingAction("email");
+      try {
+        if (acred.status === "aprobado") {
+          await sendApprovalEmail(acred);
+        } else if (acred.status === "rechazado") {
+          await sendRejectionEmail(acred);
+        }
+      } catch (error) {
+        onEmailError(error instanceof Error ? error.message : "Error desconocido al enviar email");
+      }
+      setLoadingAction(null);
+    });
   };
 
   const currentZonaName = acred.zona_id 
@@ -101,6 +116,14 @@ export default function AdminRow({
         acred.status === "aprobado" ? "bg-green-100" : acred.status === "rechazado" ? "bg-red-100" : ""
       }`}
     >
+      <td className="px-6 py-4 text-center">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={(e) => onSelectionChange(acred.id, e.target.checked)}
+          className="w-4 h-4 text-[#1e5799] border-gray-300 rounded focus:ring-[#1e5799] focus:ring-2"
+        />
+      </td>
       <td className="px-6 py-4 text-sm">
         {acred.nombre} {acred.primer_apellido} {acred.segundo_apellido || ""}
       </td>

@@ -85,8 +85,8 @@ interface AdminContextType {
   setIsModalOpen: (open: boolean) => void;
   isProcessing: boolean;
   setIsProcessing: (processing: boolean) => void;
-  confirmDeleteModal: boolean;
-  setConfirmDeleteModal: (open: boolean) => void;
+  confirmDeleteModal: { isOpen: boolean; message: string; onConfirm: (() => void) | null };
+  setConfirmDeleteModal: (modal: { isOpen: boolean; message: string; onConfirm: (() => void) | null }) => void;
   fetchAcreditaciones: () => void;
   openDetail: (acred: Acreditacion) => void;
   handleAsignZona: (zonaId: number) => void;

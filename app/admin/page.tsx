@@ -21,9 +21,12 @@ export default function AdminDashboard() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [zonas, setZonas] = useState<Array<{ id: number; nombre: string }>>([]);
-  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState<{ isOpen: boolean; message: string; onConfirm: (() => void) | null }>({ isOpen: false, message: "", onConfirm: null });
   const [confirmActionModal, setConfirmActionModal] = useState<{ isOpen: boolean; type: "aprobado" | "rechazado" | null; message: string }>({ isOpen: false, type: null, message: "" });
   const [successModal, setSuccessModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
+  const [confirmEmailModal, setConfirmEmailModal] = useState<{ isOpen: boolean; acreditacion: Acreditacion | null; onConfirm: (() => void) | null }>({ isOpen: false, acreditacion: null, onConfirm: null });
+  const [emailErrorModal, setEmailErrorModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const router = useRouter();
 
   // Check auth
@@ -269,12 +272,152 @@ export default function AdminDashboard() {
     setConfirmActionModal({ isOpen: false, type: null, message: "" });
   };
 
+  const handleConfirmDelete = (message: string, onConfirm: () => void) => {
+    setConfirmDeleteModal({ isOpen: true, message, onConfirm });
+  };
+
+  // Selection handlers
+  const handleSelectionChange = (id: number, selected: boolean) => {
+    setSelectedIds(prev => 
+      selected 
+        ? [...prev, id] 
+        : prev.filter(selectedId => selectedId !== id)
+    );
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedIds(filteredAcreditaciones.map(a => a.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  // Bulk actions
+  const handleBulkAction = async (action: "approve" | "reject" | "sendEmail" | "delete", ids: number[]) => {
+    if (ids.length === 0) return;
+
+    setIsProcessing(true);
+    try {
+      if (action === "approve" || action === "reject") {
+        const newStatus = action === "approve" ? "aprobado" : "rechazado";
+        
+        const { error } = await supabase
+          .from("acreditados")
+          .update({ status: newStatus })
+          .in("id", ids);
+
+        if (error) throw error;
+
+        // Update local state
+        setAcreditaciones(prev => prev.map(a => 
+          ids.includes(a.id) ? { ...a, status: newStatus } : a
+        ));
+
+        setMessage({ 
+          type: "success", 
+          text: `${ids.length} acreditación${ids.length !== 1 ? 'es' : ''} ${action === "approve" ? 'aprobada' : 'rechazada'}${ids.length !== 1 ? 's' : ''} exitosamente` 
+        });
+        setSuccessModal({ 
+          isOpen: true, 
+          message: `${ids.length} acreditación${ids.length !== 1 ? 'es' : ''} ${action === "approve" ? 'aprobada' : 'rechazada'}${ids.length !== 1 ? 's' : ''} exitosamente` 
+        });
+      } else if (action === "sendEmail") {
+        // Filter only approved or rejected accreditations for email sending
+        const emailEligible = filteredAcreditaciones.filter(a => 
+          ids.includes(a.id) && (a.status === "aprobado" || a.status === "rechazado")
+        );
+
+        if (emailEligible.length === 0) {
+          setMessage({ type: "error", text: "Solo se pueden enviar emails a acreditaciones aprobadas o rechazadas" });
+          return;
+        }
+
+        // Send emails
+        const emailPromises = emailEligible.map(async (acred) => {
+          const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
+          const areaNombre = AREA_NAMES[acred.area] || acred.area;
+          
+          if (acred.status === "aprobado") {
+            return fetch("/api/send-approval", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: acred.email,
+                nombre: `${acred.nombre} ${acred.primer_apellido}`,
+                zona: zonaNombre,
+                area: areaNombre,
+                tipoCredencial: acred.tipo_credencial,
+                numeroCredencial: acred.numero_credencial
+              })
+            });
+          } else {
+            return fetch("/api/send-rejection", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: acred.email,
+                nombre: `${acred.nombre} ${acred.primer_apellido}`,
+                motivo: acred.motivo_rechazo || "Sin motivo especificado"
+              })
+            });
+          }
+        });
+
+        const results = await Promise.allSettled(emailPromises);
+        const successCount = results.filter(r => r.status === "fulfilled").length;
+        const failureCount = results.filter(r => r.status === "rejected").length;
+
+        if (successCount > 0) {
+          setMessage({ 
+            type: "success", 
+            text: `Emails enviados exitosamente: ${successCount}${failureCount > 0 ? `, fallidos: ${failureCount}` : ''}` 
+          });
+          setSuccessModal({ 
+            isOpen: true, 
+            message: `Emails enviados exitosamente: ${successCount}${failureCount > 0 ? `, fallidos: ${failureCount}` : ''}` 
+          });
+        } else {
+          setMessage({ type: "error", text: "Error al enviar emails" });
+        }
+      } else if (action === "delete") {
+        // Delete selected accreditations
+        const { error } = await supabase
+          .from("acreditados")
+          .delete()
+          .in("id", ids);
+
+        if (error) throw error;
+
+        // Update local state
+        setAcreditaciones(prev => prev.filter(a => !ids.includes(a.id)));
+
+        setMessage({ 
+          type: "success", 
+          text: `${ids.length} acreditación${ids.length !== 1 ? 'es' : ''} eliminada${ids.length !== 1 ? 's' : ''} exitosamente` 
+        });
+        setSuccessModal({ 
+          isOpen: true, 
+          message: `${ids.length} acreditación${ids.length !== 1 ? 'es' : ''} eliminada${ids.length !== 1 ? 's' : ''} exitosamente` 
+        });
+      }
+
+      // Clear selection after action
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Error in bulk action:", error);
+      setMessage({ type: "error", text: "Error al procesar la acción masiva" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Delete acreditacion
   const deleteAcreditacion = async () => {
     if (!selectedAcreditacion) return;
     
     // Cerrar modal de confirmación
-    setConfirmDeleteModal(false);
+    setConfirmDeleteModal({ isOpen: false, message: "", onConfirm: null });
     setIsProcessing(true);
     try {
       const { error } = await supabase
@@ -457,6 +600,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleConfirmEmail = (acred: Acreditacion, onConfirm: () => void) => {
+    setConfirmEmailModal({ isOpen: true, acreditacion: acred, onConfirm });
+  };
+
+  const closeConfirmEmailModal = () => {
+    setConfirmEmailModal({ isOpen: false, acreditacion: null, onConfirm: null });
+  };
+
+  const handleEmailError = (message: string) => {
+    setEmailErrorModal({ isOpen: true, message });
+  };
+
+  const closeEmailErrorModal = () => {
+    setEmailErrorModal({ isOpen: false, message: "" });
+  };
+
   if (isLoading) return <LoadingSpinner message="Cargando dashboard..." />;
 
   const contextValue = {
@@ -566,6 +725,13 @@ export default function AdminDashboard() {
           AREA_NAMES={AREA_NAMES}
           ESTADO_COLORS={ESTADO_COLORS}
           onOpenDetail={openDetail}
+          onConfirmEmail={handleConfirmEmail}
+          onEmailError={handleEmailError}
+          selectedIds={selectedIds}
+          onSelectionChange={handleSelectionChange}
+          onSelectAll={handleSelectAll}
+          onBulkAction={handleBulkAction}
+          onConfirmDelete={handleConfirmDelete}
         />
       </div>
 
@@ -747,7 +913,11 @@ export default function AdminDashboard() {
                     Rechazar
                   </button>
                   <button
-                    onClick={() => setConfirmDeleteModal(true)}
+                    onClick={() => setConfirmDeleteModal({ 
+                      isOpen: true, 
+                      message: `¿Estás seguro de que deseas eliminar la acreditación de ${selectedAcreditacion.nombre} ${selectedAcreditacion.primer_apellido} permanentemente? Esta acción no se puede deshacer.`,
+                      onConfirm: deleteAcreditacion
+                    })}
                     disabled={isProcessing}
                     className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -762,20 +932,18 @@ export default function AdminDashboard() {
 
       {/* Modal de confirmación para eliminar */}
       <ConfirmationModal
-        isOpen={confirmDeleteModal}
+        isOpen={confirmDeleteModal.isOpen}
         title="Eliminar Acreditación"
-        message="¿Estás seguro de que deseas eliminar esta acreditación permanentemente? Esta acción no se puede deshacer."
-        details={selectedAcreditacion ? [
-          {
-            "Nombre": `${selectedAcreditacion.nombre} ${selectedAcreditacion.primer_apellido}`,
-            "Email": selectedAcreditacion.email,
-            "RUT": selectedAcreditacion.rut,
-          }
-        ] : []}
+        message={confirmDeleteModal.message}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
-        onConfirm={deleteAcreditacion}
-        onCancel={() => setConfirmDeleteModal(false)}
+        onConfirm={() => {
+          if (confirmDeleteModal.onConfirm) {
+            confirmDeleteModal.onConfirm();
+          }
+          setConfirmDeleteModal({ isOpen: false, message: "", onConfirm: null });
+        }}
+        onCancel={() => setConfirmDeleteModal({ isOpen: false, message: "", onConfirm: null })}
         isLoading={isProcessing}
       />
 
@@ -804,6 +972,42 @@ export default function AdminDashboard() {
         ]}
         onClose={() => setSuccessModal({ isOpen: false, message: "" })}
         autoClose={3000}
+      />
+
+      {/* Modal de confirmación para envío de email */}
+      <ConfirmationModal
+        isOpen={confirmEmailModal.isOpen}
+        title="Confirmar envío de email"
+        message={
+          confirmEmailModal.acreditacion
+            ? `¿Estás seguro de que quieres enviar el email de ${
+                confirmEmailModal.acreditacion.status === "aprobado" ? "aprobación" : "rechazo"
+              } a ${confirmEmailModal.acreditacion.nombre} ${confirmEmailModal.acreditacion.primer_apellido}?`
+            : ""
+        }
+        onConfirm={() => {
+          if (confirmEmailModal.onConfirm) {
+            confirmEmailModal.onConfirm();
+          }
+          closeConfirmEmailModal();
+        }}
+        onCancel={closeConfirmEmailModal}
+      />
+
+      {/* Modal de error de email */}
+      <Modal
+        isOpen={emailErrorModal.isOpen}
+        type="error"
+        title="Error al enviar email"
+        message={emailErrorModal.message}
+        buttons={[
+          {
+            label: "Aceptar",
+            onClick: closeEmailErrorModal,
+            variant: "primary",
+          },
+        ]}
+        onClose={closeEmailErrorModal}
       />
       </div>
     </AdminProvider>
