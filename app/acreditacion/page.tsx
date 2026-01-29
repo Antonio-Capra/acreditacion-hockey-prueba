@@ -451,7 +451,7 @@ export default function AcreditacionPage() {
             title="Datos del Responsable"
             description="Información de contacto del responsable de la acreditación"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-2 rounded-lg">
               <input
                 type="text"
                 placeholder="Nombre"
@@ -564,7 +564,7 @@ export default function AcreditacionPage() {
             title="Seleccione la categoría a la que corresponde su medio"
             description="Esta elección le asignará la cantidad de cupos que puede solicitar"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-2 rounded-lg">
               <select
                 value={formData.area}
                 onChange={(e) => {
