@@ -139,6 +139,51 @@ export async function POST(req: Request) {
       );
     }
 
+    // 2.5. Obtener zonas para asignación automática
+    const { data: zonasData, error: zonasError } = await supabaseAdmin
+      .from("zonas_acreditacion")
+      .select("id, nombre")
+      .eq("evento_id", 1);
+
+    if (zonasError) {
+      console.warn("Error al obtener zonas:", zonasError.message);
+    }
+
+    // Función para determinar zona basada en cargo
+    const getZonaIdByCargo = (cargo: string): number | null => {
+      if (!zonasData) return null;
+      
+      const cargoLower = cargo.toLowerCase();
+      
+      // Cargos que van a "Prensa"
+      const prensaCargos = [
+        "periodista",
+        "periodista pupitre", 
+        "relator",
+        "comentarista",
+        "camarógrafo",
+        "técnico"
+      ];
+      
+      // Cargos que van a "Cancha"
+      const canchaCargos = [
+        "reportero gráfico cancha",
+        "equipo comunicaciones visita"
+      ];
+      
+      if (prensaCargos.some(c => cargoLower.includes(c))) {
+        const zonaPrensa = zonasData.find(z => z.nombre.toLowerCase() === "prensa");
+        return zonaPrensa ? zonaPrensa.id : null;
+      }
+      
+      if (canchaCargos.some(c => cargoLower.includes(c))) {
+        const zonaCancha = zonasData.find(z => z.nombre.toLowerCase() === "cancha");
+        return zonaCancha ? zonaCancha.id : null;
+      }
+      
+      return null; // Sin zona asignada automáticamente
+    };
+
     // 3. Insertar acreditados
     const acreditadosToInsert = acreditados.map((acreditado: Acreditado) => ({
       evento_id: 1,
@@ -152,6 +197,7 @@ export async function POST(req: Request) {
       numero_credencial: acreditado.numero_credencial,
       area: area,
       empresa: empresa,
+      zona_id: getZonaIdByCargo(acreditado.cargo),
       status: "pendiente",
       responsable_nombre,
       responsable_primer_apellido,

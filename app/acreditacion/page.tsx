@@ -12,6 +12,7 @@ import Modal from "@/components/common/Modal";
 import AcreditadoRow from "@/components/acreditacion/AcreditadoRow";
 import { useAcreditacion } from "@/hooks/useAcreditacion";
 import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
+import { validateRUT, validateEmail } from "@/lib/validation";
 
 // Lista de canales predefinidos (actualizar con los nombres reales)
 const CANALES = [
@@ -140,6 +141,7 @@ export default function AcreditacionPage() {
     message: string;
   }>({ type: null, message: "" });
   const [currentStep, setCurrentStep] = useState(1);
+  const [responsableErrors, setResponsableErrors] = useState<{[key: string]: string}>({});
 
   const selectedArea = areas.find((a) => a.codigo === formData.area);
 
@@ -173,6 +175,27 @@ export default function AcreditacionPage() {
       ...prev,
       [field]: value,
     }));
+
+    // Validar campos específicos
+    if (field === 'responsable_rut') {
+      const newErrors = { ...responsableErrors };
+      if (value && !validateRUT(value)) {
+        newErrors.responsable_rut = 'RUT inválido';
+      } else {
+        delete newErrors.responsable_rut;
+      }
+      setResponsableErrors(newErrors);
+    }
+
+    if (field === 'responsable_email') {
+      const newErrors = { ...responsableErrors };
+      if (value && !validateEmail(value)) {
+        newErrors.responsable_email = 'Email inválido';
+      } else {
+        delete newErrors.responsable_email;
+      }
+      setResponsableErrors(newErrors);
+    }
   };
 
   const handleEmpresaChange = (value: string) => {
@@ -253,8 +276,14 @@ export default function AcreditacionPage() {
     if (!formData.responsable_rut?.trim()) {
       return "Complete el RUT del responsable";
     }
+    if (!validateRUT(formData.responsable_rut)) {
+      return "El RUT del responsable es inválido";
+    }
     if (!formData.responsable_email?.trim()) {
       return "Complete el email del responsable";
+    }
+    if (!validateEmail(formData.responsable_email)) {
+      return "El email del responsable es inválido";
     }
     if (!formData.empresa?.trim()) {
       return "Seleccione un medio/empresa";
@@ -275,8 +304,17 @@ export default function AcreditacionPage() {
       if (!acreditado.primer_apellido?.trim()) {
         return `Complete el primer apellido del acreditado ${i + 1}`;
       }
+      if (!acreditado.rut?.trim()) {
+        return `Complete el RUT del acreditado ${i + 1}`;
+      }
+      if (!validateRUT(acreditado.rut)) {
+        return `El RUT del acreditado ${i + 1} es inválido`;
+      }
       if (!acreditado.email?.trim()) {
         return `Complete el email del acreditado ${i + 1}`;
+      }
+      if (!validateEmail(acreditado.email)) {
+        return `El email del acreditado ${i + 1} es inválido`;
       }
       if (!acreditado.cargo?.trim()) {
         return `Seleccione el cargo del acreditado ${i + 1}`;
@@ -439,30 +477,48 @@ export default function AcreditacionPage() {
                 }}
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
               />
-              <input
-                type="text"
-                placeholder="RUT (sin puntos, con guion. Ej: 18274356-7)"
-                value={formData.responsable_rut}
-                pattern="^[0-9]{7,8}-[0-9kK]{1}$"
-                title="RUT sin puntos, con guion. Ej: 18274356-7"
-                onChange={(e) => {
-                  let value = e.target.value.replace(/\./g, "");
-                  value = value.replace(/[^0-9kK\-]/g, "");
-                  handleResponsableChange("responsable_rut", value);
-                }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.responsable_email}
-                onChange={(e) => {
-                  handleResponsableChange("responsable_email", e.target.value);
-                }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                required
-              />
+              <div>
+                <input
+                  type="text"
+                  placeholder="RUT (sin puntos, con guion. Ej: 11111111-1)"
+                  value={formData.responsable_rut}
+                  pattern="^[0-9]{7,8}-[0-9kK]{1}$"
+                  title="RUT sin puntos, con guion. Ej: 11111111-1"
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/\./g, "");
+                    value = value.replace(/[^0-9kK\-]/g, "");
+                    handleResponsableChange("responsable_rut", value);
+                  }}
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+                    responsableErrors.responsable_rut
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-gray-200 focus:border-[#1e5799]"
+                  }`}
+                  required
+                />
+                {responsableErrors.responsable_rut && (
+                  <p className="text-red-500 text-sm mt-1">{responsableErrors.responsable_rut}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.responsable_email}
+                  onChange={(e) => {
+                    handleResponsableChange("responsable_email", e.target.value);
+                  }}
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+                    responsableErrors.responsable_email
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-gray-200 focus:border-[#1e5799]"
+                  }`}
+                  required
+                />
+                {responsableErrors.responsable_email && (
+                  <p className="text-red-500 text-sm mt-1">{responsableErrors.responsable_email}</p>
+                )}
+              </div>
               <input
                 type="tel"
                 placeholder="Teléfono"

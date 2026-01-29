@@ -125,19 +125,39 @@ export default function AdminDashboard() {
     }
   };
 
+  // Función para normalizar texto (quitar tildes)
+  const normalizeText = (text: string): string => {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  };
+
   // Filter acreditaciones
   useEffect(() => {
     let filtered = acreditaciones;
 
     if (searchTerm) {
+      const normalizedSearchTerm = normalizeText(searchTerm);
+      
       filtered = filtered.filter(
-        a =>
-          a.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          a.primer_apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (a.segundo_apellido && a.segundo_apellido.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          a.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          a.rut.includes(searchTerm) ||
-          a.empresa.toLowerCase().includes(searchTerm.toLowerCase())
+        a => {
+          const fullName = normalizeText(`${a.nombre} ${a.primer_apellido} ${a.segundo_apellido || ""}`);
+          const areaName = normalizeText(AREA_NAMES[a.area] || a.area);
+          const zonaName = normalizeText(zonas.find(z => z.id === a.zona_id)?.nombre || "Sin asignar");
+          
+          return (
+            fullName.includes(normalizedSearchTerm) ||
+            normalizeText(a.email).includes(normalizedSearchTerm) ||
+            a.rut.includes(searchTerm) || // RUT no necesita normalización
+            normalizeText(a.empresa).includes(normalizedSearchTerm) ||
+            areaName.includes(normalizedSearchTerm) ||
+            normalizeText(a.cargo).includes(normalizedSearchTerm) ||
+            normalizeText(a.tipo_credencial).includes(normalizedSearchTerm) ||
+            (a.numero_credencial && normalizeText(a.numero_credencial).includes(normalizedSearchTerm)) ||
+            zonaName.includes(normalizedSearchTerm)
+          );
+        }
       );
     }
 
@@ -364,37 +384,6 @@ export default function AdminDashboard() {
 
       if (updateError) throw updateError;
 
-      // Send email
-      if (newEstado === "aprobado") {
-        const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
-        const areaNombre = AREA_NAMES[acred.area] || acred.area;
-        await fetch("/api/send-approval", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nombre: acred.nombre,
-            apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
-            correo: acred.email,
-            zona: zonaNombre,
-            area: areaNombre,
-          }),
-        });
-      } else if (newEstado === "rechazado") {
-        const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
-        const areaNombre = AREA_NAMES[acred.area] || acred.area;
-        await fetch("/api/send-rejection", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nombre: acred.nombre,
-            apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
-            correo: acred.email,
-            zona: zonaNombre,
-            area: areaNombre,
-          }),
-        });
-      }
-
       const successMessage = `Acreditación cambiada a ${newEstado} exitosamente`;
       setMessage({
         type: "success",
@@ -411,6 +400,60 @@ export default function AdminDashboard() {
       }, 3000);
     } catch {
       setMessage({ type: "error", text: "Error al actualizar estado" });
+    }
+  };
+
+  const sendApprovalEmail = async (acred: Acreditacion) => {
+    try {
+      const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
+      const areaNombre = AREA_NAMES[acred.area] || acred.area;
+      await fetch("/api/send-approval", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: acred.nombre,
+          apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
+          correo: acred.email,
+          zona: zonaNombre,
+          area: areaNombre,
+        }),
+      });
+      setMessage({
+        type: "success",
+        text: "Email de aprobación enviado exitosamente",
+      });
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+    } catch {
+      setMessage({ type: "error", text: "Error al enviar email de aprobación" });
+    }
+  };
+
+  const sendRejectionEmail = async (acred: Acreditacion) => {
+    try {
+      const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
+      const areaNombre = AREA_NAMES[acred.area] || acred.area;
+      await fetch("/api/send-rejection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: acred.nombre,
+          apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
+          correo: acred.email,
+          zona: zonaNombre,
+          area: areaNombre,
+        }),
+      });
+      setMessage({
+        type: "success",
+        text: "Email de rechazo enviado exitosamente",
+      });
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+    } catch {
+      setMessage({ type: "error", text: "Error al enviar email de rechazo" });
     }
   };
 
@@ -442,6 +485,8 @@ export default function AdminDashboard() {
     assignZonaDirect,
     updateEstado,
     updateEstadoDirect,
+    sendApprovalEmail,
+    sendRejectionEmail,
   };
 
   return (

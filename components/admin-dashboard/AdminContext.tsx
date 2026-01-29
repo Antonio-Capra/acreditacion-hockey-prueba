@@ -58,6 +58,7 @@ export const AREA_NAMES: Record<string, string> = {
   "E": "Medios Escritos",
   "F": "Agencias",
   "G": "Reportero gráfico cancha",
+  "H": "Equipo de Comunicaciones Club Visita",
 };
 
 export const ESTADO_COLORS: Record<string, string> = {
@@ -92,6 +93,8 @@ interface AdminContextType {
   assignZonaDirect: (acred: Acreditacion, zonaId: number | null) => void;
   updateEstado: (newEstado: "pendiente" | "aprobado" | "rechazado") => void;
   updateEstadoDirect: (acred: Acreditacion, newEstado: "pendiente" | "aprobado" | "rechazado") => void;
+  sendApprovalEmail: (acred: Acreditacion) => void;
+  sendRejectionEmail: (acred: Acreditacion) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);

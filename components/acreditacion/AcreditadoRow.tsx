@@ -1,4 +1,5 @@
-"use client";
+import { useState } from "react";
+import { validateRUT, validateEmail } from "@/lib/validation";
 
 interface Acreditado {
   nombre: string;
@@ -27,7 +28,6 @@ const CARGOS = [
   "Comentarista",
   "Camarógrafo",
   "Reportero Gráfico Cancha",
-  "Reportero Gráfico Tribuna",
   "Técnico",
   "Equipo Comunicaciones Visita",
 ];
@@ -40,6 +40,34 @@ export default function AcreditadoRow({
   onRemove,
   canRemove,
 }: AcreditadoRowProps) {
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  const validateField = (field: keyof Acreditado, value: string) => {
+    const newErrors = { ...errors };
+
+    if (field === 'rut') {
+      if (value && !validateRUT(value)) {
+        newErrors.rut = 'RUT inválido';
+      } else {
+        delete newErrors.rut;
+      }
+    }
+
+    if (field === 'email') {
+      if (value && !validateEmail(value)) {
+        newErrors.email = 'Email inválido';
+      } else {
+        delete newErrors.email;
+      }
+    }
+
+    setErrors(newErrors);
+  };
+
+  const handleFieldChange = (field: keyof Acreditado, value: string) => {
+    onChange(index, field, value);
+    validateField(field, value);
+  };
   return (
     <div className="border-2 border-gray-200 rounded-lg p-4 space-y-4 bg-gray-50 relative">
       {canRemove && (
@@ -87,30 +115,48 @@ export default function AcreditadoRow({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input
-          type="text"
-          placeholder="RUT (sin puntos, con guion. Ej: 18274356-7)"
-          value={acreditado.rut}
-          pattern="^[0-9]{7,8}-[0-9kK]{1}$"
-          title="RUT sin puntos, con guion. Ej: 18274356-7"
-          onChange={(e) => {
-            // Solo permitir números, guion y k/K, y quitar puntos automáticamente
-            let value = e.target.value.replace(/\./g, "");
-            value = value.replace(/[^0-9kK\-]/g, "");
-            onChange(index, "rut", value);
-          }}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-          required
-        />
+        <div>
+          <input
+            type="text"
+            placeholder="RUT (sin puntos, con guion. Ej: 11111111-1)"
+            value={acreditado.rut}
+            pattern="^[0-9]{7,8}-[0-9kK]{1}$"
+            title="RUT sin puntos, con guion. Ej: 11111111-1"
+            onChange={(e) => {
+              // Solo permitir números, guion y k/K, y quitar puntos automáticamente
+              let value = e.target.value.replace(/\./g, "");
+              value = value.replace(/[^0-9kK\-]/g, "");
+              handleFieldChange("rut", value);
+            }}
+            className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+              errors.rut
+                ? "border-red-500 focus:border-red-500"
+                : "border-gray-200 focus:border-[#1e5799]"
+            }`}
+            required
+          />
+          {errors.rut && (
+            <p className="text-red-500 text-sm mt-1">{errors.rut}</p>
+          )}
+        </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={acreditado.email}
-          onChange={(e) => onChange(index, "email", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-          required
-        />
+        <div>
+          <input
+            type="email"
+            placeholder="Email"
+            value={acreditado.email}
+            onChange={(e) => handleFieldChange("email", e.target.value)}
+            className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+              errors.email
+                ? "border-red-500 focus:border-red-500"
+                : "border-gray-200 focus:border-[#1e5799]"
+            }`}
+            required
+          />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
