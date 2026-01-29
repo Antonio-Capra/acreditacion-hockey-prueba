@@ -29,6 +29,7 @@ const CARGOS = [
   "Reportero Gráfico Cancha",
   "Reportero Gráfico Tribuna",
   "Técnico",
+  "Equipo Comunicaciones Visita",
 ];
 
 export default function AcreditadoRow({
