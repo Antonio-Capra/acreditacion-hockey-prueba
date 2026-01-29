@@ -8,6 +8,9 @@ interface ResendError {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// URL base para imágenes en emails - funciona tanto en preview como producción
+const BASE_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://acreditacion-hockey-prueba.vercel.app';
+
 // 🔐 Configuración SEGURA para evitar bloqueos
 const EMAIL_CONFIG = {
   // ✅ Email verificado AUTOMÁTICAMENTE en Resend (sin configuración)
@@ -25,16 +28,16 @@ const EMAIL_CONFIG = {
 const getFromEmail = (): string => {
   // Si tienes dominio personalizado verificado, úsalo
   if (EMAIL_CONFIG.custom) {
-    return `Acreditaciones UC <noreply.cruzados@${EMAIL_CONFIG.custom}>`;
+    return `Acreditaciones COLO-COLO <noreply.colocolo@${EMAIL_CONFIG.custom}>`;
   }
 
   // Si tienes email verificado en Resend, úsalo
   if (EMAIL_CONFIG.verified && EMAIL_CONFIG.verified !== EMAIL_CONFIG.default) {
-    return `Acreditaciones UC <${EMAIL_CONFIG.verified}>`;
+    return `Acreditaciones COLO-COLO <${EMAIL_CONFIG.verified}>`;
   }
 
   // Por defecto: usar email de Resend que funciona sin verificación
-  return `Acreditaciones UC <${EMAIL_CONFIG.default}>`;
+  return `Acreditaciones COLO-COLO <${EMAIL_CONFIG.default}>`;
 };
 
 export async function POST(req: Request) {
@@ -58,7 +61,7 @@ export async function POST(req: Request) {
     const { error } = await resend.emails.send({
       from,
       to: toEmail,
-      replyTo: "palarcon@cruzados.cl",
+      replyTo: "palarcon@colocolo.cl",
       subject: "❌ Tu acreditación ha sido rechazada",
       html: `
         <!DOCTYPE html>
@@ -75,11 +78,11 @@ export async function POST(req: Request) {
                 <!-- Contenedor principal -->
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; max-width: 100%;">
 
-                  <!-- Header con gradiente UC -->
+                  <!-- Header con gradiente Colo-Colo -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%); padding: 40px 30px; text-align: center;">
                       <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 10px 0; font-weight: 700;">
-                        <img src="https://res.cloudinary.com/dubnevl0h/image/upload/v1768312623/Escudo_Club_Deportivo_Universidad_Cat%C3%B3lica.svg_iwzca6.png" alt="Logo UC" style="height: 70px; margin-bottom: 10px;" />
+                        <img src="${BASE_URL}/colocolo/EscudoColo.png" alt="Logo Colo-Colo" style="height: 70px; margin-bottom: 10px;" />
                       </h1>
                       <p style="color: #ffffff; font-size: 16px; margin: 0; font-weight: 600;">
                         Sistema de Acreditaciones
@@ -103,7 +106,7 @@ export async function POST(req: Request) {
                       </p>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
-                        Debido a la capacidad limitada de espacios disponibles en prensa para el partido Universidad Católica vs Deportes Concepción a disputarse el domingo 8 de febrero a las 20:30 horas en el Claro Arena, lamentamos informarle que su(s) acreditación(ones) ha(n) sido rechazada(s).
+                        Debido a la capacidad limitada de espacios disponibles en prensa para el partido Colo-Colo vs Deportes Concepción a disputarse el domingo 8 de febrero a las 20:30 horas en el Claro Arena, lamentamos informarle que su(s) acreditación(ones) ha(n) sido rechazada(s).
                       </p>
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
@@ -112,7 +115,7 @@ export async function POST(req: Request) {
 
                       <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
                         Saludos cordiales,<br>
-                        Área de Prensa – Cruzados.
+                        Área de Prensa – Colo-Colo.
                       </p>
                     </td>
                   </tr>
@@ -121,7 +124,7 @@ export async function POST(req: Request) {
                   <tr>
                     <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
-                        <strong>Acreditaciones UC</strong>
+                        <strong>Acreditaciones COLO-COLO</strong>
                       </p>
                       <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.6;">
                         Este es un correo automático, por favor no responder.<br>

@@ -402,7 +402,11 @@ export default function AcreditacionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e5799] to-[#7db9e8] py-8">
+    <>
+      <style>
+        {`@import url("https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Special+Gothic+Condensed+One&display=swap");`}
+      </style>
+      <div className="min-h-screen py-8" style={{ background: 'linear-gradient(135deg, #000000 0%, #666666 100%)' }}>
       {isSubmitting && <LoadingSpinner message="Enviando acreditación..." />}
 
       <BotonVolver />
@@ -415,7 +419,7 @@ export default function AcreditacionPage() {
             Acreditación Prensa
           </h1>
           <p className="text-white/80 mt-2 text-lg">
-            Universidad Católica vs Deportes Concepción - Domingo 8 de Febrero 2026, Claro Arena
+            Colo-Colo vs Rival - Fecha del Evento, Estadio Monumental
           </p>
         </header>
 
@@ -455,7 +459,7 @@ export default function AcreditacionPage() {
                 onChange={(e) => {
                   handleResponsableChange("responsable_nombre", e.target.value);
                 }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
                 required
               />
               <input
@@ -465,7 +469,7 @@ export default function AcreditacionPage() {
                 onChange={(e) => {
                   handleResponsableChange("responsable_primer_apellido", e.target.value);
                 }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
                 required
               />
               <input
@@ -475,7 +479,7 @@ export default function AcreditacionPage() {
                 onChange={(e) => {
                   handleResponsableChange("responsable_segundo_apellido", e.target.value);
                 }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
               />
               <div>
                 <input
@@ -492,7 +496,7 @@ export default function AcreditacionPage() {
                   className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
                     responsableErrors.responsable_rut
                       ? "border-red-500 focus:border-red-500"
-                      : "border-gray-200 focus:border-[#1e5799]"
+                      : "border-gray-200 focus:border-black"
                   }`}
                   required
                 />
@@ -511,7 +515,7 @@ export default function AcreditacionPage() {
                   className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
                     responsableErrors.responsable_email
                       ? "border-red-500 focus:border-red-500"
-                      : "border-gray-200 focus:border-[#1e5799]"
+                      : "border-gray-200 focus:border-black"
                   }`}
                   required
                 />
@@ -526,12 +530,12 @@ export default function AcreditacionPage() {
                 onChange={(e) => {
                   handleResponsableChange("responsable_telefono", e.target.value);
                 }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
               />
               <select
                 value={formData.empresa}
                 onChange={(e) => handleEmpresaChange(e.target.value)}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
                 required
               >
                 <option value="">Seleccionar Medio/Empresa</option>
@@ -547,7 +551,7 @@ export default function AcreditacionPage() {
                   placeholder="Nombre del Medio/Empresa"
                   value={formData.empresa_personalizada}
                   onChange={(e) => handleEmpresaPersonalizadaChange(e.target.value)}
-                  className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                  className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
                   required
                 />
               )}
@@ -566,7 +570,7 @@ export default function AcreditacionPage() {
                 onChange={(e) => {
                   handleAreaChange(e.target.value);
                 }}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
                 required
               >
                 <option value="">Seleccionar Área</option>
@@ -581,8 +585,8 @@ export default function AcreditacionPage() {
             </div>
 
             {selectedArea && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <p className="text-sm text-gray-800">
                   Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
                 </p>
               </div>
@@ -595,8 +599,8 @@ export default function AcreditacionPage() {
             title="Datos de Acreditados"
             description={`Complete los datos de los ${formData.acreditados.length} acreditado(s)`}
           >
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <p className="text-sm text-gray-800">
                 Acreditaciones a registrar: {formData.acreditados.length} de {selectedArea?.cupos || 0} disponibles.
               </p>
             </div>
@@ -605,7 +609,7 @@ export default function AcreditacionPage() {
                 <button
                   type="button"
                   onClick={handleAddAcreditado}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1e5799] text-white rounded-lg hover:bg-[#207cca] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -632,7 +636,7 @@ export default function AcreditacionPage() {
           <div className="flex justify-center">
             <button
               type="submit"
-              className="px-8 py-4 bg-[#1e5799] hover:bg-[#207cca] text-white font-bold rounded-xl transition-colors shadow-lg"
+              className="px-8 py-4 bg-black hover:bg-gray-800 text-white font-bold rounded-xl transition-colors shadow-lg"
             >
               Enviar Acreditación
             </button>
@@ -694,5 +698,6 @@ export default function AcreditacionPage() {
         />
       )}
     </div>
+    </>
   );
 }

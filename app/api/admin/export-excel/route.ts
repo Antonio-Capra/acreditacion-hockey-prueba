@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         Apellido: `${a.primer_apellido}${a.segundo_apellido ? ` ${a.segundo_apellido}` : ''}`,
         RUT: a.rut,
         Empresa: a.empresa,
-        Área: "CRUZADOS",
+        Área: "COLO-COLO",
         Acreditación: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
         Patente: "",
       }));

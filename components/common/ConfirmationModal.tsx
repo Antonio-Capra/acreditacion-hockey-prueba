@@ -63,7 +63,7 @@ export default function ConfirmationModal({
       )}
       {isLoading && (
         <div className="mt-4 flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
           <span className="ml-2 text-sm text-gray-600">Procesando...</span>
         </div>
       )}

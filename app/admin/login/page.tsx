@@ -42,25 +42,24 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#1e5799] via-[#2989d8] to-[#7db9e8] flex items-center justify-center px-4 py-10 relative overflow-hidden">
-      {/* Decoración de fondo */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#2989d8] rounded-full blur-3xl"></div>
-      </div>
+    <>
+      <main className="min-h-screen w-full flex items-center justify-center px-4 py-10 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #000000 0%, #666666 100%)' }}>
+        {/* Decoración de fondo */}
+        <BotonVolver />
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-96 h-96 rounded-full blur-3xl bg-gray-600"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl bg-gray-600"></div>
+        </div>
 
-      <BotonVolver />
-      <BotonFlotante />
-
-      {/* Tarjeta de login */}
+        {/* Tarjeta de login */}
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-blue-100">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-gray-100">
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <div className="relative w-48 h-20">
               <Image
-                src="/UCimg/EscudoUC.png"
-                alt="Logo UC"
+                src="/colocolo/EscudoColo.png"
+                alt="Logo Colo-Colo"
                 fill
                 className="object-contain"
                 priority
@@ -92,7 +91,7 @@ export default function AdminLoginPage() {
                   </svg>
                 </div>
                 <input
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
                   type="email"
                   placeholder="admin@ejemplo.com"
                   value={email}
@@ -115,7 +114,7 @@ export default function AdminLoginPage() {
                   </svg>
                 </div>
                 <input
-                  className="w-full rounded-xl border border-gray-300 pl-10 pr-12 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  className="w-full rounded-xl border border-gray-300 pl-10 pr-12 py-3 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
@@ -156,7 +155,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-[#1e5799] via-[#2989d8] to-[#7db9e8] hover:shadow-lg text-white font-semibold px-4 py-3.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full rounded-xl bg-gradient-to-r from-black via-gray-800 to-gray-600 hover:shadow-lg text-white font-semibold px-4 py-3.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? (
                 <>
@@ -180,12 +179,13 @@ export default function AdminLoginPage() {
           {/* Footer */}
           <div className="mt-6 pt-6 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-500">
-              Sistema de Acreditación - Cruzados
+              Sistema de Acreditación - Colo-Colo
             </p>
           </div>
         </div>
       </div>
     </main>
+    </>
   );
 }
 

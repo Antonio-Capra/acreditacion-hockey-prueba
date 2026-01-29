@@ -15,7 +15,7 @@ export default function AdminStats({ acreditaciones }: AdminStatsProps) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Acreditaciones</p>
-            <p className="text-4xl font-bold text-[#1e5799] mt-2">{total}</p>
+            <p className="text-4xl font-bold text-black mt-2">{total}</p>
           </div>
           <div className="text-5xl">
             📋

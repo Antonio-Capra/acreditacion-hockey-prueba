@@ -28,7 +28,7 @@ export default function ProgressIndicator({
                   isCompleted
                     ? "bg-green-500 text-white shadow-lg"
                     : isActive
-                    ? "bg-[#1e5799] text-white shadow-lg ring-4 ring-[#1e5799]/20"
+                    ? "bg-black text-white shadow-lg ring-4 ring-black/20"
                     : "bg-gray-200 text-gray-500"
                 }`}
               >
@@ -57,7 +57,7 @@ export default function ProgressIndicator({
               <span
                 className={`text-sm font-medium transition-colors duration-300 ${
                   isActive
-                    ? "text-[#1e5799] font-bold"
+                    ? "text-black font-bold"
                     : isCompleted
                     ? "text-green-600"
                     : "text-gray-500"
@@ -73,7 +73,7 @@ export default function ProgressIndicator({
       {/* Texto descriptivo */}
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          Paso <span className="font-bold text-[#1e5799]">{currentStep}</span> de {totalSteps}
+          Paso <span className="font-bold text-black">{currentStep}</span> de {totalSteps}
         </p>
         <p className="text-xs text-gray-500 mt-1">
           {currentStep === 1 && "Complete la información del responsable de la acreditación"}

@@ -14,14 +14,17 @@ const barlowCondensed = Barlow_Condensed({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "Acreditaciones UC",
-  description: "Sistema de acreditación oficial para el partido Universidad Católica vs Deportes Concepción - 8 de Febrero 2026, Claro Arena",
-  icons: {
-    icon: "/UCimg/EscudoUC.png",
-  },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
-};
+// Función para generar metadata estático
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Acreditación Prensa - Colo-Colo",
+    description: "Sistema de acreditación para prensa y medios de comunicación - Colo-Colo",
+    icons: {
+      icon: "/colocolo/logo-colo-colo.png",
+    },
+    viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
+  };
+}
 
 export default function RootLayout({
   children,

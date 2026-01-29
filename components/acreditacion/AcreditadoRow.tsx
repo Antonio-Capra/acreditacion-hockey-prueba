@@ -92,7 +92,7 @@ export default function AcreditadoRow({
           placeholder="Nombre"
           value={acreditado.nombre}
           onChange={(e) => onChange(index, "nombre", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
           required
         />
 
@@ -101,7 +101,7 @@ export default function AcreditadoRow({
           placeholder="Primer Apellido"
           value={acreditado.primer_apellido}
           onChange={(e) => onChange(index, "primer_apellido", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
           required
         />
 
@@ -110,7 +110,7 @@ export default function AcreditadoRow({
           placeholder="Segundo Apellido"
           value={acreditado.segundo_apellido}
           onChange={(e) => onChange(index, "segundo_apellido", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
         />
       </div>
 
@@ -131,7 +131,7 @@ export default function AcreditadoRow({
             className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
               errors.rut
                 ? "border-red-500 focus:border-red-500"
-                : "border-gray-200 focus:border-[#1e5799]"
+                : "border-gray-200 focus:border-black"
             }`}
             required
           />
@@ -149,7 +149,7 @@ export default function AcreditadoRow({
             className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
               errors.email
                 ? "border-red-500 focus:border-red-500"
-                : "border-gray-200 focus:border-[#1e5799]"
+                : "border-gray-200 focus:border-black"
             }`}
             required
           />
@@ -163,7 +163,7 @@ export default function AcreditadoRow({
         <select
           value={acreditado.cargo}
           onChange={(e) => onChange(index, "cargo", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
           required
         >
           <option value="">Seleccionar Cargo</option>
@@ -177,7 +177,7 @@ export default function AcreditadoRow({
         <select
           value={acreditado.tipo_credencial}
           onChange={(e) => onChange(index, "tipo_credencial", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
           required
         >
           <option value="">Seleccionar Tipo de Credencial</option>
@@ -191,7 +191,7 @@ export default function AcreditadoRow({
           placeholder="Número de Credencial"
           value={acreditado.numero_credencial}
           onChange={(e) => onChange(index, "numero_credencial", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none"
           required
         />
       </div>

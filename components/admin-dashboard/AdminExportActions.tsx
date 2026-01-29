@@ -16,7 +16,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
     <div className="mb-6">
       {/* Encabezado del Panel */}
       <div className="bg-white/95 backdrop-blur-sm rounded-t-2xl px-6 py-4 shadow-lg">
-        <h2 className="text-lg font-bold text-[#1e5799]">
+        <h2 className="text-lg font-bold text-black">
           Exportar Datos
         </h2>
       </div>
@@ -96,7 +96,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
               }
             }}
             disabled={isExportingPuntoTicket}
-            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+            className="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-black to-gray-800 text-white rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
           >
             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
             {isExportingPuntoTicket ? (
@@ -151,7 +151,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
             )}
           </button>
         </div>
-        <div className="bg-blue-50 border-l-4 border-[#1e5799] p-4 rounded-lg">
+        <div className="bg-gray-50 border-l-4 border-black p-4 rounded-lg">
           <p className="text-sm text-gray-700">
             <strong>Tip:</strong> &quot;Punto Ticket (Aprobados)&quot; solo exporta acreditaciones aprobadas. Usa &quot;Punto Ticket (Filtrado)&quot; para exportar según el filtro de estado actual.
           </p>

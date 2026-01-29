@@ -112,7 +112,7 @@ export default function AdminRow({
 
   return (
     <tr
-      className={`border-t border-gray-200 ${index % 2 === 0 ? "bg-gray-50" : ""} hover:bg-blue-50 transition-all ${
+      className={`border-t border-gray-200 ${index % 2 === 0 ? "bg-gray-50" : ""} hover:bg-gray-100 transition-all ${
         acred.status === "aprobado" ? "bg-green-100" : acred.status === "rechazado" ? "bg-red-100" : ""
       }`}
     >
@@ -121,7 +121,7 @@ export default function AdminRow({
           type="checkbox"
           checked={isSelected}
           onChange={(e) => onSelectionChange(acred.id, e.target.checked)}
-          className="w-4 h-4 text-[#1e5799] border-gray-300 rounded focus:ring-[#1e5799] focus:ring-2"
+          className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black focus:ring-2"
         />
       </td>
       <td className="px-6 py-4 text-sm">
@@ -194,7 +194,7 @@ export default function AdminRow({
         <button
           type="button"
           onClick={() => onOpenDetail(acred)}
-          className="px-3 py-1 bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white text-xs rounded-lg hover:shadow-lg transition-all font-semibold hover:scale-105"
+          className="px-3 py-1 bg-gradient-to-r from-black to-gray-800 text-white text-xs rounded-lg hover:shadow-lg transition-all font-semibold hover:scale-105"
         >
           Ver Detalles
         </button>
@@ -219,7 +219,7 @@ export default function AdminRow({
             title={acred.status === "aprobado" ? "Enviar email de aprobación" : acred.status === "rechazado" ? "Enviar email de rechazo" : "Enviar email"}
             onClick={handleSendEmail}
             disabled={(acred.status !== "aprobado" && acred.status !== "rechazado") || loadingAction !== null}
-            className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[2rem]"
+            className="px-2 py-1 bg-black hover:bg-gray-800 text-white text-xs rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[2rem]"
           >
             {loadingAction === "email" ? (
               <ButtonSpinner size={16} />

@@ -54,7 +54,7 @@ export default function AdminTable({
     <>
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden mt-16">
       {/* Header de la Tabla */}
-      <div className="bg-gradient-to-r from-[#1e5799] to-[#2989d8] px-6 py-5">
+      <div className="bg-gradient-to-r from-black to-gray-800 px-6 py-5">
         <h2 className="text-xl font-bold text-white flex items-center justify-between">
           <span>Lista de Acreditaciones</span>
           <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold">
@@ -74,7 +74,7 @@ export default function AdminTable({
                     type="checkbox"
                     checked={selectedIds.length === filteredAcreditaciones.length && filteredAcreditaciones.length > 0}
                     onChange={(e) => onSelectAll(e.target.checked)}
-                    className="w-4 h-4 text-[#1e5799] border-gray-300 rounded focus:ring-[#1e5799] focus:ring-2"
+                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black focus:ring-2"
                     title="Seleccionar todos"
                   />
                  
@@ -93,7 +93,7 @@ export default function AdminTable({
             </tr>
           </thead>
           {selectedIds.length > 0 && (
-            <thead className="bg-blue-50 border-b border-gray-200">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <td colSpan={11} className="px-6 py-4">
                   <div className="flex items-center justify-between">
@@ -115,7 +115,7 @@ export default function AdminTable({
                       </button>
                       <button
                         onClick={() => onBulkAction('sendEmail', selectedIds)}
-                        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                        className="px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition-colors"
                       >
                         Enviar Email
                       </button>

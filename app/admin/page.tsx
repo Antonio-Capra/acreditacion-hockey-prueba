@@ -650,14 +650,18 @@ export default function AdminDashboard() {
 
   return (
     <AdminProvider value={contextValue}>
-      <div className="bg-gradient-to-br from-[#1e5799] via-[#2989d8] to-[#7db9e8] min-h-screen">
+      <>
+        <style>
+          {`@import url("https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Special+Gothic+Condensed+One&display=swap");`}
+        </style>
+        <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #000000 0%, #666666 100%)' }}>
         <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
           <div className="flex items-center gap-6">
               <Image
-                src="/UCimg/LogoUC.png"
-                alt="Logo UC"
+                src="/colocolo/EscudoColo.png"
+                alt="Logo Colo-Colo"
                 width={80}
                 height={80}
                 className="h-auto"
@@ -665,7 +669,7 @@ export default function AdminDashboard() {
             />
             <div>
               <h1 className="text-3xl font-bold text-white drop-shadow-lg">Panel de Administración</h1>
-              <p className="text-white/90 text-sm mt-1 font-medium">Sistema de Acreditaciones prensa UC</p>
+              <p className="text-white/90 text-sm mt-1 font-medium">Sistema de Acreditaciones prensa Colo-Colo</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -740,7 +744,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white px-6 py-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-gradient-to-r from-black to-gray-800 text-white px-6 py-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Detalles de Acreditación</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -754,7 +758,7 @@ export default function AdminDashboard() {
             <div className="p-6 space-y-6">
               {/* Acreditado Info */}
               <div>
-                <h3 className="text-lg font-bold text-[#1e5799] mb-3">Datos del Acreditado</h3>
+                <h3 className="text-lg font-bold text-black mb-3">Datos del Acreditado</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Nombre</label>
@@ -792,7 +796,7 @@ export default function AdminDashboard() {
 
               {/* Información Institucional */}
               <div>
-                <h3 className="text-lg font-bold text-[#1e5799] mb-3">Información Institucional</h3>
+                <h3 className="text-lg font-bold text-black mb-3">Información Institucional</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Área</label>
@@ -808,8 +812,8 @@ export default function AdminDashboard() {
               {/* Responsable Info */}
               {selectedAcreditacion.responsable_nombre && (
                 <div>
-                  <h3 className="text-lg font-bold text-[#1e5799] mb-3">Contacto Responsable</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-bold text-black mb-3">Contacto Responsable</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div>
                       <label className="text-sm font-medium text-gray-600">Nombre</label>
                       <p className="text-base font-semibold">{selectedAcreditacion.responsable_nombre}</p>
@@ -840,7 +844,7 @@ export default function AdminDashboard() {
 
               {/* Info adicional */}
               <div>
-                <h3 className="text-lg font-bold text-[#1e5799] mb-3">Información Adicional</h3>
+                <h3 className="text-lg font-bold text-black mb-3">Información Adicional</h3>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                   <p><strong>Fecha Solicitud:</strong> {new Date(selectedAcreditacion.created_at).toLocaleDateString("es-CL")}</p>
                   <p><strong>Zona Asignada:</strong> {selectedAcreditacion.zona_id ? zonas.find(z => z.id === selectedAcreditacion.zona_id)?.nombre || "Desconocida" : "Sin asignar"}</p>
@@ -852,16 +856,16 @@ export default function AdminDashboard() {
               </div>
 
               {/* Modificar Zona */}
-              <div className="border-2 border-blue-300 rounded-lg">
-                <h3 className="text-lg font-bold text-white bg-gradient-to-r from-[#1e5799] to-[#2989d8] px-4 py-3 rounded-t-lg">
+              <div className="border-2 border-gray-300 rounded-lg">
+                <h3 className="text-lg font-bold text-white bg-gradient-to-r from-black to-gray-800 px-4 py-3 rounded-t-lg">
                   Modificar Zona Asignada
                 </h3>
-                <div className="bg-blue-50 p-4">
+                <div className="bg-gray-50 p-4">
                   <div className="mb-3">
                     <label className="text-sm font-medium text-gray-700 block mb-1">
                       Zona Actual:
                     </label>
-                    <p className="text-base font-bold text-[#1e5799]">
+                    <p className="text-base font-bold text-black">
                       {selectedAcreditacion.zona_id 
                         ? zonas.find(z => z.id === selectedAcreditacion.zona_id)?.nombre || "Desconocida" 
                         : "Sin asignar"}
@@ -874,7 +878,7 @@ export default function AdminDashboard() {
                     <select
                       value={selectedAcreditacion.zona_id || ""}
                       onChange={(e) => handleAsignZona(Number(e.target.value))}
-                      className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-[#1e5799] focus:outline-none bg-white font-medium text-base"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none bg-white font-medium text-base"
                     >
                       <option value="">Sin asignar</option>
                       {zonas.map((zona) => (
@@ -1010,6 +1014,7 @@ export default function AdminDashboard() {
         onClose={closeEmailErrorModal}
       />
       </div>
+      </>
     </AdminProvider>
   );
 }

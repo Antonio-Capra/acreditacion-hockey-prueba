@@ -19,7 +19,7 @@ export default function AdminFilters({
     <div className="mb-6">
       {/* Encabezado del Panel */}
       <div className="bg-white/95 backdrop-blur-sm rounded-t-2xl px-6 py-4 shadow-lg">
-        <h2 className="text-lg font-bold text-[#1e5799]">
+        <h2 className="text-lg font-bold text-black">
           Filtros y Búsqueda
         </h2>
       </div>
@@ -37,7 +37,7 @@ export default function AdminFilters({
               placeholder="Nombre, email, RUT..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#1e5799] focus:ring-2 focus:ring-[#1e5799]/20 focus:outline-none transition-all shadow-sm"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-black/20 focus:outline-none transition-all shadow-sm"
             />
           </div>
           <div>
@@ -47,7 +47,7 @@ export default function AdminFilters({
             <select
               value={estadoFilter}
               onChange={(e) => setEstadoFilter(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#1e5799] focus:ring-2 focus:ring-[#1e5799]/20 focus:outline-none transition-all shadow-sm"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-black/20 focus:outline-none transition-all shadow-sm"
             >
               <option value="">Todos</option>
               <option value="pendiente">Pendiente</option>
@@ -58,7 +58,7 @@ export default function AdminFilters({
           <div className="flex items-end">
             <button
               onClick={onRefresh}
-              className="w-full px-4 py-3 bg-gradient-to-r from-[#1e5799] to-[#2989d8] text-white rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+              className="w-full px-4 py-3 bg-gradient-to-r from-black to-gray-800 text-white rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 active:scale-95"
             >
               Actualizar
             </button>
