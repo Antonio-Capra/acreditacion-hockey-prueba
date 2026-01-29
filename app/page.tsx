@@ -196,7 +196,7 @@ export default function LandingPage() {
                                     src="/colocolo/EscudoColo.png"
                                     alt="Logo Colo-Colo"
                                     width={80}
-                                    height={40}
+                                    height={50}
                                     className="h-10 w-auto object-contain"
                                 />
                                 
