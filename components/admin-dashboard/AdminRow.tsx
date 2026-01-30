@@ -90,7 +90,6 @@ export default function AdminRow({
   };
 
   const handleSendEmail = () => {
-    const emailType = acred.status === "aprobado" ? "aprobación" : "rechazo";
     onConfirmEmail(acred, async () => {
       setLoadingAction("email");
       try {

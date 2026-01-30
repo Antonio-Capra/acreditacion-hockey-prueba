@@ -558,9 +558,8 @@ export default function AcreditacionPage() {
           <FormSection
             stepNumber={2}
             title="Seleccione la categoría a la que corresponde su medio"
-            description="Esta elección le asignará la cantidad de cupos que puede solicitar"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
               <select
                 value={formData.area}
                 onChange={(e) => {
@@ -569,24 +568,14 @@ export default function AcreditacionPage() {
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
                 required
               >
-                <option value="">Seleccionar Área</option>
+                <option value="" >Seleccionar Área</option>
                 {areas.map((area) => (
                   <option key={area.codigo} value={area.codigo}>
-                    {area.codigo === 'H'
-                      ? area.nombre
-                      : `${area.nombre} (${area.cupos} ${area.cupos === 1 ? 'cupo' : 'cupos'})`}
+                    {area.nombre}
                   </option>
                 ))}
               </select>
             </div>
-
-            {selectedArea && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  Área seleccionada: {selectedArea.nombre} | Cupos disponibles: {selectedArea.cupos} {selectedArea.cupos === 1 ? 'cupo' : 'cupos'}
-                </p>
-              </div>
-            )}
           </FormSection>
 
           {/* Sección Acreditados */}

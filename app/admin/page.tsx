@@ -169,7 +169,7 @@ export default function AdminDashboard() {
     }
 
     setFilteredAcreditaciones(filtered);
-  }, [searchTerm, estadoFilter, acreditaciones]);
+  }, [searchTerm, estadoFilter, acreditaciones, zonas]);
 
   // Open detail modal
   const openDetail = async (acreditacion: Acreditacion) => {
@@ -333,40 +333,64 @@ export default function AdminDashboard() {
           return;
         }
 
-        // Send emails
-        const emailPromises = emailEligible.map(async (acred) => {
-          const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
-          const areaNombre = AREA_NAMES[acred.area] || acred.area;
-          
-          if (acred.status === "aprobado") {
-            return fetch("/api/send-approval", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: acred.email,
-                nombre: `${acred.nombre} ${acred.primer_apellido}`,
-                zona: zonaNombre,
-                area: areaNombre,
-                tipoCredencial: acred.tipo_credencial,
-                numeroCredencial: acred.numero_credencial
-              })
-            });
-          } else {
-            return fetch("/api/send-rejection", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: acred.email,
-                nombre: `${acred.nombre} ${acred.primer_apellido}`,
-                motivo: acred.motivo_rechazo || "Sin motivo especificado"
-              })
-            });
-          }
-        });
+        // Separate approved and rejected emails for batch sending
+        const approvedEmails = emailEligible
+          .filter(a => a.status === "aprobado")
+          .map(acred => ({
+            nombre: acred.nombre,
+            apellido: acred.primer_apellido,
+            correo: acred.email,
+            zona: zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar",
+            area: AREA_NAMES[acred.area] || acred.area,
+            tipoCredencial: acred.tipo_credencial,
+            numeroCredencial: acred.numero_credencial
+          }));
 
-        const results = await Promise.allSettled(emailPromises);
-        const successCount = results.filter(r => r.status === "fulfilled").length;
-        const failureCount = results.filter(r => r.status === "rejected").length;
+        const rejectedEmails = emailEligible
+          .filter(a => a.status === "rechazado")
+          .map(acred => ({
+            nombre: acred.nombre,
+            apellido: acred.primer_apellido,
+            correo: acred.email,
+            motivo: acred.motivo_rechazo || "Sin motivo especificado"
+          }));
+
+        const results = [];
+
+        // Send approved emails in batch (up to 100 per request)
+        if (approvedEmails.length > 0) {
+          const response = await fetch("/api/send-approval", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(approvedEmails)
+          });
+          results.push({ 
+            status: response.ok ? "fulfilled" : "rejected", 
+            count: approvedEmails.length,
+            type: "approval"
+          });
+        }
+
+        // Send rejected emails in batch (up to 100 per request)
+        if (rejectedEmails.length > 0) {
+          const response = await fetch("/api/send-rejection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(rejectedEmails)
+          });
+          results.push({ 
+            status: response.ok ? "fulfilled" : "rejected", 
+            count: rejectedEmails.length,
+            type: "rejection"
+          });
+        }
+
+        const successCount = results
+          .filter(r => r.status === "fulfilled")
+          .reduce((sum, r) => sum + r.count, 0);
+        const failureCount = results
+          .filter(r => r.status === "rejected")
+          .reduce((sum, r) => sum + r.count, 0);
 
         if (successCount > 0) {
           setMessage({ 
@@ -550,10 +574,11 @@ export default function AdminDashboard() {
     try {
       const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
       const areaNombre = AREA_NAMES[acred.area] || acred.area;
-      await fetch("/api/send-approval", {
+      const response = await fetch("/api/send-approval", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: acred.id,
           nombre: acred.nombre,
           apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
           correo: acred.email,
@@ -561,42 +586,43 @@ export default function AdminDashboard() {
           area: areaNombre,
         }),
       });
-      setMessage({
-        type: "success",
-        text: "Email de aprobación enviado exitosamente",
+      
+      if (!response.ok) {
+        throw new Error("Error en la respuesta del servidor");
+      }
+      
+      setSuccessModal({
+        isOpen: true,
+        message: `✅ Email de aprobación enviado exitosamente a ${acred.nombre} ${acred.primer_apellido}`,
       });
-      setTimeout(() => {
-        setMessage(null);
-      }, 3000);
     } catch {
-      setMessage({ type: "error", text: "Error al enviar email de aprobación" });
+      setEmailErrorModal({ isOpen: true, message: "Error al enviar email de aprobación. Intenta nuevamente." });
     }
   };
 
   const sendRejectionEmail = async (acred: Acreditacion) => {
     try {
-      const zonaNombre = zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar";
-      const areaNombre = AREA_NAMES[acred.area] || acred.area;
-      await fetch("/api/send-rejection", {
+      const response = await fetch("/api/send-rejection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: acred.id,
           nombre: acred.nombre,
           apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
           correo: acred.email,
-          zona: zonaNombre,
-          area: areaNombre,
         }),
       });
-      setMessage({
-        type: "success",
-        text: "Email de rechazo enviado exitosamente",
+      
+      if (!response.ok) {
+        throw new Error("Error en la respuesta del servidor");
+      }
+      
+      setSuccessModal({
+        isOpen: true,
+        message: `✅ Email de rechazo enviado exitosamente a ${acred.nombre} ${acred.primer_apellido}`,
       });
-      setTimeout(() => {
-        setMessage(null);
-      }, 3000);
     } catch {
-      setMessage({ type: "error", text: "Error al enviar email de rechazo" });
+      setEmailErrorModal({ isOpen: true, message: "Error al enviar email de rechazo. Intenta nuevamente." });
     }
   };
 
@@ -616,7 +642,7 @@ export default function AdminDashboard() {
     setEmailErrorModal({ isOpen: false, message: "" });
   };
 
-  if (isLoading) return <LoadingSpinner message="Cargando dashboard..." />;
+  if (isLoading) return <LoadingSpinner message="Cargando acreditaciones..." />;
 
   const contextValue = {
     acreditaciones,
