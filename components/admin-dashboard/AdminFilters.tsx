@@ -52,7 +52,7 @@ export default function AdminFilters({
               <option value="">Todos</option>
               <option value="pendiente">Pendiente</option>
               <option value="aprobado">Aprobado</option>
-              <option value="rechazado">Rechazada</option>
+              <option value="rechazado">Rechazado</option>
             </select>
           </div>
           <div className="flex items-end">
