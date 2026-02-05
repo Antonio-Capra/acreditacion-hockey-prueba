@@ -7,7 +7,7 @@ import Image from "next/image";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
-import { AdminProvider, AdminStats, AdminFilters, AdminExportActions, AdminTable, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
+import { AdminProvider, AdminStats, AdminFilters, AdminExportActions, AdminTable, AdminAcreditacionControl, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -718,6 +718,9 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <AdminStats acreditaciones={acreditaciones} />
+
+        {/* Control de acreditacion */}
+        <AdminAcreditacionControl />
 
         {/* Message */}
         {message && (

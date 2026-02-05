@@ -11,6 +11,7 @@ import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
 import AcreditadoRow from "@/components/acreditacion/AcreditadoRow";
 import { useAcreditacion } from "@/hooks/useAcreditacion";
+import { useAcreditacionConfig } from "@/hooks/useAcreditacionConfig";
 import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
 import { validateRUT, validateEmail } from "@/lib/validation";
 
@@ -115,9 +116,8 @@ function createEmptyAcreditado(): Acreditado {
 
 export default function AcreditacionPage() {
   const { areas, loading: areasLoading, cuposError, closeCuposError, submitAcreditacion, error: areasError } = useAcreditacion();
-
-  const ACCREDITATION_CLOSED = true;
-  const ACCREDITATION_CLOSED_MESSAGE = "Lamentablemente ya no estas en tiempo de acreditarte. El plazo de acreditacion ha finalizado.";
+  const { isOpen: accreditationOpen, loading: configLoading, closeMessage } = useAcreditacionConfig(1);
+  const isClosed = !accreditationOpen;
   
   const [formData, setFormData] = useState<FormData>({
     responsable_nombre: "",
@@ -396,7 +396,7 @@ export default function AcreditacionPage() {
     }
   };
 
-  if (areasLoading) {
+  if (areasLoading || configLoading) {
     return <LoadingSpinner message="Cargando..." />;
   }
 
@@ -422,15 +422,15 @@ export default function AcreditacionPage() {
           </p>
         </header>
 
-        {ACCREDITATION_CLOSED && (
+        {isClosed && (
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl">
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-900 rounded-xl p-5 text-center text-lg font-semibold">
-              {ACCREDITATION_CLOSED_MESSAGE}
+              {closeMessage}
             </div>
           </div>
         )}
 
-        {!ACCREDITATION_CLOSED && (
+        {!isClosed && (
           <form
             onSubmit={handleSubmit}
             className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl space-y-8"
@@ -642,7 +642,7 @@ export default function AcreditacionPage() {
         )}
       </div>
 
-      {!ACCREDITATION_CLOSED && (
+      {!isClosed && (
         <>
           <DisclaimerModal
             isVisible={showDisclaimer}
