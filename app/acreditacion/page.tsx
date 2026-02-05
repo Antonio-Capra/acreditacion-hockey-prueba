@@ -115,6 +115,9 @@ function createEmptyAcreditado(): Acreditado {
 
 export default function AcreditacionPage() {
   const { areas, loading: areasLoading, cuposError, closeCuposError, submitAcreditacion, error: areasError } = useAcreditacion();
+
+  const ACCREDITATION_CLOSED = true;
+  const ACCREDITATION_CLOSED_MESSAGE = "Lamentablemente ya no estas en tiempo de acreditarte. El plazo de acreditacion ha finalizado.";
   
   const [formData, setFormData] = useState<FormData>({
     responsable_nombre: "",
@@ -419,35 +422,44 @@ export default function AcreditacionPage() {
           </p>
         </header>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl space-y-8"
-        >
-          <ProgressIndicator
-            currentStep={currentStep}
-            totalSteps={3}
-            stepLabels={["Responsable", "Cupos", "Acreditados"]}
-          />
-
-          {submissionStatus.type && (
-            <div
-              className={`p-4 rounded-lg text-sm font-medium ${
-                submissionStatus.type === "success"
-                  ? "bg-green-100 text-green-800 border border-green-300"
-                  : "bg-red-100 text-red-800 border border-red-300"
-              }`}
-            >
-              {submissionStatus.message}
+        {ACCREDITATION_CLOSED && (
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl">
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-900 rounded-xl p-5 text-center text-lg font-semibold">
+              {ACCREDITATION_CLOSED_MESSAGE}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Sección Responsable */}
-          <FormSection
-            stepNumber={1}
-            title="Datos del Responsable"
-            description="Información de contacto del responsable de la acreditación"
+        {!ACCREDITATION_CLOSED && (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl space-y-8"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ProgressIndicator
+              currentStep={currentStep}
+              totalSteps={3}
+              stepLabels={["Responsable", "Cupos", "Acreditados"]}
+            />
+
+            {submissionStatus.type && (
+              <div
+                className={`p-4 rounded-lg text-sm font-medium ${
+                  submissionStatus.type === "success"
+                    ? "bg-green-100 text-green-800 border border-green-300"
+                    : "bg-red-100 text-red-800 border border-red-300"
+                }`}
+              >
+                {submissionStatus.message}
+              </div>
+            )}
+
+            {/* Sección Responsable */}
+            <FormSection
+              stepNumber={1}
+              title="Datos del Responsable"
+              description="Información de contacto del responsable de la acreditación"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="Nombre"
@@ -551,8 +563,8 @@ export default function AcreditacionPage() {
                   required
                 />
               )}
-            </div>
-          </FormSection>
+              </div>
+            </FormSection>
 
           {/* Sección Cupos por área del medio */}
           <FormSection
@@ -618,69 +630,74 @@ export default function AcreditacionPage() {
             </div>
           </FormSection>
 
-          <div className="flex justify-center">
-            <button
-              type="submit"
-              className="px-8 py-4 bg-[#1e5799] hover:bg-[#207cca] text-white font-bold rounded-xl transition-colors shadow-lg"
-            >
-              Enviar Acreditación
-            </button>
-          </div>
-        </form>
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                className="px-8 py-4 bg-[#1e5799] hover:bg-[#207cca] text-white font-bold rounded-xl transition-colors shadow-lg"
+              >
+                Enviar Acreditación
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
-      <DisclaimerModal
-        isVisible={showDisclaimer}
-        onAccept={() => setShowDisclaimer(false)}
-      />
+      {!ACCREDITATION_CLOSED && (
+        <>
+          <DisclaimerModal
+            isVisible={showDisclaimer}
+            onAccept={() => setShowDisclaimer(false)}
+          />
 
-      <ConfirmationModal
-        isOpen={showConfirmation}
-        onConfirm={confirmSubmit}
-        onCancel={() => setShowConfirmation(false)}
-        title="Confirmar Envío"
-        message={`¿Desea enviar la acreditación para ${formData.acreditados.length} persona(s)?`}
-      />
+          <ConfirmationModal
+            isOpen={showConfirmation}
+            onConfirm={confirmSubmit}
+            onCancel={() => setShowConfirmation(false)}
+            title="Confirmar Envío"
+            message={`¿Desea enviar la acreditación para ${formData.acreditados.length} persona(s)?`}
+          />
 
-      <Modal
-        isOpen={successModal.show}
-        type="success"
-        title="¡Solicitud enviada exitosamente!"
-        message="Su solicitud de acreditación ha sido registrada correctamente."
-        buttons={[
-          {
-            label: "Aceptar",
-            onClick: handleSuccessModalClose,
-            variant: "primary",
-          },
-        ]}
-        onClose={handleSuccessModalClose}
-      >
-        <div className="mt-4 space-y-3 text-lg md:text-xl text-gray-800">
-          <p className="text-red-700 font-bold text-lg md:text-xl">
-            La solicitud de acreditación no garantiza la obtención de la misma. La resolución será informada vía correo electrónico.
-          </p>
-          <p><span className="font-semibold">Empresa:</span> {getEmpresaDisplay()}</p>
-          <p><span className="font-semibold">Área:</span> {selectedArea?.nombre}</p>
-          <p><span className="font-semibold">Acreditados registrados:</span> {successModal.acreditados_count}</p>
-        </div>
-      </Modal>
+          <Modal
+            isOpen={successModal.show}
+            type="success"
+            title="¡Solicitud enviada exitosamente!"
+            message="Su solicitud de acreditación ha sido registrada correctamente."
+            buttons={[
+              {
+                label: "Aceptar",
+                onClick: handleSuccessModalClose,
+                variant: "primary",
+              },
+            ]}
+            onClose={handleSuccessModalClose}
+          >
+            <div className="mt-4 space-y-3 text-lg md:text-xl text-gray-800">
+              <p className="text-red-700 font-bold text-lg md:text-xl">
+                La solicitud de acreditación no garantiza la obtención de la misma. La resolución será informada vía correo electrónico.
+              </p>
+              <p><span className="font-semibold">Empresa:</span> {getEmpresaDisplay()}</p>
+              <p><span className="font-semibold">Área:</span> {selectedArea?.nombre}</p>
+              <p><span className="font-semibold">Acreditados registrados:</span> {successModal.acreditados_count}</p>
+            </div>
+          </Modal>
 
-      {cuposError?.show && (
-        <Modal
-          isOpen={cuposError.show}
-          type="error"
-          title="Cupos Agotados"
-          message={`No hay cupos disponibles.\n\nEmpresa: ${cuposError.empresa}\nÁrea: ${cuposError.area}\nCupos máximos: ${cuposError.maximo}\nYa acreditados: ${cuposError.existentes}\nIntentó registrar: ${cuposError.solicitados}\nTotal resultante: ${cuposError.existentes + cuposError.solicitados} (excede el límite)`}
-          buttons={[
-            {
-              label: "Entendido",
-              onClick: closeCuposError,
-              variant: "primary",
-            },
-          ]}
-          onClose={closeCuposError}
-        />
+          {cuposError?.show && (
+            <Modal
+              isOpen={cuposError.show}
+              type="error"
+              title="Cupos Agotados"
+              message={`No hay cupos disponibles.\n\nEmpresa: ${cuposError.empresa}\nÁrea: ${cuposError.area}\nCupos máximos: ${cuposError.maximo}\nYa acreditados: ${cuposError.existentes}\nIntentó registrar: ${cuposError.solicitados}\nTotal resultante: ${cuposError.existentes + cuposError.solicitados} (excede el límite)`}
+              buttons={[
+                {
+                  label: "Entendido",
+                  onClick: closeCuposError,
+                  variant: "primary",
+                },
+              ]}
+              onClose={closeCuposError}
+            />
+          )}
+        </>
       )}
     </div>
   );

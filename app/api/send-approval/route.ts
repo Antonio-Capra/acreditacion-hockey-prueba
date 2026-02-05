@@ -56,8 +56,8 @@ const generateApprovalHTML = (nombre: string, apellido: string, zona: string, ar
   const informacionComun = `
     <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Información General</h3>
     <p style="margin: 0 0 10px 0; color: #4b5563; line-height: 1.6;">
-      <strong>Apertura de puertas:</strong> 18:00 hrs.<br>
-      <strong>Cierre de ingreso de prensa:</strong> 19:30 hrs. (sin excepciones).
+      <strong>Apertura de puertas:</strong> 18:30 hrs.<br>
+      <strong>Cierre de ingreso de prensa:</strong> 20:15 hrs. (sin excepciones).
     </p>
     <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
       Les recomendamos trasladarse e ingresar al recinto con tiempo y anticipación, además de planificar su viaje.
