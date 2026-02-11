@@ -35,6 +35,7 @@ export function useAcreditacionConfig(eventoId: number) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => new Date());
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -45,9 +46,9 @@ export function useAcreditacionConfig(eventoId: number) {
         .from("configuracion_acreditacion")
         .select("id, evento_id, esta_abierta, actualizado_en")
         .eq("evento_id", eventoId)
-        .single();
+        .maybeSingle();
 
-      if (configError && configError.code !== "PGRST116") {
+      if (configError) {
         throw configError;
       }
 
@@ -75,6 +76,14 @@ export function useAcreditacionConfig(eventoId: number) {
     fetchConfig();
   }, [fetchConfig]);
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(new Date());
+    }, 30_000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   const ventanasActivas = useMemo(
     () => ventanas.filter((ventana) => ventana.esta_activa),
     [ventanas]
@@ -82,9 +91,8 @@ export function useAcreditacionConfig(eventoId: number) {
 
   const isWithinWindow = useMemo(() => {
     if (ventanasActivas.length === 0) return false;
-    const now = new Date();
     return ventanasActivas.some((ventana) => isDateWithinWindow(now, ventana));
-  }, [ventanasActivas]);
+  }, [ventanasActivas, now]);
 
   const hasSchedule = ventanasActivas.length > 0;
   const manualOpen = config?.esta_abierta ?? true;

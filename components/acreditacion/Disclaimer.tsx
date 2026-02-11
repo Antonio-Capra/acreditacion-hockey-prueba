@@ -5,9 +5,26 @@ import React, { useState, useRef, useEffect } from 'react';
 interface DisclaimerModalProps {
   isVisible: boolean;
   onAccept: () => void;
+  window?: {
+    startsAt: string;
+    endsAt: string;
+  } | null;
 }
 
-export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModalProps) {
+const formatDateTime = (value?: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("es-CL", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+export default function DisclaimerModal({ isVisible, onAccept, window }: DisclaimerModalProps) {
   const [canAccept, setCanAccept] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +87,9 @@ export default function DisclaimerModal({ isVisible, onAccept }: DisclaimerModal
                     <span>Plazo de Acreditación</span>
                   </p>
                   <p className="text-yellow-700 leading-relaxed">
-                    Desde el lunes 02 de febrero, hasta el jueves 05 a las 12:30 horas; sin excepción. No se aceptarán solicitudes fuera de plazo.
+                    {window
+                      ? `Desde el ${formatDateTime(window.startsAt)} hasta el ${formatDateTime(window.endsAt)}; sin excepción. No se aceptarán solicitudes fuera de plazo.`
+                      : "El plazo de acreditación se publicará aquí; sin excepción. No se aceptarán solicitudes fuera de plazo."}
                   </p>
                 </div>
               </div>

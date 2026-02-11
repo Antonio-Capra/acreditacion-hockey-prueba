@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { useAcreditacionConfig } from "@/hooks/useAcreditacionConfig";
 
-const EVENTO_ID = 1;
+interface AdminAcreditacionControlProps {
+  eventoId: number;
+}
 
 const formatDateTime = (value: string) => {
   const date = new Date(value);
@@ -23,7 +25,7 @@ const toISOStringFromLocal = (value: string) => {
   return date.toISOString();
 };
 
-export default function AdminAcreditacionControl() {
+export default function AdminAcreditacionControl({ eventoId }: AdminAcreditacionControlProps) {
   const {
     manualOpen,
     isOpen,
@@ -37,7 +39,7 @@ export default function AdminAcreditacionControl() {
     addVentana,
     updateVentana,
     deleteVentana,
-  } = useAcreditacionConfig(EVENTO_ID);
+  } = useAcreditacionConfig(eventoId);
 
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");

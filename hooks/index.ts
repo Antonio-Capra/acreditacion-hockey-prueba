@@ -1,1 +1,2 @@
-// Exportar hooks aquí si es necesario
+export { useEventoActivo } from "./useEventoActivo";
+export type { EventoActivo } from "./useEventoActivo";

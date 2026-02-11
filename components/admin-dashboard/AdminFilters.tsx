@@ -6,6 +6,9 @@ interface AdminFiltersProps {
   estadoFilter: string;
   setEstadoFilter: (filter: string) => void;
   onRefresh: () => void;
+  eventos: Array<{ id: number; nombre: string; activo?: boolean | null }>;
+  selectedEventoId: number | null;
+  onEventoChange: (id: number) => void;
 }
 
 export default function AdminFilters({
@@ -14,6 +17,9 @@ export default function AdminFilters({
   estadoFilter,
   setEstadoFilter,
   onRefresh,
+  eventos,
+  selectedEventoId,
+  onEventoChange,
 }: AdminFiltersProps) {
   return (
     <div className="mb-6">
@@ -28,6 +34,26 @@ export default function AdminFilters({
       <div className="bg-white/90 backdrop-blur-sm p-6 rounded-b-2xl shadow-lg">
         {/* Filtros */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Evento
+            </label>
+            <select
+              value={selectedEventoId ?? ""}
+              onChange={(e) => onEventoChange(Number(e.target.value))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#1e5799] focus:ring-2 focus:ring-[#1e5799]/20 focus:outline-none transition-all shadow-sm"
+            >
+              <option value="" disabled>
+                Seleccionar evento
+              </option>
+              {eventos.map((evento) => (
+                <option key={evento.id} value={evento.id}>
+                  {evento.nombre || `Evento ${evento.id}`}
+                  {evento.activo ? " (Activo)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Buscar

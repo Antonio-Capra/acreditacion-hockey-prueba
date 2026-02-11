@@ -67,7 +67,7 @@ export default function AdminTable({
         <table className="w-full">
           <thead className="bg-gray-50 border-b-2 border-gray-200">
             <tr>
-              <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
                 <div className="flex-col items-center justify-center">
                    <span className="flex justify-center text-xs font-bold text-gray-700 uppercase tracking-wider">Selec Todos</span>
                   <input
