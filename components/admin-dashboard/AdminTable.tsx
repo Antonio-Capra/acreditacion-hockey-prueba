@@ -202,19 +202,10 @@ export default function AdminTable({
 
       </div>
 
-      <div className="overflow-x-auto">
-        {/* wrapper que aplica el escalado visual para que even los elementos con `text-sm/text-xs` se vean afectados */}
-        <div
-          data-testid="table-scale-wrapper"
-          style={{
-            transform: `scale(${fontScale / 100})`,
-            transformOrigin: '0 0',
-            width: `${100 / (fontScale / 100)}%`,
-          }}
-        >
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-            <tr>
+      <div className="overflow-auto max-h-[70vh]">
+          <table className="w-full" data-testid="table-scale-wrapper" style={{ fontSize: `${fontScale / 100}em` }}>
+            <thead className="sticky top-0 z-20">
+            <tr className="bg-gray-50 border-b-2 border-gray-200">
               <th className="px-2 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
                 <div className="flex-col items-center justify-center">
                    <span className="flex justify-center text-xs font-bold text-gray-700 uppercase tracking-wider">Selec Todos</span>
@@ -239,11 +230,9 @@ export default function AdminTable({
               <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Ver Detalles</th>
               <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
             </tr>
-          </thead>
           {selectedIds.length > 0 && (
-            <thead className="bg-blue-50 border-b border-gray-200">
-              <tr>
-                <td colSpan={11} className="px-6 py-4">
+              <tr className="bg-blue-50 border-b border-gray-200">
+                <td colSpan={11} className="px-6 py-4 bg-blue-50">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
                       {selectedIds.length} elemento{selectedIds.length !== 1 ? 's' : ''} seleccionado{selectedIds.length !== 1 ? 's' : ''}
@@ -280,8 +269,8 @@ export default function AdminTable({
                   </div>
                 </td>
               </tr>
-            </thead>
           )}
+          </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredAcreditaciones.map((acred, idx) => (
               <AdminRow
@@ -300,7 +289,6 @@ export default function AdminTable({
             ))}
           </tbody>
         </table>
-      </div>
 
       {filteredAcreditaciones.length === 0 && (
         <div className="p-8 text-center text-gray-500">

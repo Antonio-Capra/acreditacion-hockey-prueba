@@ -311,13 +311,13 @@ describe('AdminTable Bulk Actions', () => {
     const increase = screen.getAllByLabelText('aumentar-tamano')[0];
     const decrease = screen.getAllByLabelText('disminuir-tamano')[0];
 
-    // initial scale should be 1 (100%)
-    expect(wrapper).toHaveStyle({ transform: 'scale(1)' });
+    // initial font-size should be 1em (100%)
+    expect(wrapper).toHaveStyle({ fontSize: '1em' });
 
     await user.click(increase);
-    expect(wrapper).toHaveStyle({ transform: 'scale(1.1)' });
+    expect(wrapper).toHaveStyle({ fontSize: '1.1em' });
 
     await user.click(decrease);
-    expect(wrapper).toHaveStyle({ transform: 'scale(1)' });
+    expect(wrapper).toHaveStyle({ fontSize: '1em' });
   });
 });

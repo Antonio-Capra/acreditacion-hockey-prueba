@@ -19,6 +19,7 @@ interface AcreditadoRowProps {
   onChange: (index: number, field: keyof Acreditado, value: string) => void;
   onRemove: (index: number) => void;
   canRemove: boolean;
+  lockedFields?: (keyof Acreditado)[];
 }
 
 const CARGOS = [
@@ -39,8 +40,11 @@ export default function AcreditadoRow({
   onChange,
   onRemove,
   canRemove,
+  lockedFields,
 }: AcreditadoRowProps) {
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  const isLocked = (field: keyof Acreditado) => lockedFields?.includes(field) ?? false;
 
   const validateField = (field: keyof Acreditado, value: string) => {
     const newErrors = { ...errors };
@@ -82,17 +86,25 @@ export default function AcreditadoRow({
           </svg>
         </button>
       )}
-      <h3 className="font-semibold text-gray-700 text-lg">
-        Acreditado {index + 1} de {total}
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-gray-700 text-lg">
+          Acreditado {index + 1} de {total}
+        </h3>
+        {lockedFields && lockedFields.length > 0 && (
+          <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+            📋 Datos del responsable
+          </span>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <input
           type="text"
           placeholder="Nombre"
           value={acreditado.nombre}
+          readOnly={isLocked("nombre")}
           onChange={(e) => onChange(index, "nombre", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className={`px-4 py-3 border-2 rounded-lg focus:outline-none ${isLocked("nombre") ? "bg-blue-50 border-blue-200 text-gray-600 cursor-not-allowed" : "border-gray-200 focus:border-[#1e5799]"}`}
           required
         />
 
@@ -100,8 +112,9 @@ export default function AcreditadoRow({
           type="text"
           placeholder="Primer Apellido"
           value={acreditado.primer_apellido}
+          readOnly={isLocked("primer_apellido")}
           onChange={(e) => onChange(index, "primer_apellido", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className={`px-4 py-3 border-2 rounded-lg focus:outline-none ${isLocked("primer_apellido") ? "bg-blue-50 border-blue-200 text-gray-600 cursor-not-allowed" : "border-gray-200 focus:border-[#1e5799]"}`}
           required
         />
 
@@ -109,8 +122,9 @@ export default function AcreditadoRow({
           type="text"
           placeholder="Segundo Apellido"
           value={acreditado.segundo_apellido}
+          readOnly={isLocked("segundo_apellido")}
           onChange={(e) => onChange(index, "segundo_apellido", e.target.value)}
-          className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          className={`px-4 py-3 border-2 rounded-lg focus:outline-none ${isLocked("segundo_apellido") ? "bg-blue-50 border-blue-200 text-gray-600 cursor-not-allowed" : "border-gray-200 focus:border-[#1e5799]"}`}
         />
       </div>
 
@@ -122,16 +136,20 @@ export default function AcreditadoRow({
             value={acreditado.rut}
             pattern="^[0-9]{7,8}-[0-9kK]{1}$"
             title="RUT sin puntos, con guion. Ej: 11111111-1"
+            readOnly={isLocked("rut")}
             onChange={(e) => {
+              if (isLocked("rut")) return;
               // Solo permitir números, guion y k/K, y quitar puntos automáticamente
               let value = e.target.value.replace(/\./g, "");
               value = value.replace(/[^0-9kK\-]/g, "");
               handleFieldChange("rut", value);
             }}
             className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
-              errors.rut
-                ? "border-red-500 focus:border-red-500"
-                : "border-gray-200 focus:border-[#1e5799]"
+              isLocked("rut")
+                ? "bg-blue-50 border-blue-200 text-gray-600 cursor-not-allowed"
+                : errors.rut
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-200 focus:border-[#1e5799]"
             }`}
             required
           />
@@ -145,11 +163,17 @@ export default function AcreditadoRow({
             type="email"
             placeholder="Email"
             value={acreditado.email}
-            onChange={(e) => handleFieldChange("email", e.target.value)}
+            readOnly={isLocked("email")}
+            onChange={(e) => {
+              if (isLocked("email")) return;
+              handleFieldChange("email", e.target.value);
+            }}
             className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
-              errors.email
-                ? "border-red-500 focus:border-red-500"
-                : "border-gray-200 focus:border-[#1e5799]"
+              isLocked("email")
+                ? "bg-blue-50 border-blue-200 text-gray-600 cursor-not-allowed"
+                : errors.email
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-200 focus:border-[#1e5799]"
             }`}
             required
           />

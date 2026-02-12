@@ -173,6 +173,7 @@ export default function AcreditacionPage() {
   }>({ type: null, message: "" });
   const [currentStep, setCurrentStep] = useState(1);
   const [responsableErrors, setResponsableErrors] = useState<{[key: string]: string}>({});
+  const [yoMeAcredito, setYoMeAcredito] = useState(false);
 
   const selectedArea = areas.find((a) => a.codigo === formData.area);
 
@@ -202,10 +203,28 @@ export default function AcreditacionPage() {
   }, [formData]);
 
   const handleResponsableChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+
+      // Sync to first acreditado if "yo me acredito" is active
+      if (yoMeAcredito && prev.acreditados.length > 0) {
+        const fieldMap: Record<string, string> = {
+          responsable_nombre: "nombre",
+          responsable_primer_apellido: "primer_apellido",
+          responsable_segundo_apellido: "segundo_apellido",
+          responsable_rut: "rut",
+          responsable_email: "email",
+        };
+        const acreditadoField = fieldMap[field];
+        if (acreditadoField) {
+          const newAcreditados = [...prev.acreditados];
+          newAcreditados[0] = { ...newAcreditados[0], [acreditadoField]: value };
+          updated.acreditados = newAcreditados;
+        }
+      }
+
+      return updated;
+    });
 
     // Validar campos específicos
     if (field === 'responsable_rut') {
@@ -252,6 +271,18 @@ export default function AcreditacionPage() {
     const newAcreditados = Array.from({ length: cupos }, () =>
       createEmptyAcreditado()
     );
+
+    // Auto-fill first acreditado if "yo me acredito" is active
+    if (yoMeAcredito) {
+      newAcreditados[0] = {
+        ...newAcreditados[0],
+        nombre: formData.responsable_nombre,
+        primer_apellido: formData.responsable_primer_apellido,
+        segundo_apellido: formData.responsable_segundo_apellido,
+        rut: formData.responsable_rut,
+        email: formData.responsable_email,
+      };
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -371,6 +402,7 @@ export default function AcreditacionPage() {
   };
 
   const resetForm = () => {
+    setYoMeAcredito(false);
     setFormData({
       responsable_nombre: "",
       responsable_primer_apellido: "",
@@ -631,6 +663,39 @@ export default function AcreditacionPage() {
                 Acreditaciones a registrar: {formData.acreditados.length} de {selectedArea?.cupos || 0} disponibles.
               </p>
             </div>
+            <div className="mb-4 p-4 bg-indigo-50 border-2 border-indigo-200 rounded-lg">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={yoMeAcredito}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setYoMeAcredito(checked);
+                    if (checked && formData.acreditados.length > 0) {
+                      const newAcreditados = [...formData.acreditados];
+                      newAcreditados[0] = {
+                        ...newAcreditados[0],
+                        nombre: formData.responsable_nombre,
+                        primer_apellido: formData.responsable_primer_apellido,
+                        segundo_apellido: formData.responsable_segundo_apellido,
+                        rut: formData.responsable_rut,
+                        email: formData.responsable_email,
+                      };
+                      setFormData(prev => ({ ...prev, acreditados: newAcreditados }));
+                    }
+                  }}
+                  className="w-5 h-5 text-[#1e5799] rounded focus:ring-[#1e5799] accent-[#1e5799]"
+                />
+                <div>
+                  <span className="text-xl font-semibold text-indigo-800">
+                    Yo, el responsable, me acreditaré
+                  </span>
+                  <p className="text-sm text-indigo-600 mt-0.5">
+                    Tus datos se copiarán automáticamente al primer cupo. Solo deberás completar cargo y credencial.
+                  </p>
+                </div>
+              </label>
+            </div>
             {formData.acreditados.length < (selectedArea?.cupos || 0) && (
               <div className="mb-4">
                 <button
@@ -654,7 +719,8 @@ export default function AcreditacionPage() {
                   total={formData.acreditados.length}
                   onChange={handleAcreditadoChange}
                   onRemove={handleRemoveAcreditado}
-                  canRemove={formData.acreditados.length > 1}
+                  canRemove={formData.acreditados.length > 1 && !(yoMeAcredito && index === 0)}
+                  lockedFields={yoMeAcredito && index === 0 ? ["nombre", "primer_apellido", "segundo_apellido", "rut", "email"] : undefined}
                 />
               ))}
             </div>
