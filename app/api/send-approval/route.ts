@@ -13,6 +13,39 @@ interface ResendError {
   code?: string;
 }
 
+interface EmailTemplateRow {
+  subject: string | null;
+  partido_descripcion: string | null;
+  partido_fecha: string | null;
+  sede: string | null;
+  apertura_puertas: string | null;
+  cierre_ingreso_prensa: string | null;
+  contacto_email: string | null;
+  reply_to: string | null;
+  instrucciones_acceso_override: string | null;
+  info_general_override: string | null;
+  intro_text_override: string | null;
+}
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+async function fetchTemplate(eventoId: number | null | undefined, tipo: "approval" | "rejection", zonaKey: string): Promise<EmailTemplateRow | null> {
+  if (!eventoId) return null;
+  try {
+    const { data } = await supabaseAdmin
+      .from("email_templates")
+      .select("*")
+      .eq("evento_id", eventoId)
+      .eq("tipo", tipo)
+      .eq("zona_key", zonaKey)
+      .maybeSingle();
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
 // 🔐 Configuración SEGURA para evitar bloqueos
 const EMAIL_CONFIG = {
   default: "onboarding@resend.dev",
@@ -32,8 +65,23 @@ const getFromEmail = (): string => {
 };
 
 // Función para generar el HTML del email de aprobación
-const generateApprovalHTML = (nombre: string, apellido: string, zona: string, area: string): string => {
-  const instruccionesAcceso = zona === "Cancha" 
+const generateApprovalHTML = (nombre: string, apellido: string, zona: string, area: string, tpl?: EmailTemplateRow | null): string => {
+  // Resolver variables desde el template DB o usar defaults hardcoded
+  const partido = tpl?.partido_descripcion || "Universidad Católica";
+  const fecha = tpl?.partido_fecha || "";
+  const sede = tpl?.sede || "Claro Arena";
+  const apertura = tpl?.apertura_puertas || "18:30 hrs.";
+  const cierre = tpl?.cierre_ingreso_prensa || "20:15 hrs.";
+  const contacto = tpl?.contacto_email || "palarcon@cruzados.cl";
+
+  const introText = tpl?.intro_text_override
+    ? `<p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;"><strong>${escapeHtml(tpl.intro_text_override)}</strong></p>`
+    : fecha
+      ? `<p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;"><strong>Su solicitud de acreditación para el partido ${escapeHtml(partido)} a disputarse el ${escapeHtml(fecha)} en el ${escapeHtml(sede)}, ha sido aceptada.</strong></p>`
+      : `<p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">Nos complace informarte que tu solicitud de acreditación ha sido <strong style="color: #10b981;">aprobada exitosamente</strong>.</p>`;
+  const instruccionesAcceso = tpl?.instrucciones_acceso_override
+    ? `<p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">${escapeHtml(tpl.instrucciones_acceso_override).replace(/\n/g, "<br>")}</p>`
+    : zona === "Cancha" 
     ? `
       <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Acceso Reporteros Gráficos:</h3>
       <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
@@ -53,11 +101,13 @@ const generateApprovalHTML = (nombre: string, apellido: string, zona: string, ar
       </p>
     `;
 
-  const informacionComun = `
+  const informacionComun = tpl?.info_general_override
+    ? `<p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">${escapeHtml(tpl.info_general_override).replace(/\n/g, "<br>")}</p>`
+    : `
     <h3 style="color: #1e5799; margin: 20px 0 10px 0; font-size: 16px;">Información General</h3>
     <p style="margin: 0 0 10px 0; color: #4b5563; line-height: 1.6;">
-      <strong>Apertura de puertas:</strong> 18:30 hrs.<br>
-      <strong>Cierre de ingreso de prensa:</strong> 20:15 hrs. (sin excepciones).
+      <strong>Apertura de puertas:</strong> ${escapeHtml(apertura)}<br>
+      <strong>Cierre de ingreso de prensa:</strong> ${escapeHtml(cierre)} (sin excepciones).
     </p>
     <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
       Les recomendamos trasladarse e ingresar al recinto con tiempo y anticipación, además de planificar su viaje.
@@ -81,7 +131,7 @@ const generateApprovalHTML = (nombre: string, apellido: string, zona: string, ar
     </ul>
 
     <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
-      Dudas o consultas previas, contactar al Área de Comunicaciones de Cruzados, al correo palarcon@cruzados.cl.
+      Dudas o consultas previas, contactar al Área de Comunicaciones de Cruzados, al correo ${escapeHtml(contacto)}.
     </p>
     <p style="margin: 0 0 15px 0; color: #4b5563; line-height: 1.6;">
       Por favor compartir estas indicaciones de cobertura con sus profesionales.
@@ -139,12 +189,7 @@ const generateApprovalHTML = (nombre: string, apellido: string, zona: string, ar
                   <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0; line-height: 1.6;">
                     Hola <strong>${nombre} ${apellido}</strong>,
                   </p>
-                  <p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
-                    Nos complace informarte que tu solicitud de acreditación ha sido <strong style="color: #10b981;">aprobada exitosamente</strong>.
-                  </p>
-                  <p style="font-size: 16px; color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
-                    <strong>Su solicitud de acreditación para el partido Universidad Católica vs. Deportes Concepción a disputarse el domingo 8 de febrero a las 20:30 horas en el Claro Arena, ha sido aceptada.</strong>
-                  </p>
+                  ${introText}
                   <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
                     <tr>
                       <td style="padding: 20px; background-color: #eff6ff; border-left: 4px solid #1e5799; border-radius: 8px; margin-bottom: 15px;">
@@ -209,13 +254,23 @@ export async function POST(req: Request) {
 
     // Check if it's a batch request
     if (Array.isArray(body)) {
-      const emails = body.map((item: { nombre: string; apellido: string; correo: string; zona: string; area: string }) => ({
-        from: getFromEmail(),
-        to: item.correo,
-        replyTo: "palarcon@cruzados.cl",
-        subject: "✅ Tu acreditación ha sido aprobada",
-        html: generateApprovalHTML(item.nombre, item.apellido, item.zona, item.area)
-      }));
+      // Fetch templates for batch (all items share eventoId)
+      const eventoId = body[0]?.eventoId ?? null;
+      const [tplDefault, tplCancha] = await Promise.all([
+        fetchTemplate(eventoId, "approval", "default"),
+        fetchTemplate(eventoId, "approval", "cancha"),
+      ]);
+
+      const emails = body.map((item: { nombre: string; apellido: string; correo: string; zona: string; area: string }) => {
+        const tpl = item.zona === "Cancha" ? tplCancha : tplDefault;
+        return {
+          from: getFromEmail(),
+          to: item.correo,
+          replyTo: tpl?.reply_to || "palarcon@cruzados.cl",
+          subject: tpl?.subject || "✅ Tu acreditación ha sido aprobada",
+          html: generateApprovalHTML(item.nombre, item.apellido, item.zona, item.area, tpl),
+        };
+      });
 
       const { data: batchResult, error } = await resend.batch.send(emails);
 
@@ -253,12 +308,16 @@ export async function POST(req: Request) {
         );
       }
 
+      // Fetch template for this zona
+      const zonaKey = zona === "Cancha" ? "cancha" : "default";
+      const tpl = await fetchTemplate(body.eventoId, "approval", zonaKey);
+
       const { data: emailResult, error } = await resend.emails.send({
         from: getFromEmail(),
         to: correo,
-        replyTo: "palarcon@cruzados.cl",
-        subject: "✅ Tu acreditación ha sido aprobada",
-        html: generateApprovalHTML(nombre, apellido, zona, area)
+        replyTo: tpl?.reply_to || "palarcon@cruzados.cl",
+        subject: tpl?.subject || "✅ Tu acreditación ha sido aprobada",
+        html: generateApprovalHTML(nombre, apellido, zona, area, tpl)
       });
 
       if (error) {

@@ -13,6 +13,34 @@ interface ResendError {
   code?: string;
 }
 
+interface EmailTemplateRow {
+  subject: string | null;
+  partido_descripcion: string | null;
+  partido_fecha: string | null;
+  sede: string | null;
+  reply_to: string | null;
+  intro_text_override: string | null;
+}
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+async function fetchTemplate(eventoId: number | null | undefined, tipo: "approval" | "rejection", zonaKey: string): Promise<EmailTemplateRow | null> {
+  if (!eventoId) return null;
+  try {
+    const { data } = await supabaseAdmin
+      .from("email_templates")
+      .select("*")
+      .eq("evento_id", eventoId)
+      .eq("tipo", tipo)
+      .eq("zona_key", zonaKey)
+      .maybeSingle();
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
 // 🔐 Configuración SEGURA para evitar bloqueos
 const EMAIL_CONFIG = {
   default: "onboarding@resend.dev",
@@ -32,7 +60,18 @@ const getFromEmail = (): string => {
 };
 
 // Función para generar el HTML del email de rechazo
-const generateRejectionHTML = (nombre: string, apellido: string): string => `
+const generateRejectionHTML = (nombre: string, apellido: string, tpl?: EmailTemplateRow | null): string => {
+  const partido = tpl?.partido_descripcion || "Universidad Católica";
+  const fecha = tpl?.partido_fecha || "";
+  const sede = tpl?.sede || "Claro Arena";
+
+  const rejectionText = tpl?.intro_text_override
+    ? escapeHtml(tpl.intro_text_override).replace(/\n/g, "<br>")
+    : fecha
+      ? `Debido a la capacidad limitada de espacios disponibles en prensa para el partido ${escapeHtml(partido)} a disputarse el ${escapeHtml(fecha)} en el ${escapeHtml(sede)}, lamentamos informarle que su(s) acreditación(es) ha(n) sido rechazada(s).`
+      : `Lamentamos informarle que su solicitud de acreditación no ha sido aprobada.`;
+
+  return `
   <!DOCTYPE html>
   <html lang="es">
   <head>
@@ -63,10 +102,10 @@ const generateRejectionHTML = (nombre: string, apellido: string): string => `
                   </div>
                 </div>
                 <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0; line-height: 1.6;">
-                  Estimado <strong>${nombre} ${apellido}</strong>,
+                  Estimado <strong>${escapeHtml(nombre)} ${escapeHtml(apellido)}</strong>,
                 </p>
                 <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
-                  Debido a la capacidad limitada de espacios disponibles en prensa para el partido Universidad Católica vs Deportes Concepción a disputarse el domingo 8 de febrero a las 20:30 horas en el Claro Arena, lamentamos informarle que su(s) acreditación(ones) ha(n) sido rechazada(s).
+                  ${rejectionText}
                 </p>
                 <p style="font-size: 16px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
                   Agradecemos su interés y comprensión.
@@ -94,7 +133,8 @@ const generateRejectionHTML = (nombre: string, apellido: string): string => `
     </table>
   </body>
   </html>
-`;
+  `;
+};
 
 export async function POST(req: Request) {
   try {
@@ -103,12 +143,16 @@ export async function POST(req: Request) {
 
     // Check if it's a batch request
     if (Array.isArray(body)) {
+      // Fetch template for batch
+      const eventoId = body[0]?.eventoId ?? null;
+      const tpl = await fetchTemplate(eventoId, "rejection", "default");
+
       const emails = body.map((item: { nombre: string; apellido: string; correo: string }) => ({
         from: getFromEmail(),
         to: item.correo,
-        replyTo: "palarcon@cruzados.cl",
-        subject: "❌ Tu acreditación ha sido rechazada",
-        html: generateRejectionHTML(item.nombre, item.apellido)
+        replyTo: tpl?.reply_to || "palarcon@cruzados.cl",
+        subject: tpl?.subject || "❌ Tu acreditación ha sido rechazada",
+        html: generateRejectionHTML(item.nombre, item.apellido, tpl)
       }));
 
       const { data: batchResult, error } = await resend.batch.send(emails);
@@ -147,12 +191,14 @@ export async function POST(req: Request) {
         );
       }
 
+      const tpl = await fetchTemplate(body.eventoId, "rejection", "default");
+
       const { data: emailResult, error } = await resend.emails.send({
         from: getFromEmail(),
         to: correo,
-        replyTo: "palarcon@cruzados.cl",
-        subject: "❌ Tu acreditación ha sido rechazada",
-        html: generateRejectionHTML(nombre, apellido)
+        replyTo: tpl?.reply_to || "palarcon@cruzados.cl",
+        subject: tpl?.subject || "❌ Tu acreditación ha sido rechazada",
+        html: generateRejectionHTML(nombre, apellido, tpl)
       });
 
       if (error) {

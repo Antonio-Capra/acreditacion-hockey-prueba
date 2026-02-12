@@ -5,6 +5,7 @@ export { default as AdminAcreditacionControl } from './AdminAcreditacionControl'
 export { default as AdminSidebar } from './AdminSidebar';
 export { default as AdminTable } from './AdminTable';
 export { default as AdminRow } from './AdminRow';
+export { default as AdminMailTab } from './AdminMailTab';
 export { AdminProvider, useAdmin } from './AdminContext';
 export type { Acreditacion, Zona, Acreditado, User } from './AdminContext';
 export { AREA_NAMES, ESTADO_COLORS } from './AdminContext';

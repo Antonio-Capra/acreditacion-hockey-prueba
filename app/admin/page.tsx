@@ -7,11 +7,11 @@ import Image from "next/image";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
-import { AdminProvider, AdminStats, AdminExportActions, AdminTable, AdminAcreditacionControl, AdminSidebar, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
+import { AdminProvider, AdminStats, AdminExportActions, AdminTable, AdminAcreditacionControl, AdminSidebar, AdminMailTab, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
 import { useEventoActivo } from "@/hooks";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"acreditaciones" | "configuracion">("acreditaciones");
+  const [activeTab, setActiveTab] = useState<"acreditaciones" | "configuracion" | "mail">("acreditaciones");
   const { evento, loading: eventoLoading } = useEventoActivo();
   const [activeEventoId, setActiveEventoId] = useState<number | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -792,6 +792,17 @@ export default function AdminDashboard() {
             >
               Configuracion
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("mail")}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                activeTab === "mail"
+                  ? "bg-[#1e5799] text-white"
+                  : "bg-white text-[#1e5799] border border-[#1e5799]/40"
+              }`}
+            >
+              📧 Mail
+            </button>
           </div>
         </div>
 
@@ -848,11 +859,13 @@ export default function AdminDashboard() {
               onEventoChange={(id) => setActiveEventoId(id)}
             />
           </>
-        ) : (
+        ) : activeTab === "configuracion" ? (
           <AdminSidebar
             eventoId={activeEventoId}
             onEventoChange={(id) => setActiveEventoId(id)}
           />
+        ) : (
+          <AdminMailTab eventoId={activeEventoId} />
         )}
       </div>
 

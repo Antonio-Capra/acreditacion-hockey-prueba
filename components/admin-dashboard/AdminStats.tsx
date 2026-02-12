@@ -51,10 +51,21 @@ export default function AdminStats({ acreditaciones, eventoId, zonas = [] }: Adm
       try {
         const query = eventoId ? `?evento_id=${eventoId}` : "";
         const res = await fetch(`/api/admin/email-issues${query}`);
-        const data = await res.json();
+        if (!res.ok) {
+          console.error("Email issues response not ok:", res.status);
+          setEmailIssues([]);
+          return;
+        }
+        const text = await res.text();
+        if (!text) {
+          setEmailIssues([]);
+          return;
+        }
+        const data = JSON.parse(text);
         setEmailIssues(data.issues || []);
       } catch (error) {
         console.error("Error fetching email issues:", error);
+        setEmailIssues([]);
       } finally {
         setIsLoading(false);
       }
