@@ -202,8 +202,8 @@ export default function AdminTable({
 
       </div>
 
-      <div className="overflow-auto max-h-[70vh]">
-          <table className="w-full" data-testid="table-scale-wrapper" style={{ fontSize: `${fontScale / 100}em` }}>
+      <div className="overflow-auto max-h-[70vh]" style={{ '--font-scale': `${fontScale / 100}` } as React.CSSProperties & { '--font-scale': string }}>
+          <table className="w-full" data-testid="table-scale-wrapper" style={{ zoom: `${fontScale}%` }}>
             <thead className="sticky top-0 z-20">
             <tr className="bg-gray-50 border-b-2 border-gray-200">
               <th className="px-2 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">

@@ -10,8 +10,8 @@
   --blanco: #ffffff;
   --font-barlow-condensed: 'Barlow Condensed', sans-serif;
 }
-
-html{
+html {
+  scroll-behavior: smooth;
   font-size: 18px;
 }
 
