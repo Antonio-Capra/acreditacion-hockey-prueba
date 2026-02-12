@@ -37,7 +37,18 @@ export function useAcreditacionConfig(eventoId: number) {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
 
+  // Resetear estado al cambiar de evento para evitar mostrar datos stale
+  useEffect(() => {
+    setConfig(null);
+    setVentanas([]);
+    setLoading(true);
+  }, [eventoId]);
+
   const fetchConfig = useCallback(async () => {
+    if (!eventoId || eventoId <= 0) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -95,7 +106,7 @@ export function useAcreditacionConfig(eventoId: number) {
   }, [ventanasActivas, now]);
 
   const hasSchedule = ventanasActivas.length > 0;
-  const manualOpen = config?.esta_abierta ?? true;
+  const manualOpen = config?.esta_abierta ?? false;
   const isOpen = manualOpen && (!hasSchedule || isWithinWindow);
 
   const setManualOpen = async (value: boolean) => {

@@ -122,8 +122,9 @@ export async function POST(req: Request) {
       }
 
       // Guardar logs de cada email enviado
-      const emailLogs = body.map((item: { id?: number; nombre: string; apellido: string; correo: string }, index: number) => ({
+      const emailLogs = body.map((item: { id?: number; nombre: string; apellido: string; correo: string; eventoId?: number | null }, index: number) => ({
         acreditacion_id: item.id || null,
+        evento_id: item.eventoId ?? null,
         resend_id: batchResult?.data?.[index]?.id || null,
         to_email: item.correo,
         email_type: "rejection",
@@ -168,6 +169,7 @@ export async function POST(req: Request) {
       // Guardar log del email
       await supabaseAdmin.from("email_logs").insert({
         acreditacion_id: body.id || null,
+        evento_id: (body as any).eventoId ?? null,
         resend_id: emailResult?.id || null,
         to_email: correo,
         email_type: "rejection",

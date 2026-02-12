@@ -17,22 +17,8 @@ export interface EventoActivo {
   activo?: boolean | null;
 }
 
-const DEFAULT_EVENTO: EventoActivo = {
-  id: 1,
-  nombre: "Universidad Catolica",
-  fecha: "2026-02-08",
-  hora: "20:30",
-  lugar: "Claro Arena",
-  local: "Universidad Catolica",
-  rival: "Deportes Concepcion",
-  escudo_local_url: "/UCimg/EscudoUC1.png",
-  escudo_rival_url: "/UCimg/EscudoConce.png",
-  descripcion: null,
-  activo: true,
-};
-
 export function useEventoActivo() {
-  const [evento, setEvento] = useState<EventoActivo>(DEFAULT_EVENTO);
+  const [evento, setEvento] = useState<EventoActivo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +30,7 @@ export function useEventoActivo() {
       const { data, error: fetchError } = await supabase
         .from("eventos")
         .select(
-          "id, nombre, descripcion, fecha, hora, lugar, rival, escudo_local_url, escudo_rival_url, activo"
+          "id, nombre, descripcion, fecha, hora, lugar, local, rival, escudo_local_url, escudo_rival_url, activo"
         )
         .eq("activo", true)
         .order("id", { ascending: false })
@@ -54,16 +40,7 @@ export function useEventoActivo() {
       if (fetchError) throw fetchError;
 
       if (data) {
-        setEvento((prev) => ({
-          ...prev,
-          ...data,
-          id: data.id ?? prev.id,
-          nombre: data.nombre ?? prev.nombre,
-          fecha: data.fecha ?? prev.fecha,
-          hora: data.hora ?? prev.hora,
-          lugar: data.lugar ?? prev.lugar,
-          rival: data.rival ?? prev.rival,
-        }));
+        setEvento(data);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al cargar evento";

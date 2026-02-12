@@ -40,8 +40,21 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const format = searchParams.get("format") || "completo";
     const statusFilter = searchParams.get("status") || "all";
+    let eventoId = Number(searchParams.get("evento_id")) || 0;
 
-    let query = supabaseAdmin.from("acreditados").select("*").eq("evento_id", 1);
+    // Si no se envía evento_id, buscar el evento activo
+    if (!eventoId) {
+      const { data: activeEvento } = await supabaseAdmin
+        .from("eventos")
+        .select("id")
+        .eq("activo", true)
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      eventoId = activeEvento?.id ?? 1;
+    }
+
+    let query = supabaseAdmin.from("acreditados").select("*").eq("evento_id", eventoId);
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter);
     }
@@ -53,41 +66,55 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No hay datos para exportar" }, { status: 404 });
     }
 
-    const { data: zonas } = await supabaseAdmin.from("zonas_acreditacion").select("id, nombre").eq("evento_id", 1);
+    const { data: zonas } = await supabaseAdmin.from("zonas_acreditacion").select("id, nombre");
     const zonasMap = new Map(zonas?.map((z: Zona) => [z.id, z.nombre]) || []);
+
+    interface Area {
+      codigo: string;
+      nombre: string;
+    }
+
+    const { data: areas } = await supabaseAdmin.from("areas_prensa").select("codigo, nombre");
+    const areasMap = new Map(areas?.map((a: Area) => [a.codigo, a.nombre]) || []);
 
     const dateStr = new Date().toISOString().split("T")[0];
 
-    // --- CASO 1: PUNTO TICKET (CSV PLANO) ---
+    // --- CASO 1: PUNTO TICKET (XLSX) ---
     if (format === "puntoticket") {
-      const csvData = acreditados.map((a: Acreditado) => ({
-        Nombre: a.nombre,
-        Apellido: `${a.primer_apellido}${a.segundo_apellido ? ` ${a.segundo_apellido}` : ''}`,
-        RUT: a.rut,
-        Empresa: a.empresa,
-        Área: "CRUZADOS",
-        Acreditación: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
-        Patente: "",
-      }));
+      // Construir workbook simple para Punto Ticket
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('PuntoTicket');
 
-      const ws = XLSX.utils.json_to_sheet(csvData);
-      const csvContent = XLSX.utils.sheet_to_csv(ws);
-      
-      // El secreto: BOM + Codificación explícita a Uint8Array
-      const encoder = new TextEncoder();
-      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-      const csvUint8 = encoder.encode(csvContent);
-      const combined = new Uint8Array(bom.length + csvUint8.length);
-      combined.set(bom);
-      combined.set(csvUint8, bom.length);
+      worksheet.columns = [
+        { key: 'Nombre', header: 'Nombre', width: 20 },
+        { key: 'Apellido', header: 'Apellido', width: 25 },
+        { key: 'RUT', header: 'RUT', width: 18 },
+        { key: 'Empresa', header: 'Empresa', width: 25 },
+        { key: 'Area', header: 'Área', width: 15 },
+        { key: 'Acreditacion', header: 'Acreditación', width: 20 },
+        { key: 'Patente', header: 'Patente', width: 15 },
+      ];
 
-      return new NextResponse(combined, {
+      acreditados.forEach((a: Acreditado) => {
+        worksheet.addRow({
+          Nombre: a.nombre,
+          Apellido: `${a.primer_apellido}${a.segundo_apellido ? ` ${a.segundo_apellido}` : ''}`,
+          RUT: a.rut,
+          Empresa: a.empresa,
+          Area: 'CRUZADOS',
+          Acreditacion: a.zona_id ? zonasMap.get(a.zona_id) || 'Sin asignar' : 'Sin asignar',
+          Patente: '',
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      return new NextResponse(new Uint8Array(buffer as ArrayBuffer), {
         headers: {
-          "Content-Type": "text/csv; charset=utf-8",
-          "Content-Disposition": `attachment; filename="acreditados_puntoticket_${dateStr}.csv"`,
+          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Disposition": `attachment; filename="acreditados_puntoticket_${dateStr}.xlsx"`,
         },
       });
-    } 
+    }
 
     // --- CASO 2: COMPLETO (EXCEL REAL) ---
     else {
@@ -130,7 +157,7 @@ export async function GET(request: NextRequest) {
           tipoCredencial: a.tipo_credencial,
           numeroCredencial: a.numero_credencial || "",
           empresa: a.empresa,
-          area: a.area,
+          area: areasMap.get(a.area) || a.area,
           zona: a.zona_id ? zonasMap.get(a.zona_id) || "Sin asignar" : "Sin asignar",
           estado: a.status.charAt(0).toUpperCase() + a.status.slice(1),
           responsableNombre: a.responsable_nombre || "",

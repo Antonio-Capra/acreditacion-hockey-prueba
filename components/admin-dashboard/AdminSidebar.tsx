@@ -1,774 +1,529 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent, DragEvent, KeyboardEvent } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { useEventosCrud } from "@/hooks/useEventosCrud";
+import { useCrestUpload } from "@/hooks/useCrestUpload";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 
-interface EventInfo {
-  name: string;
-  date: string;
-  time: string;
-  location: string;
-  opponent: string;
-  localCrestUrl: string;
-  opponentCrestUrl: string;
-}
-
-const DEFAULT_EVENT: EventInfo = {
-  name: "Universidad Catolica vs Deportes Concepcion",
-  date: "2026-02-08",
-  time: "12:30",
-  location: "Claro Arena",
-  opponent: "Deportes Concepcion",
-  localCrestUrl: "",
-  opponentCrestUrl: "",
-};
-
-interface EventoOption {
-  id: number;
-  nombre: string;
-  fecha?: string | null;
-  activo?: boolean | null;
-}
+/* ================================================================== */
+/*  Props                                                              */
+/* ================================================================== */
 
 interface AdminSidebarProps {
   eventoId: number | null;
   onEventoChange: (id: number) => void;
 }
 
-type CrestTarget = "local" | "opponent";
+/* ================================================================== */
+/*  Sub-componentes internos                                           */
+/* ================================================================== */
 
-interface CrestUploadState {
-  uploading: boolean;
-  error: string | null;
-}
+/* ---- Selector de eventos ---- */
 
-const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
-const MAX_IMAGE_SIZE_MB = 4;
-const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-
-const createInitialCrestUploads = (): Record<CrestTarget, CrestUploadState> => ({
-  local: { uploading: false, error: null },
-  opponent: { uploading: false, error: null },
-});
-
-export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarProps) {
-  const [eventInfo, setEventInfo] = useState<EventInfo>(DEFAULT_EVENT);
-  const [eventClosed, setEventClosed] = useState(false);
-  const [eventos, setEventos] = useState<EventoOption[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [crestUploads, setCrestUploads] = useState<Record<CrestTarget, CrestUploadState>>(
-    () => createInitialCrestUploads()
-  );
-
-  const activeEventoId = eventoId ?? eventos.find((evt) => evt.activo)?.id ?? null;
-  const selectedEventoId = activeEventoId ?? eventoId;
-  const selectedEventoLabel = useMemo(() => {
-    const match = eventos.find((evt) => evt.id === selectedEventoId);
-    if (!match) return "Seleccionar evento";
-    const base = match.nombre || `Evento ${match.id}`;
-    return match.activo ? `${base} (Activo)` : base;
-  }, [eventos, selectedEventoId]);
-
-  const fetchEventos = useCallback(async () => {
-    try {
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .from("eventos")
-        .select("id, nombre, fecha, activo")
-        .order("id", { ascending: false });
-
-      if (fetchError) throw fetchError;
-
-      setEventos(data || []);
-
-      const active = (data || []).find((evt) => evt.activo);
-      if (!eventoId && active) {
-        onEventoChange(active.id);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al cargar evento";
-      setError(message);
-    }
-  }, [eventoId, onEventoChange]);
-
-  useEffect(() => {
-    fetchEventos();
-  }, [fetchEventos]);
-
-  useEffect(() => {
-    const fetchEvento = async () => {
-      if (!selectedEventoId) return;
-      try {
-        setLoading(true);
-        setError(null);
-
-        const { data, error: fetchError } = await supabase
-          .from("eventos")
-          .select(
-            "id, nombre, fecha, hora, lugar, rival, escudo_local_url, escudo_rival_url, activo"
-          )
-          .eq("id", selectedEventoId)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        if (data) {
-          setEventInfo({
-            name: data.nombre ?? DEFAULT_EVENT.name,
-            date: data.fecha ?? DEFAULT_EVENT.date,
-            time: data.hora ?? DEFAULT_EVENT.time,
-            location: data.lugar ?? DEFAULT_EVENT.location,
-            opponent: data.rival ?? DEFAULT_EVENT.opponent,
-            localCrestUrl: data.escudo_local_url ?? "",
-            opponentCrestUrl: data.escudo_rival_url ?? "",
-          });
-          setEventClosed(data.activo === false);
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Error al cargar evento";
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvento();
-  }, [selectedEventoId]);
-
-  useEffect(() => {
-    setCrestUploads(createInitialCrestUploads());
-  }, [selectedEventoId]);
-
-  const setCrestUploadState = useCallback(
-    (target: CrestTarget, patch: Partial<CrestUploadState>) => {
-      setCrestUploads((prev) => ({
-        ...prev,
-        [target]: {
-          ...prev[target],
-          ...patch,
-        },
-      }));
-    },
-    []
-  );
-
-  const uploadCrest = useCallback(
-    async (file: File, target: CrestTarget) => {
-      if (!selectedEventoId) {
-        setCrestUploadState(target, {
-          error: "Selecciona o crea un evento antes de subir un escudo.",
-        });
-        return;
-      }
-
-      if (file.size > MAX_IMAGE_SIZE_BYTES) {
-        setCrestUploadState(target, {
-          error: `El archivo supera ${MAX_IMAGE_SIZE_MB} MB`,
-        });
-        return;
-      }
-
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        setCrestUploadState(target, {
-          error: "Formato no soportado (usa PNG, JPG, SVG o WebP)",
-        });
-        return;
-      }
-
-      setCrestUploadState(target, { uploading: true, error: null });
-
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("target", target);
-        formData.append("eventoId", String(selectedEventoId));
-
-        const response = await fetch("/api/admin/upload-crest", {
-          method: "POST",
-          body: formData,
-        });
-
-        const payload = (await response.json().catch(() => null)) as
-          | { url?: string; error?: string }
-          | null;
-
-        if (!response.ok || !payload?.url) {
-          throw new Error(payload?.error ?? "No se pudo subir el archivo");
-        }
-
-        const uploadedUrl = payload.url ?? "";
-        setEventInfo((prev) =>
-          target === "local"
-            ? { ...prev, localCrestUrl: uploadedUrl }
-            : { ...prev, opponentCrestUrl: uploadedUrl }
-        );
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Error al subir imagen";
-        setCrestUploadState(target, { error: message });
-      } finally {
-        setCrestUploadState(target, { uploading: false });
-      }
-    },
-    [selectedEventoId, setCrestUploadState]
-  );
-
-  const handleSave = async () => {
-    try {
-      if (!selectedEventoId) return;
-      if (crestUploads.local.uploading || crestUploads.opponent.uploading) {
-        setError("Espera a que terminen las cargas de escudos antes de guardar.");
-        return;
-      }
-      setSaving(true);
-      setError(null);
-      setSuccess(null);
-
-      const { error: updateError } = await supabase
-        .from("eventos")
-        .update({
-          nombre: eventInfo.name,
-          fecha: eventInfo.date || null,
-          hora: eventInfo.time || null,
-          lugar: eventInfo.location,
-          rival: eventInfo.opponent,
-          escudo_local_url: eventInfo.localCrestUrl || null,
-          escudo_rival_url: eventInfo.opponentCrestUrl || null,
-          activo: !eventClosed,
-        })
-        .eq("id", selectedEventoId);
-
-      if (updateError) throw updateError;
-
-      setSuccess("Evento actualizado");
-      setTimeout(() => setSuccess(null), 2500);
-      onEventoChange(selectedEventoId);
-      fetchEventos();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al guardar";
-      setError(message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSetActive = async () => {
-    try {
-      if (!selectedEventoId) return;
-      setSaving(true);
-      setError(null);
-      setSuccess(null);
-
-      const { error: deactivateError } = await supabase
-        .from("eventos")
-        .update({ activo: false })
-        .neq("id", selectedEventoId);
-
-      if (deactivateError) throw deactivateError;
-
-      const { error: activateError } = await supabase
-        .from("eventos")
-        .update({ activo: true })
-        .eq("id", selectedEventoId);
-
-      if (activateError) throw activateError;
-
-      setEventClosed(false);
-      setSuccess("Evento marcado como activo");
-      setTimeout(() => setSuccess(null), 2500);
-      onEventoChange(selectedEventoId);
-      fetchEventos();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al activar evento";
-      setError(message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCreateEvent = async () => {
-    try {
-      setSaving(true);
-      setError(null);
-      setSuccess(null);
-
-      const { data, error: insertError } = await supabase
-        .from("eventos")
-        .insert({
-          nombre: "Nuevo evento",
-          fecha: DEFAULT_EVENT.date,
-          hora: DEFAULT_EVENT.time,
-          lugar: DEFAULT_EVENT.location,
-          rival: DEFAULT_EVENT.opponent,
-          escudo_local_url: DEFAULT_EVENT.localCrestUrl || null,
-          escudo_rival_url: DEFAULT_EVENT.opponentCrestUrl || null,
-          activo: false,
-        })
-        .select("id")
-        .single();
-
-      if (insertError) throw insertError;
-
-      if (data?.id) {
-        onEventoChange(data.id);
-        fetchEventos();
-        setSuccess("Evento creado (borrador)");
-        setTimeout(() => setSuccess(null), 2500);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al crear evento";
-      setError(message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteEvent = async () => {
-    try {
-      if (!selectedEventoId) return;
-      if (eventos.length <= 1) {
-        setError("No puedes eliminar el unico evento.");
-        return;
-      }
-
-      setSaving(true);
-      setError(null);
-      setSuccess(null);
-
-      const checks = await Promise.all([
-        supabase
-          .from("acreditados")
-          .select("id", { count: "exact", head: true })
-          .eq("evento_id", selectedEventoId),
-        supabase
-          .from("ventanas_acreditacion")
-          .select("id", { count: "exact", head: true })
-          .eq("evento_id", selectedEventoId),
-        supabase
-          .from("configuracion_acreditacion")
-          .select("id", { count: "exact", head: true })
-          .eq("evento_id", selectedEventoId),
-        supabase
-          .from("zonas_acreditacion")
-          .select("id", { count: "exact", head: true })
-          .eq("evento_id", selectedEventoId),
-        supabase
-          .from("areas_prensa")
-          .select("id", { count: "exact", head: true })
-          .eq("evento_id", selectedEventoId),
-      ]);
-
-      const hasData = checks.some((res) => (res.count ?? 0) > 0);
-      if (hasData) {
-        setError(
-          "No se puede eliminar: el evento tiene datos asociados. Cierra el evento y crea uno nuevo."
-        );
-        return;
-      }
-
-      const { error: deleteError } = await supabase
-        .from("eventos")
-        .delete()
-        .eq("id", selectedEventoId);
-
-      if (deleteError) throw deleteError;
-
-      const nextEventId = eventos.find((evt) => evt.id !== selectedEventoId)?.id ?? null;
-      if (nextEventId) {
-        onEventoChange(nextEventId);
-      }
-      fetchEventos();
-      setSuccess("Evento eliminado");
-      setTimeout(() => setSuccess(null), 2500);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al eliminar evento";
-      setError(message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const crestInputsDisabled = loading || !selectedEventoId;
-  const crestUploadsBusy = crestUploads.local.uploading || crestUploads.opponent.uploading;
-  const crestHelperLocal = crestInputsDisabled
-    ? "Selecciona un evento para habilitar esta subida."
-    : "Se usa como escudo local en la landing y los correos. Guarda para aplicar.";
-  const crestHelperOpponent = crestInputsDisabled
-    ? "Selecciona un evento para habilitar esta subida."
-    : "Escudo del rival mostrado en la landing y correos. Guarda para aplicar.";
-
+function EventSelector({
+  eventos,
+  selectedId,
+  loading,
+  onSelect,
+  onCreate,
+  creating,
+}: {
+  eventos: { id: number; nombre: string; activo?: boolean | null }[];
+  selectedId: number | null;
+  loading: boolean;
+  onSelect: (id: number | null) => void;
+  onCreate: () => void;
+  creating: boolean;
+}) {
   return (
-    <section className="space-y-6">
-      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
-        <div className="relative px-6 py-5 bg-[radial-gradient(120%_120%_at_0%_0%,#2f7cc9_0%,#1e5799_45%,#0f3b70_100%)]">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-white/70">
-                Configuracion
-              </p>
-              <h2 className="text-white font-bold text-xl">Panel del Evento</h2>
-            </div>
-            <span className="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-white">
-              Admin
-            </span>
+    <div className="space-y-2">
+      <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase">
+        📋 Evento
+      </label>
+      <div className="flex gap-2 items-stretch">
+        <div className="relative flex-1">
+          <select
+            className="w-full appearance-none border-2 border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-base font-medium text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white focus:outline-none transition-all cursor-pointer pr-10"
+            value={selectedId ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              onSelect(val ? Number(val) : null);
+            }}
+            disabled={loading}
+          >
+            <option value="">— Seleccionar evento —</option>
+            {eventos.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.nombre} {ev.activo ? " ★" : ""}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m6 8 4 4 4-4"/></svg>
           </div>
-          <p className="text-white/80 text-xs mt-2">
-            Actualiza datos del evento.
-          </p>
         </div>
 
-        <div className="p-6 space-y-6">
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-              {error}
-            </div>
+        <button
+          onClick={onCreate}
+          disabled={creating}
+          className="shrink-0 bg-gradient-to-b from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-base font-bold px-5 py-3 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 active:scale-95"
+          title="Crear nuevo evento"
+        >
+          {creating ? (
+            <span className="animate-pulse">…</span>
+          ) : (
+            <span className="flex items-center gap-1">＋ Crear</span>
           )}
-          {success && (
-            <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
-              {success}
-            </div>
-          )}
-          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase text-blue-700 font-semibold">Evento seleccionado</p>
-                <p className="text-base text-blue-900 font-semibold mt-1">{eventInfo.name}</p>
-                <p className="text-xs text-blue-700 mt-1">
-                  {eventInfo.date} · {eventInfo.time} · {eventInfo.location}
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  eventClosed ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
-                }`}
-              >
-                {eventClosed ? "Cerrado" : "Activo"}
-              </span>
-            </div>
-          </div>
+        </button>
+      </div>
+    </div>
+  );
+}
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase text-gray-500 font-semibold">Gestion</p>
-                <p className="text-sm font-semibold text-gray-800">Eventos</p>
-              </div>
-              <span className="text-xs text-gray-400">{eventos.length} total</span>
-            </div>
-            <label className="block text-xs font-semibold text-gray-600">
-              Seleccionar evento
-              <select
-                value={selectedEventoId ?? ""}
-                onChange={(e) => onEventoChange(Number(e.target.value))}
-                className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                disabled={loading || eventos.length === 0}
-              >
-                <option value="" disabled>
-                  {selectedEventoLabel || "Seleccionar evento"}
-                </option>
-                {eventos.map((evt) => (
-                  <option key={evt.id} value={evt.id}>
-                    {evt.nombre || `Evento ${evt.id}`}
-                    {evt.activo ? " (Activo)" : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
+/* ---- Formulario del evento ---- */
 
-            <div className="mt-4 grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={handleCreateEvent}
-                disabled={saving}
-                className="w-full px-4 py-2 border border-[#1e5799] text-[#1e5799] rounded-xl font-semibold hover:bg-[#1e5799]/10 transition-colors disabled:opacity-60"
-              >
-                Crear evento
-              </button>
-              <button
-                type="button"
-                onClick={handleSetActive}
-                disabled={saving || !selectedEventoId}
-                className="w-full px-4 py-2 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-60"
-              >
-                Marcar como activo
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteOpen(true)}
-                disabled={saving || eventos.length <= 1}
-                className="w-full px-4 py-2 border border-red-300 text-red-600 rounded-xl font-semibold hover:bg-red-50 transition-colors disabled:opacity-60"
-              >
-                Eliminar evento
-              </button>
-            </div>
-          </div>
+function EventForm({
+  detail,
+  onChange,
+}: {
+  detail: {
+    name: string;
+    date: string;
+    time: string;
+    location: string;
+    opponent: string;
+  };
+  onChange: <K extends "name" | "date" | "time" | "location" | "opponent">(
+    key: K,
+    value: string
+  ) => void;
+}) {
+  const inputClass = "w-full border-2 border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 text-base text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white focus:outline-none transition-all";
 
-          <details open className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <summary className="cursor-pointer text-sm font-semibold text-[#1e5799] flex items-center justify-between">
-              Ficha del evento
-              <span className="text-xs text-gray-400 group-open:rotate-180 transition">▾</span>
-            </summary>
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <label className="block text-xs font-semibold text-gray-600">
-                Nombre del evento
-                <input
-                  type="text"
-                  value={eventInfo.name}
-                  onChange={(e) => setEventInfo({ ...eventInfo, name: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  disabled={loading}
-                />
-              </label>
-              <label className="block text-xs font-semibold text-gray-600">
-                Fecha
-                <input
-                  type="date"
-                  value={eventInfo.date}
-                  onChange={(e) => setEventInfo({ ...eventInfo, date: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  disabled={loading}
-                />
-              </label>
-              <label className="block text-xs font-semibold text-gray-600">
-                Hora
-                <input
-                  type="time"
-                  value={eventInfo.time}
-                  onChange={(e) => setEventInfo({ ...eventInfo, time: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  disabled={loading}
-                />
-              </label>
-              <label className="block text-xs font-semibold text-gray-600">
-                Lugar
-                <input
-                  type="text"
-                  value={eventInfo.location}
-                  onChange={(e) => setEventInfo({ ...eventInfo, location: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  disabled={loading}
-                />
-              </label>
-              <label className="block text-xs font-semibold text-gray-600">
-                Rival
-                <input
-                  type="text"
-                  value={eventInfo.opponent}
-                  onChange={(e) => setEventInfo({ ...eventInfo, opponent: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  disabled={loading}
-                />
-              </label>
-              <CrestUploader
-                label="Escudo organizador"
-                value={eventInfo.localCrestUrl}
-                disabled={crestInputsDisabled}
-                uploading={crestUploads.local.uploading}
-                error={crestUploads.local.error}
-                helperText={crestHelperLocal}
-                onUrlChange={(value) => setEventInfo({ ...eventInfo, localCrestUrl: value })}
-                onFileUpload={(file) => uploadCrest(file, "local")}
-              />
-              <CrestUploader
-                label="Escudo rival"
-                value={eventInfo.opponentCrestUrl}
-                disabled={crestInputsDisabled}
-                uploading={crestUploads.opponent.uploading}
-                error={crestUploads.opponent.error}
-                helperText={crestHelperOpponent}
-                onUrlChange={(value) =>
-                  setEventInfo({ ...eventInfo, opponentCrestUrl: value })
-                }
-                onFileUpload={(file) => uploadCrest(file, "opponent")}
-              />
-            </div>
-          </details>
+  return (
+    <div className="space-y-4">
+      {/* Nombre */}
+      <div>
+        <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase mb-1.5">
+          ✏️ Nombre del evento
+        </label>
+        <input
+          type="text"
+          value={detail.name}
+          onChange={(e) => onChange("name", e.target.value)}
+          className={inputClass}
+          placeholder="Ej: UC vs Rival - Fecha X"
+        />
+      </div>
 
-          <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-700">Evento cerrado</p>
-                <p className="text-xs text-gray-500">Si esta cerrado, el evento deja de estar activo</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEventClosed(!eventClosed)}
-                className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors ${
-                  eventClosed ? "bg-red-500" : "bg-gray-300"
-                }`}
-                aria-pressed={eventClosed}
-                disabled={loading}
-              >
-                <span
-                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${
-                    eventClosed ? "translate-x-9" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-[#1e5799]/20 bg-gradient-to-r from-[#1e5799]/10 to-[#2989d8]/10 p-4">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving || loading || crestUploadsBusy}
-              className="w-full px-4 py-2 bg-[#1e5799] text-white rounded-xl font-semibold hover:bg-[#207cca] transition-colors disabled:opacity-60"
-            >
-              {saving ? "Guardando..." : crestUploadsBusy ? "Procesando imagen..." : "Guardar cambios"}
-            </button>
-          </div>
+      {/* Fecha + Hora */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase mb-1.5">
+            📅 Fecha
+          </label>
+          <input
+            type="date"
+            value={detail.date}
+            onChange={(e) => onChange("date", e.target.value)}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase mb-1.5">
+            🕐 Hora
+          </label>
+          <input
+            type="time"
+            value={detail.time}
+            onChange={(e) => onChange("time", e.target.value)}
+            className={inputClass}
+          />
         </div>
       </div>
 
-      <ConfirmationModal
-        isOpen={confirmDeleteOpen}
-        title="Eliminar evento"
-        message={`Se eliminara el evento "${eventInfo.name}". Esta accion no se puede deshacer.`}
-        confirmText="Si, eliminar"
-        cancelText="Cancelar"
-        onConfirm={() => {
-          setConfirmDeleteOpen(false);
-          handleDeleteEvent();
-        }}
-        onCancel={() => setConfirmDeleteOpen(false)}
-        isLoading={saving}
-      />
-    </section>
+      {/* Lugar + Rival */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase mb-1.5">
+            📍 Lugar
+          </label>
+          <input
+            type="text"
+            value={detail.location}
+            onChange={(e) => onChange("location", e.target.value)}
+            className={inputClass}
+            placeholder="Ej: San Carlos de Apoquindo"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase mb-1.5">
+            🆚 Rival
+          </label>
+          <input
+            type="text"
+            value={detail.opponent}
+            onChange={(e) => onChange("opponent", e.target.value)}
+            className={inputClass}
+            placeholder="Ej: Colo Colo"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
-interface CrestUploaderProps {
-  label: string;
-  value: string;
-  disabled: boolean;
-  uploading: boolean;
-  error?: string | null;
-  helperText?: string;
-  onUrlChange: (value: string) => void;
-  onFileUpload: (file: File) => void;
-}
+/* ---- Uploader de escudos ---- */
 
 function CrestUploader({
   label,
-  value,
-  disabled,
-  uploading,
-  error,
-  helperText,
+  url,
   onUrlChange,
-  onFileUpload,
-}: CrestUploaderProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  busy,
+  onFile,
+}: {
+  label: string;
+  url: string;
+  onUrlChange: (v: string) => void;
+  busy: boolean;
+  onFile: (f: File) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextFile = event.target.files?.[0];
-    if (nextFile) {
-      onFileUpload(nextFile);
-      event.target.value = "";
-    }
-  };
-
-  const handleUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onUrlChange(event.target.value);
-  };
-
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-    if (disabled || uploading) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-  };
-
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    if (disabled || uploading) return;
-    event.preventDefault();
-    const nextFile = event.dataTransfer.files?.[0];
-    if (nextFile) {
-      onFileUpload(nextFile);
-    }
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (disabled || uploading) return;
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      fileInputRef.current?.click();
-    }
-  };
-
-  const openFileDialog = () => {
-    if (disabled || uploading) return;
-    fileInputRef.current?.click();
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) onFile(file);
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-xs font-semibold text-gray-600">
-        <span>{label}</span>
-        {uploading && <span className="text-[#1e5799]">Subiendo...</span>}
-      </div>
-      <div
-        className={`rounded-xl border-2 border-dashed px-3 py-3 transition ${
-          uploading ? "border-[#1e5799] bg-blue-50/40" : "border-gray-200"
-        } ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-[#1e5799]"}`}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-disabled={disabled}
-        onClick={openFileDialog}
-        onKeyDown={handleKeyDown}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        <div className="flex items-center gap-3">
-          {value ? (
-            <Image
-              src={value}
-              alt={`Vista previa ${label}`}
-              width={64}
-              height={64}
-              className="h-12 w-12 rounded-lg border border-gray-200 object-contain bg-white"
-            />
-          ) : (
-            <div className="h-12 w-12 rounded-lg border border-dashed border-gray-300 bg-gray-50 text-[10px] font-semibold text-gray-400 flex items-center justify-center">
-              IMG
-            </div>
-          )}
-          <div className="text-[11px] text-gray-500">
-            <p>Arrastra un archivo o haz clic para subir.</p>
-            <p className="text-[10px] text-gray-400">
-              Formatos: PNG, JPG, SVG, WebP · Max {MAX_IMAGE_SIZE_MB} MB
-            </p>
+    <div className="space-y-2 bg-gray-50 rounded-xl p-3 border border-gray-200">
+      <label className="block text-sm font-bold text-gray-600 tracking-wide uppercase text-center">
+        {label}
+      </label>
+
+      {/* preview */}
+      {url ? (
+        <div className="flex justify-center py-1">
+          <Image
+            src={url}
+            alt={label}
+            width={80}
+            height={80}
+            className="h-20 w-20 object-contain rounded-lg border-2 border-gray-200 bg-white p-1 shadow-sm"
+            unoptimized
+          />
+        </div>
+      ) : (
+        <div className="flex justify-center py-1">
+          <div className="h-20 w-20 rounded-lg border-2 border-dashed border-gray-300 bg-white flex items-center justify-center">
+            <span className="text-2xl text-gray-300">🛡️</span>
           </div>
         </div>
-      </div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-        disabled={disabled || uploading}
-      />
-      <label className="block text-[11px] font-semibold text-gray-600">
-        o pega una URL
+      )}
+
+      {/* drop zone */}
+      <div
+        className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all group"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+        onClick={() => fileRef.current?.click()}
+      >
         <input
-          type="url"
-          value={value}
-          onChange={handleUrlChange}
-          placeholder="https://..."
-          disabled={disabled}
-          className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onFile(file);
+          }}
         />
+        {busy ? (
+          <span className="text-sm text-blue-600 font-medium animate-pulse">Subiendo…</span>
+        ) : (
+          <div>
+            <span className="text-lg">📤</span>
+            <p className="text-xs text-gray-500 mt-1 group-hover:text-blue-500 transition-colors">
+              Arrastra o haz clic
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* url manual */}
+      <input
+        type="text"
+        value={url}
+        onChange={(e) => onUrlChange(e.target.value)}
+        placeholder="O pega una URL"
+        className="w-full border-2 border-gray-200 bg-white rounded-lg px-3 py-1.5 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
+      />
+    </div>
+  );
+}
+
+/* ---- Botones de acción ---- */
+
+function EventActions({
+  saving,
+  isActive,
+  onSave,
+  onActivate,
+  onDelete,
+  closed,
+  onToggleClosed,
+}: {
+  saving: boolean;
+  isActive: boolean;
+  onSave: () => void;
+  onActivate: () => void;
+  onDelete: () => void;
+  closed: boolean;
+  onToggleClosed: (v: boolean) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Toggle cerrar acreditación */}
+      <label className="flex items-center gap-3 cursor-pointer bg-red-50 border border-red-200 rounded-xl px-4 py-3 hover:bg-red-100 transition-colors">
+        <input
+          type="checkbox"
+          checked={closed}
+          onChange={(e) => onToggleClosed(e.target.checked)}
+          className="h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-500"
+        />
+        <span className="text-base font-semibold text-red-700">🔒 Cerrar acreditación</span>
       </label>
-      {helperText && <p className="text-[11px] text-gray-500">{helperText}</p>}
-      {error && <p className="text-[11px] text-red-600">{error}</p>}
+
+      {/* Botones principales */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-base font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+        >
+          {saving ? (
+            <span className="animate-spin">⏳</span>
+          ) : (
+            <>💾 Guardar</>
+          )}
+        </button>
+        <button
+          onClick={onActivate}
+          disabled={saving || isActive}
+          className={`text-white text-base font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2 ${
+            isActive
+              ? "bg-gradient-to-b from-emerald-400 to-emerald-500 cursor-default"
+              : "bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg"
+          }`}
+          title={isActive ? "Ya es el evento activo" : "Marcar como evento activo"}
+        >
+          {isActive ? "✅ Activo" : "⚡ Activar"}
+        </button>
+      </div>
+
+      {/* Botón eliminar separado */}
+      <button
+        onClick={onDelete}
+        disabled={saving}
+        className="w-full bg-white border-2 border-red-300 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 text-base font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+      >
+        🗑️ Eliminar evento
+      </button>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  Componente principal                                               */
+/* ================================================================== */
+
+export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarProps) {
+  const crud = useEventosCrud();
+
+  /* ---- crest upload ---- */
+  const handleCrestSuccess = useCallback(
+    (field: "localCrestUrl" | "opponentCrestUrl", url: string) => {
+      crud.updateField(field, url);
+    },
+    [crud]
+  );
+
+  const crest = useCrestUpload(crud.selectedId, handleCrestSuccess);
+
+  /* ---- confirmación de eliminación ---- */
+  const [deleteModal, setDeleteModal] = useState(false);
+
+  /* ---- handlers que conectan con el padre ---- */
+
+  const handleSave = async () => {
+    const ok = await crud.save();
+    if (ok && crud.selectedId !== null) {
+      // Solo notifica al padre si este evento ya era el activo
+      // para que refresque datos
+      if (crud.isActiveEvent) {
+        onEventoChange(crud.selectedId);
+      }
+    }
+  };
+
+  const handleActivate = async () => {
+    const ok = await crud.activate();
+    if (ok && crud.selectedId !== null) {
+      onEventoChange(crud.selectedId);
+    }
+  };
+
+  const handleDelete = () => {
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    const nextId = await crud.remove();
+    setDeleteModal(false);
+    // Si se eliminó el evento activo del padre, cambiar al siguiente
+    if (nextId !== null && eventoId === crud.selectedId) {
+      onEventoChange(nextId);
+    }
+  };
+
+  /* ================================================================ */
+  /*  Render                                                           */
+  /* ================================================================ */
+
+  return (
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      {/* ---- Header con gradiente ---- */}
+      <div className="bg-gradient-to-r from-[#1e5799] to-[#2989d8] px-6 py-5">
+        <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          ⚙️ Gestión de Eventos
+        </h2>
+        <p className="text-blue-200 text-sm mt-0.5">
+          {crud.eventos.length} evento{crud.eventos.length !== 1 ? "s" : ""} registrado{crud.eventos.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+
+      <div className="p-6 space-y-5">
+
+      {/* ---- Mensajes de feedback ---- */}
+      {crud.error && (
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 text-base font-medium px-4 py-3 rounded-r-lg flex items-start gap-2">
+          <span className="text-lg">❌</span>
+          <span>{crud.error}</span>
+        </div>
+      )}
+      {crud.success && (
+        <div className="bg-green-50 border-l-4 border-green-500 text-green-700 text-base font-medium px-4 py-3 rounded-r-lg flex items-start gap-2 animate-[fadeIn_0.3s_ease-in]">
+          <span className="text-lg">✅</span>
+          <span>{crud.success}</span>
+        </div>
+      )}
+      {crest.error && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-base font-medium px-4 py-3 rounded-r-lg flex items-center justify-between">
+          <span className="flex items-center gap-2"><span className="text-lg">⚠️</span>{crest.error}</span>
+          <button onClick={crest.clearError} className="text-amber-500 hover:text-amber-700 font-bold text-lg leading-none">✕</button>
+        </div>
+      )}
+
+      {/* ---- Selector ---- */}
+      <EventSelector
+        eventos={crud.eventos}
+        selectedId={crud.selectedId}
+        loading={crud.loadingList}
+        onSelect={crud.select}
+        onCreate={crud.create}
+        creating={crud.saving}
+      />
+
+      {/* ---- Ficha del evento (solo si hay selección) ---- */}
+      {crud.selectedId !== null ? (
+        crud.loadingDetail ? (
+          <div className="text-center py-12">
+            <div className="inline-block h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-500 text-base mt-3">Cargando evento…</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {/* Divider: Datos */}
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-gray-200"></div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Datos del evento</span>
+              <div className="h-px flex-1 bg-gray-200"></div>
+            </div>
+
+            {/* Formulario */}
+            <EventForm detail={crud.detail} onChange={crud.updateField} />
+
+            {/* Divider: Escudos */}
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-gray-200"></div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Escudos</span>
+              <div className="h-px flex-1 bg-gray-200"></div>
+            </div>
+
+            {/* Escudos */}
+            <div className="grid grid-cols-2 gap-4">
+              <CrestUploader
+                label="🏠 Escudo Local"
+                url={crud.detail.localCrestUrl}
+                onUrlChange={(v) => crud.updateField("localCrestUrl", v)}
+                busy={crest.localBusy}
+                onFile={(f) => crest.upload(f, "local")}
+              />
+              <CrestUploader
+                label="🏟️ Escudo Rival"
+                url={crud.detail.opponentCrestUrl}
+                onUrlChange={(v) => crud.updateField("opponentCrestUrl", v)}
+                busy={crest.opponentBusy}
+                onFile={(f) => crest.upload(f, "opponent")}
+              />
+            </div>
+
+            {/* Divider: Acciones */}
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-gray-200"></div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Acciones</span>
+              <div className="h-px flex-1 bg-gray-200"></div>
+            </div>
+
+            {/* Acciones */}
+            <EventActions
+              saving={crud.saving}
+              isActive={crud.isActiveEvent}
+              onSave={handleSave}
+              onActivate={handleActivate}
+              onDelete={handleDelete}
+              closed={crud.detail.closed}
+              onToggleClosed={(v) => crud.updateField("closed", v)}
+            />
+          </div>
+        )
+      ) : (
+        <div className="text-center py-12">
+          <span className="text-5xl">📂</span>
+          <p className="text-gray-500 text-base mt-3 font-medium">
+            Selecciona o crea un evento
+          </p>
+          <p className="text-gray-400 text-sm mt-1">
+            para ver y editar su ficha
+          </p>
+        </div>
+      )}
+
+      </div>{/* cierre del padding container */}
+
+      {/* ---- Modal de confirmación de eliminación ---- */}
+      <ConfirmationModal
+        isOpen={deleteModal}
+        title="Eliminar evento"
+        message="¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModal(false)}
+        isLoading={crud.saving}
+      />
     </div>
   );
 }

@@ -4,10 +4,11 @@ import { useState } from "react";
 
 interface AdminExportActionsProps {
   estadoFilter: string;
+  eventoId?: number | null;
   setMessage: (message: { type: "success" | "error"; text: string } | null) => void;
 }
 
-export default function AdminExportActions({ estadoFilter, setMessage }: AdminExportActionsProps) {
+export default function AdminExportActions({ estadoFilter, eventoId, setMessage }: AdminExportActionsProps) {
   const [isExportingCompleto, setIsExportingCompleto] = useState(false);
   const [isExportingPuntoTicket, setIsExportingPuntoTicket] = useState(false);
   const [isExportingPuntoTicketFiltrado, setIsExportingPuntoTicketFiltrado] = useState(false);
@@ -30,7 +31,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
 
               setIsExportingCompleto(true);
               try {
-                const response = await fetch(`/api/admin/export-excel?format=completo&status=${estadoFilter || "all"}`);
+                const response = await fetch(`/api/admin/export-excel?format=completo&status=${estadoFilter || "all"}${eventoId ? `&evento_id=${eventoId}` : ""}`);
                 if (!response.ok) {
                   const error = await response.json();
                   setMessage({
@@ -72,7 +73,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
 
               setIsExportingPuntoTicket(true);
               try {
-                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=aprobado`);
+                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=aprobado${eventoId ? `&evento_id=${eventoId}` : ""}`);
                 if (!response.ok) {
                   const error = await response.json();
                   setMessage({
@@ -85,10 +86,10 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `acreditados_puntoticket_${new Date().toISOString().split("T")[0]}.csv`;
+                link.download = `acreditados_puntoticket_${new Date().toISOString().split("T")[0]}.xlsx`;
                 link.click();
                 window.URL.revokeObjectURL(url);
-                setMessage({ type: "success", text: "CSV Punto Ticket descargado exitosamente" });
+                setMessage({ type: "success", text: "Excel Punto Ticket descargado exitosamente" });
               } catch {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {
@@ -114,7 +115,7 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
 
               setIsExportingPuntoTicketFiltrado(true);
               try {
-                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=${estadoFilter || "all"}`);
+                const response = await fetch(`/api/admin/export-excel?format=puntoticket&status=${estadoFilter || "all"}${eventoId ? `&evento_id=${eventoId}` : ""}`);
                 if (!response.ok) {
                   const error = await response.json();
                   setMessage({
@@ -127,10 +128,10 @@ export default function AdminExportActions({ estadoFilter, setMessage }: AdminEx
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `acreditados_puntoticket_filtrado_${new Date().toISOString().split("T")[0]}.csv`;
+                link.download = `acreditados_puntoticket_filtrado_${new Date().toISOString().split("T")[0]}.xlsx`;
                 link.click();
                 window.URL.revokeObjectURL(url);
-                setMessage({ type: "success", text: "CSV Punto Ticket filtrado descargado exitosamente" });
+                setMessage({ type: "success", text: "Excel Punto Ticket filtrado descargado exitosamente" });
               } catch {
                 setMessage({ type: "error", text: "Error al descargar Excel" });
               } finally {

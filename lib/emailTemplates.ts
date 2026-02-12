@@ -94,7 +94,7 @@ export const generateApprovalHTML = (
       ***Solicitamos a todos los acreditados mantener un comportamiento respetuoso con colegas, staff y publico durante toda su permanencia en el Claro Arena. El buen desarrollo de la jornada depende tambien de la colaboracion y profesionalismo de cada uno.
     </p>
     <p style="margin: 0 0 15px 0; color: #dc2626; font-weight: 600; line-height: 1.6;">
-      ***El incumplimiento de cualquiera de las disposiciones o instrucciones del club durante el partido facultara a Universidad Catolica a evaluar la participacion del/de la profesional en futuros procesos de acreditacion.
+      ***El incumplimiento de cualquiera de las disposiciones o instrucciones del club durante el partido facultará a Universidad Católica a evaluar la participación del/de la profesional en futuros procesos de acreditación.
     </p>
   `;
 

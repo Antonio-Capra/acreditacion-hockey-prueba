@@ -30,6 +30,7 @@ interface FormData {
   empresa: string;
   area: string;
   acreditados: Acreditado[];
+  evento_id?: number;
 }
 
 // Fallback areas in case Supabase table doesn't exist

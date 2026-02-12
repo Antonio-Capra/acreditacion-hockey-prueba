@@ -15,10 +15,12 @@ interface EmailIssue {
 }
 
 interface AdminStatsProps {
-  acreditaciones: Array<{ status: string }>;
+  acreditaciones: Array<{ status: string; zona_id?: number | null }>;
+  eventoId?: number | null;
+  zonas?: Array<{ id: number; nombre: string }>;
 }
 
-export default function AdminStats({ acreditaciones }: AdminStatsProps) {
+export default function AdminStats({ acreditaciones, eventoId, zonas = [] }: AdminStatsProps) {
   const [emailIssues, setEmailIssues] = useState<EmailIssue[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,12 +28,29 @@ export default function AdminStats({ acreditaciones }: AdminStatsProps) {
   const total = acreditaciones.length;
   const pendientes = acreditaciones.filter(a => a.status === 'pendiente').length;
   const aprobadas = acreditaciones.filter(a => a.status === 'aprobado').length;
+  const rechazadas = acreditaciones.filter(a => a.status === 'rechazado').length;
 
-  // Fetch email issues
+  // Agrupar aprobadas por zona
+  const approvedByZone = (() => {
+    const map = new Map<string, number>();
+
+    // contar por zona_id
+    aprobadas && acreditaciones.forEach((a) => {
+      if (a.status !== 'aprobado') return;
+      const zid = a.zona_id ?? -1;
+      const zoneName = zid === -1 ? 'Sin asignar' : (zonas.find(z => z.id === zid)?.nombre ?? `Zona ${zid}`);
+      map.set(zoneName, (map.get(zoneName) || 0) + 1);
+    });
+
+    return Array.from(map.entries()); // [ [zoneName, count], ... ]
+  })();
+
+  // Fetch email issues (filtrar por evento si se provee)
   useEffect(() => {
     const fetchEmailIssues = async () => {
       try {
-        const res = await fetch("/api/admin/email-issues");
+        const query = eventoId ? `?evento_id=${eventoId}` : "";
+        const res = await fetch(`/api/admin/email-issues${query}`);
         const data = await res.json();
         setEmailIssues(data.issues || []);
       } catch (error) {
@@ -41,7 +60,7 @@ export default function AdminStats({ acreditaciones }: AdminStatsProps) {
       }
     };
     fetchEmailIssues();
-  }, []);
+  }, [eventoId ?? null]);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -63,7 +82,7 @@ export default function AdminStats({ acreditaciones }: AdminStatsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6 relative">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-xl hover:shadow-2xl transition-all hover:scale-105">
           <div className="flex items-center justify-between">
             <div>
@@ -91,9 +110,33 @@ export default function AdminStats({ acreditaciones }: AdminStatsProps) {
             <div>
               <p className="text-gray-500 text-sm font-medium">Aprobadas</p>
               <p className="text-4xl font-bold text-green-600 mt-2">{aprobadas}</p>
+
+              {/* Desglose por zona */}
+              {approvedByZone.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {approvedByZone.map(([zoneName, count]) => (
+                    <span key={zoneName} className="text-xs px-2 py-1 bg-green-800 text-white rounded-full border border-green-100">
+                      {zoneName} {count}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="text-5xl ">
               ✅
+            </div>
+          </div>
+        </div>
+
+        {/* Rechazadas */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-medium">Rechazadas</p>
+              <p className="text-4xl font-bold text-red-600 mt-2">{rechazadas}</p>
+            </div>
+            <div className="text-5xl">
+              ❌
             </div>
           </div>
         </div>
@@ -102,7 +145,7 @@ export default function AdminStats({ acreditaciones }: AdminStatsProps) {
         {!isLoading && emailIssues.length > 0 && (
           <button
             onClick={() => setShowModal(true)}
-            className="absolute -top-2 -right-2 md:relative md:top-0 md:right-0 md:col-span-3 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl p-3 transition-all cursor-pointer group"
+            className="w-full md:col-span-4 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl p-3 transition-all cursor-pointer group"
           >
             <span className="text-2xl">⚠️</span>
             <span className="text-red-700 font-medium">

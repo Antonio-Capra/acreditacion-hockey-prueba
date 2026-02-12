@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [acreditaciones, setAcreditaciones] = useState<Acreditacion[]>([]);
   const [filteredAcreditaciones, setFilteredAcreditaciones] = useState<Acreditacion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadedEventoId, setLoadedEventoId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [estadoFilter, setEstadoFilter] = useState<string>("");
   const [selectedAcreditacion, setSelectedAcreditacion] = useState<Acreditacion | null>(null);
@@ -35,10 +36,10 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    if (evento?.id) {
+    if (!eventoLoading && evento?.id) {
       setActiveEventoId(evento.id);
     }
-  }, [evento?.id]);
+  }, [evento?.id, eventoLoading]);
 
   // Check auth
   useEffect(() => {
@@ -74,17 +75,21 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user || !activeEventoId) return;
+    // Limpiar datos anteriores inmediatamente al cambiar de evento
+    setAcreditaciones([]);
+    setFilteredAcreditaciones([]);
+    setZonas([]);
+    setLoadedEventoId(null);
     fetchAcreditaciones(activeEventoId);
-    fetchZonas(activeEventoId);
+    fetchZonas();
   }, [user, activeEventoId]);
 
-  // Fetch zonas
-  const fetchZonas = async (eventoId: number) => {
+  // Fetch zonas (globales, no dependen del evento)
+  const fetchZonas = async () => {
     try {
       const { data, error } = await supabase
         .from("zonas_acreditacion")
         .select("id, nombre")
-        .eq("evento_id", eventoId)
         .order("nombre", { ascending: true });
 
       if (error) throw error;
@@ -154,6 +159,7 @@ export default function AdminDashboard() {
 
       setAcreditaciones(transformedData);
       setFilteredAcreditaciones(transformedData);
+      setLoadedEventoId(eventoId);
     } catch (err) {
       console.error("Error fetching:", err);
       setMessage({ type: "error", text: "Error al cargar acreditaciones" });
@@ -682,7 +688,7 @@ export default function AdminDashboard() {
     setEmailErrorModal({ isOpen: false, message: "" });
   };
 
-  if (eventoLoading || isLoading) return <LoadingSpinner message="Cargando acreditaciones..." />;
+  if (eventoLoading || isLoading || (activeEventoId && loadedEventoId !== activeEventoId)) return <LoadingSpinner message="Cargando acreditaciones..." />;
 
   const refreshAcreditaciones = () => {
     if (activeEventoId) {
@@ -792,7 +798,7 @@ export default function AdminDashboard() {
         {activeTab === "acreditaciones" ? (
           <>
             {/* Stats Cards */}
-            <AdminStats acreditaciones={acreditaciones} />
+            <AdminStats acreditaciones={acreditaciones} eventoId={activeEventoId} zonas={zonas} />
 
             {/* Control de acreditacion */}
             {activeEventoId && <AdminAcreditacionControl eventoId={activeEventoId} />}
@@ -812,7 +818,7 @@ export default function AdminDashboard() {
 
             {/* Acciones complementarias */}
             <div className="mb-6">
-              <AdminExportActions estadoFilter={estadoFilter} setMessage={setMessage} />
+              <AdminExportActions estadoFilter={estadoFilter} eventoId={activeEventoId} setMessage={setMessage} />
             </div>
 
             {/* Tabla */}

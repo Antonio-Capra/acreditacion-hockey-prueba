@@ -118,11 +118,11 @@ function createEmptyAcreditado(): Acreditado {
 export default function AcreditacionPage() {
   const { evento, loading: eventoLoading } = useEventoActivo();
   const { areas, loading: areasLoading, cuposError, closeCuposError, submitAcreditacion, error: areasError } = useAcreditacion();
-  const { isOpen: accreditationOpen, loading: configLoading, closeMessage, ventanasActivas } = useAcreditacionConfig(evento.id);
+  const { isOpen: accreditationOpen, loading: configLoading, closeMessage, ventanasActivas } = useAcreditacionConfig(evento?.id ?? 0);
   const isClosed = !accreditationOpen;
 
   const formattedDate = React.useMemo(() => {
-    if (!evento.fecha) return "";
+    if (!evento?.fecha) return "";
     const parsed = new Date(`${evento.fecha}T${evento.hora || "00:00"}`);
     if (Number.isNaN(parsed.getTime())) return "";
     const formatter = new Intl.DateTimeFormat("es-CL", {
@@ -133,7 +133,7 @@ export default function AcreditacionPage() {
     });
     const text = formatter.format(parsed);
     return text.charAt(0).toUpperCase() + text.slice(1);
-  }, [evento.fecha, evento.hora]);
+  }, [evento?.fecha, evento?.hora]);
 
   const upcomingWindow = React.useMemo(() => {
     if (ventanasActivas.length === 0) return null;
@@ -404,7 +404,7 @@ export default function AcreditacionPage() {
         formDataToSend.empresa = `Otros: ${formData.empresa_personalizada}`;
       }
 
-      const result = await submitAcreditacion(formDataToSend);
+      const result = await submitAcreditacion({ ...formDataToSend, evento_id: evento?.id });
       
       if (result.success) {
         setSuccessModal({ show: true, acreditados_count: formData.acreditados.length });
@@ -424,7 +424,7 @@ export default function AcreditacionPage() {
     }
   };
 
-  if (eventoLoading || areasLoading || configLoading) {
+  if (eventoLoading || areasLoading || configLoading || !evento) {
     return <LoadingSpinner message="Cargando..." />;
   }
 
@@ -446,9 +446,9 @@ export default function AcreditacionPage() {
             Acreditación Prensa
           </h1>
           <p className="text-white/80 mt-2 text-lg">
-            {evento.local || "Universidad Catolica"} vs {evento.rival}
+            {evento?.local || "Universidad Católica"} vs {evento?.rival || ""}
             {formattedDate ? ` - ${formattedDate}` : ""}
-            {evento.lugar ? `, ${evento.lugar}` : ""}
+            {evento?.lugar ? `, ${evento.lugar}` : ""}
           </p>
         </header>
 

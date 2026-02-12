@@ -111,9 +111,7 @@ export default function AdminRow({
 
   return (
     <tr
-      className={`border-t border-gray-200 ${index % 2 === 0 ? "bg-gray-50" : ""} hover:bg-blue-50 transition-all ${
-        acred.status === "aprobado" ? "bg-green-100" : acred.status === "rechazado" ? "bg-red-100" : ""
-      }`}
+      className={`border-t border-gray-200 ${index % 2 === 0 ? "bg-white" : "bg-blue-50"} hover:bg-blue-100 transition-all`}
     >
       <td className="px-1 py-1 text-center">
         <input

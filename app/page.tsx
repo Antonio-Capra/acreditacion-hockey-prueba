@@ -107,20 +107,20 @@ export default function LandingPage() {
                                         border: `2px solid var(--azul-mas-claro)`
                                     }}>
                                     <i className="fas fa-map-marker-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                    <span className="font-semibold">{evento.lugar || "Claro Arena"}</span>
+                                    <span className="font-semibold">{evento?.lugar || "Claro Arena"}</span>
                                 </div>
                             </div>
 
                             {/* Título compacto */}
                             <h1 className="text-center sm:text-left text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-2 leading-tight w-full">
-                                <span className="block text-white drop-shadow-2xl">{evento.local || "Universidad Catolica"}</span>
+                                <span className="block text-white drop-shadow-2xl">{evento?.local || "Universidad Católica"}</span>
                             </h1>
 
                             {/* VS y rival en una línea */}
                             <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 w-full justify-center sm:justify-start">
                                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light tracking-wide" style={{ color: 'var(--azul-claro)' }}>vs</span>
                                 <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white opacity-90">
-                                    {evento.rival || "Deportes Concepcion"}
+                                    {evento?.rival || "Deportes Concepcion"}
                                 </h2>
                             </div>
                         </div>

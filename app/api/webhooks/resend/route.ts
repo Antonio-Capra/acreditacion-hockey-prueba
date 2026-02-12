@@ -63,9 +63,9 @@ export async function POST(req: Request) {
     // Buscar el registro del email por resend_id
     const { data: existingLog } = await supabaseAdmin
       .from("email_logs")
-      .select("id")
+      .select("id, evento_id")
       .eq("resend_id", data.email_id)
-      .single();
+      .maybeSingle();
 
     if (existingLog) {
       // Actualizar el registro existente
@@ -73,6 +73,18 @@ export async function POST(req: Request) {
         status,
         updated_at: new Date().toISOString(),
       };
+
+      // Si el registro existe pero no tiene evento_id, intentar asignar el evento activo
+      if (!existingLog.evento_id) {
+        const { data: activeEvento } = await supabaseAdmin
+          .from("eventos")
+          .select("id")
+          .eq("activo", true)
+          .order("id", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (activeEvento?.id) updateData.evento_id = activeEvento.id;
+      }
 
       // Si es un bounce, agregar detalles
       if (type === "email.bounced" && data.bounce) {
@@ -87,12 +99,21 @@ export async function POST(req: Request) {
 
       console.log("[RESEND WEBHOOK] Updated log:", data.email_id, "->", status);
     } else {
-      // Si no existe, crear uno nuevo (por si el webhook llega antes de que se guarde)
+      // Si no existe, intentar resolver evento activo para asociar (fallback)
+      const { data: activeEvento } = await supabaseAdmin
+        .from("eventos")
+        .select("id")
+        .eq("activo", true)
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
       const insertData: Record<string, unknown> = {
         resend_id: data.email_id,
         to_email: toEmail,
         email_type: "unknown",
         status,
+        evento_id: activeEvento?.id ?? null,
       };
 
       if (type === "email.bounced" && data.bounce) {
@@ -102,7 +123,7 @@ export async function POST(req: Request) {
 
       await supabaseAdmin.from("email_logs").insert(insertData);
 
-      console.log("[RESEND WEBHOOK] Created new log:", data.email_id, "->", status);
+      console.log("[RESEND WEBHOOK] Created new log:", data.email_id, "->", status, "(evento_id:", insertData.evento_id, ")");
     }
 
     return NextResponse.json({ received: true });

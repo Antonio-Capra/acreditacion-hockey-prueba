@@ -22,6 +22,7 @@ interface AccreditacionRequest {
   empresa: string;
   area: string;
   acreditados: Acreditado[];
+  evento_id?: number;
 }
 
 // Fallback areas data in case Supabase table doesn't exist
@@ -56,8 +57,22 @@ export async function POST(req: Request) {
       responsable_telefono,
       empresa,
       area,
-      acreditados
+      acreditados,
+      evento_id: requestEventoId
     } = data;
+
+    // Determinar evento_id: usar el enviado o buscar el evento activo
+    let eventoId = requestEventoId;
+    if (!eventoId) {
+      const { data: activeEvento } = await supabaseAdmin
+        .from("eventos")
+        .select("id")
+        .eq("activo", true)
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      eventoId = activeEvento?.id ?? 1;
+    }
 
     // Validaciones básicas
     if (!responsable_email || !responsable_nombre || !responsable_rut || !empresa || !area || !acreditados.length) {
@@ -72,8 +87,7 @@ export async function POST(req: Request) {
     try {
       const { data, error: areasError } = await supabaseAdmin
         .from("areas_prensa")
-        .select("id, codigo, cupo_maximo")
-        .eq("evento_id", 1);
+        .select("id, codigo, cupo_maximo");
 
       if (areasError) {
         console.warn("Error al acceder a la tabla areas_prensa, usando datos de fallback:", areasError.message);
@@ -102,7 +116,7 @@ export async function POST(req: Request) {
     const { count: countAll, error: countError1 } = await supabaseAdmin
       .from("acreditados")
       .select("*", { count: "exact", head: true })
-      .eq("evento_id", 1)
+      .eq("evento_id", eventoId)
       .ilike("area", area)
       .ilike("empresa", empresa);
 
@@ -113,7 +127,7 @@ export async function POST(req: Request) {
     const { count: countRechazados, error: countError2 } = await supabaseAdmin
       .from("acreditados")
       .select("*", { count: "exact", head: true })
-      .eq("evento_id", 1)
+      .eq("evento_id", eventoId)
       .ilike("area", area)
       .ilike("empresa", empresa)
       .eq("status", "rechazado");
@@ -142,8 +156,7 @@ export async function POST(req: Request) {
     // 2.5. Obtener zonas para asignación automática
     const { data: zonasData, error: zonasError } = await supabaseAdmin
       .from("zonas_acreditacion")
-      .select("id, nombre")
-      .eq("evento_id", 1);
+      .select("id, nombre");
 
     if (zonasError) {
       console.warn("Error al obtener zonas:", zonasError.message);
@@ -186,7 +199,7 @@ export async function POST(req: Request) {
 
     // 3. Insertar acreditados
     const acreditadosToInsert = acreditados.map((acreditado: Acreditado) => ({
-      evento_id: 1,
+      evento_id: eventoId,
       nombre: acreditado.nombre,
       primer_apellido: acreditado.primer_apellido,
       segundo_apellido: acreditado.segundo_apellido,
