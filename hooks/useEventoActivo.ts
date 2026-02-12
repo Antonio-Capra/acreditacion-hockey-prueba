@@ -9,6 +9,7 @@ export interface EventoActivo {
   fecha: string;
   hora: string;
   lugar: string;
+  local: string;
   rival: string;
   escudo_local_url?: string | null;
   escudo_rival_url?: string | null;
@@ -22,6 +23,7 @@ const DEFAULT_EVENTO: EventoActivo = {
   fecha: "2026-02-08",
   hora: "20:30",
   lugar: "Claro Arena",
+  local: "Universidad Catolica",
   rival: "Deportes Concepcion",
   escudo_local_url: "/UCimg/EscudoUC1.png",
   escudo_rival_url: "/UCimg/EscudoConce.png",

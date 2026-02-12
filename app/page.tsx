@@ -12,10 +12,10 @@ import { useEventoActivo } from "@/hooks";
 export default function LandingPage() {
     const [isNavigating, setIsNavigating] = useState(false);
     const router = useRouter();
-    const { evento } = useEventoActivo();
+    const { evento, loading: eventoLoading } = useEventoActivo();
 
     const formattedDate = useMemo(() => {
-        if (!evento.fecha) return "";
+        if (!evento?.fecha) return "";
         const parsed = new Date(`${evento.fecha}T${evento.hora || "00:00"}`);
         if (Number.isNaN(parsed.getTime())) return "";
         const formatter = new Intl.DateTimeFormat("es-CL", {
@@ -25,11 +25,11 @@ export default function LandingPage() {
         });
         const text = formatter.format(parsed);
         return text.charAt(0).toUpperCase() + text.slice(1);
-    }, [evento.fecha, evento.hora]);
+    }, [evento?.fecha, evento?.hora]);
 
-    const formattedTime = evento.hora ? `${evento.hora} hrs` : "";
-    const localCrestSrc = evento.escudo_local_url || "/UCimg/EscudoUC1.png";
-    const rivalCrestSrc = evento.escudo_rival_url || "/UCimg/EscudoConce.png";
+    const formattedTime = evento?.hora ? `${evento.hora} hrs` : "";
+    const localCrestSrc = evento?.escudo_local_url ?? "";
+    const rivalCrestSrc = evento?.escudo_rival_url ?? "";
 
     const handleNavigate = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -113,7 +113,7 @@ export default function LandingPage() {
 
                             {/* Título compacto */}
                             <h1 className="text-center sm:text-left text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-2 leading-tight w-full">
-                                <span className="block text-white drop-shadow-2xl">{evento.nombre || "Universidad Catolica"}</span>
+                                <span className="block text-white drop-shadow-2xl">{evento.local || "Universidad Catolica"}</span>
                             </h1>
 
                             {/* VS y rival en una línea */}
@@ -134,13 +134,17 @@ export default function LandingPage() {
                             <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-12 lg:gap-16 xl:gap-20 mb-4 sm:mb-8 w-full">
                                 {/* Universidad Católica */}
                                 <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                                  {eventoLoading ? (
+                                    <div className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 xl:h-40 xl:w-40 rounded-full bg-gray-200/60 border border-gray-200 animate-pulse" />
+                                  ) : (
                                     <Image
-                                        src={localCrestSrc}
-                                        alt="Escudo Universidad Católica"
-                                        width={300}
-                                        height={300}
-                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                      src={localCrestSrc}
+                                      alt="Escudo Universidad Católica"
+                                      width={300}
+                                      height={300}
+                                      className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
                                     />
+                                  )}
                                 </div>
 
                                 {/* VS */}
@@ -150,13 +154,17 @@ export default function LandingPage() {
 
                                 {/* Deportes Concepción */}
                                 <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
+                                  {eventoLoading ? (
+                                    <div className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 xl:h-40 xl:w-40 rounded-full bg-gray-200/60 border border-gray-200 animate-pulse" />
+                                  ) : (
                                     <Image
-                                        src={rivalCrestSrc}
-                                        alt="Escudo Deportes Concepción"
-                                        width={300}
-                                        height={300}
-                                        className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                      src={rivalCrestSrc}
+                                      alt="Escudo Deportes Concepción"
+                                      width={300}
+                                      height={300}
+                                      className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
                                     />
+                                  )}
                                 </div>
                             </div>
 
