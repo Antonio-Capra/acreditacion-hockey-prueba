@@ -17,6 +17,12 @@ interface AdminTableProps {
   onSelectAll: (selected: boolean) => void;
   onBulkAction: (action: "approve" | "reject" | "sendEmail" | "delete", ids: number[]) => void;
   onConfirmDelete: (message: string, onConfirm: () => void) => void;
+  // Opcionales: permitir renderizar filtros compactos en la cabecera
+  searchTerm?: string;
+  setSearchTerm?: (term: string) => void;
+  estadoFilter?: string;
+  setEstadoFilter?: (filter: string) => void;
+  onRefresh?: () => void;
 }
 
 export default function AdminTable({
@@ -31,9 +37,18 @@ export default function AdminTable({
   onSelectAll,
   onBulkAction,
   onConfirmDelete,
+  // opcionales
+  searchTerm,
+  setSearchTerm,
+  estadoFilter,
+  setEstadoFilter,
+  onRefresh,
 }: AdminTableProps) {
   const [confirmActionModal, setConfirmActionModal] = useState<{ isOpen: boolean; type: "aprobado" | "rechazado" | null; message: string; onConfirm: () => void }>({ isOpen: false, type: null, message: "", onConfirm: () => {} });
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<{ isOpen: boolean; message: string; onConfirm: () => void }>({ isOpen: false, message: "", onConfirm: () => {} });
+
+  // Control de tamaño de fuente de la tabla
+  const [fontScale, setFontScale] = useState<number>(100);
 
   const openConfirmModal = (type: "aprobado" | "rechazado", message: string, onConfirm: () => void) => {
     setConfirmActionModal({ isOpen: true, type, message, onConfirm });
@@ -51,23 +66,92 @@ export default function AdminTable({
     setConfirmDeleteModal({ isOpen: false, message: "", onConfirm: () => {} });
   };
   return (
-    <>
+    <div>
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden mt-16">
       {/* Header de la Tabla */}
       <div className="bg-gradient-to-r from-[#1e5799] to-[#2989d8] px-6 py-5">
-        <h2 className="text-xl font-bold text-white flex items-center justify-between">
-          <span>Lista de Acreditaciones</span>
-          <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold">
-            {filteredAcreditaciones.length} resultado{filteredAcreditaciones.length !== 1 ? 's' : ''}
-          </span>
-        </h2>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-white">Lista de Acreditaciones</h2>
+            {/* Filtros compactos en la cabecera (si el parent pasa las props) */}
+            {setSearchTerm && setEstadoFilter && (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  aria-label="filtro-buscar"
+                  placeholder="Buscar (nombre, email, RUT...)"
+                  value={searchTerm || ''}
+                  onChange={(e) => setSearchTerm?.(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+                />
+                <select
+                  aria-label="filtro-estado"
+                  value={estadoFilter || ''}
+                  onChange={(e) => setEstadoFilter?.(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-white/20 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+                >
+                  <option className="text-black" value="">Todos</option>
+                  <option className="text-black" value="pendiente">Pendiente</option>
+                  <option className="text-black" value="aprobado">Aprobado</option>
+                  <option className="text-black" value="rechazado">Rechazado</option>
+                </select>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onRefresh?.()}
+                    className="px-4 py-2 rounded-lg bg-white text-[#1e5799] font-semibold hover:opacity-90"
+                    aria-label="actualizar-filtros"
+                  >
+                    Actualizar
+                  </button>
+                  <div className="flex items-center ml-auto bg-white/10 px-2 py-1 rounded-md text-white">
+                    <button
+                      onClick={() => setFontScale(s => Math.max(80, s - 10))}
+                      aria-label="disminuir-tamano"
+                      className="px-2 py-1 hover:bg-white/10 rounded-md"
+                      title="Disminuir tamaño de letra"
+                    >
+                      −
+                    </button>
+                    <span className="px-2 text-sm text-white font-semibold" aria-hidden>{fontScale}%</span>
+                    <button
+                      onClick={() => setFontScale(s => Math.min(140, s + 10))}
+                      aria-label="aumentar-tamano"
+                      className="px-2 py-1 hover:bg-white/10 rounded-md"
+                      title="Aumentar tamaño de letra"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Contador */}
+            <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold">
+              {filteredAcreditaciones.length} resultado{filteredAcreditaciones.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+
+
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b-2 border-gray-200">
+        {/* wrapper que aplica el escalado visual para que even los elementos con `text-sm/text-xs` se vean afectados */}
+        <div
+          data-testid="table-scale-wrapper"
+          style={{
+            transform: `scale(${fontScale / 100})`,
+            transformOrigin: '0 0',
+            width: `${100 / (fontScale / 100)}%`,
+          }}
+        >
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b-2 border-gray-200">
             <tr>
-              <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <th className="px-2 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
                 <div className="flex-col items-center justify-center">
                    <span className="flex justify-center text-xs font-bold text-gray-700 uppercase tracking-wider">Selec Todos</span>
                   <input
@@ -180,6 +264,7 @@ export default function AdminTable({
         }}
         onCancel={closeConfirmDeleteModal}
       />
-    </>
+    </div>
+  </div>
   );
 }

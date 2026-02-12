@@ -255,4 +255,38 @@ describe('AdminTable Bulk Actions', () => {
     const rows = screen.getAllByRole('row');
     expect(rows).toHaveLength(3); // header + 2 data rows
   });
+
+  it('shows compact filters in header when parent passes props', () => {
+    render(
+      <TestWrapper>
+        <AdminTable {...mockProps} searchTerm="" setSearchTerm={jest.fn()} estadoFilter="" setEstadoFilter={jest.fn()} onRefresh={jest.fn()} />
+      </TestWrapper>
+    );
+
+    expect(screen.getByLabelText('filtro-buscar')).toBeInTheDocument();
+    expect(screen.getByLabelText('filtro-estado')).toBeInTheDocument();
+    expect(screen.getByLabelText('actualizar-filtros')).toBeInTheDocument();
+  });
+
+  it('font size controls adjust table font-size', async () => {
+    const user = userEvent.setup();
+    render(
+      <TestWrapper>
+        <AdminTable {...mockProps} searchTerm="" setSearchTerm={jest.fn()} estadoFilter="" setEstadoFilter={jest.fn()} onRefresh={jest.fn()} />
+      </TestWrapper>
+    );
+
+    const wrapper = screen.getByTestId('table-scale-wrapper');
+    const increase = screen.getAllByLabelText('aumentar-tamano')[0];
+    const decrease = screen.getAllByLabelText('disminuir-tamano')[0];
+
+    // initial scale should be 1 (100%)
+    expect(wrapper).toHaveStyle({ transform: 'scale(1)' });
+
+    await user.click(increase);
+    expect(wrapper).toHaveStyle({ transform: 'scale(1.1)' });
+
+    await user.click(decrease);
+    expect(wrapper).toHaveStyle({ transform: 'scale(1)' });
+  });
 });
