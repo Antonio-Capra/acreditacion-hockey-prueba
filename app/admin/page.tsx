@@ -41,17 +41,27 @@ export default function AdminDashboard() {
     }
   }, [evento?.id, eventoLoading]);
 
-  // Check auth
+  // Check auth - usar getUser() que valida contra el servidor (getSession() lee caché y puede devolver sesiones ya cerradas)
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        router.push("/admin/login");
+      const { data: { user: authUser }, error } = await supabase.auth.getUser();
+      if (error || !authUser) {
+        router.replace("/admin/login");
         return;
       }
-      setUser(data.session.user);
+      setUser(authUser);
     };
     checkAuth();
+
+    // Escuchar cambios de auth para reaccionar al signOut
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        router.replace("/admin/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   useEffect(() => {
@@ -512,15 +522,16 @@ export default function AdminDashboard() {
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Logout
+  // Logout - usar scope:'local' + hard redirect para limpiar toda la sesión en memoria
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await supabase.auth.signOut();
-      router.push("/admin/login");
+      await supabase.auth.signOut({ scope: 'local' });
     } catch (error) {
       console.error("Error during logout:", error);
-      setIsLoggingOut(false);
+    } finally {
+      // Hard redirect: destruye todo el estado React + caché de Supabase en memoria
+      window.location.href = "/admin/login";
     }
   };
 
