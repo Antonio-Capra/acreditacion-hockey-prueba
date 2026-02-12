@@ -1,16 +1,35 @@
 // app/page.tsx
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import BotonFlotante from "@/components/common/BotonesFlotantes/BotonFlotante";
 import IconoFlotanteAdmin from "@/components/common/BotonesFlotantes/IconoFlotanteAdmin";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { useEventoActivo } from "@/hooks";
 
 export default function LandingPage() {
     const [isNavigating, setIsNavigating] = useState(false);
     const router = useRouter();
+    const { evento } = useEventoActivo();
+
+    const formattedDate = useMemo(() => {
+        if (!evento.fecha) return "";
+        const parsed = new Date(`${evento.fecha}T${evento.hora || "00:00"}`);
+        if (Number.isNaN(parsed.getTime())) return "";
+        const formatter = new Intl.DateTimeFormat("es-CL", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+        });
+        const text = formatter.format(parsed);
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }, [evento.fecha, evento.hora]);
+
+    const formattedTime = evento.hora ? `${evento.hora} hrs` : "";
+    const localCrestSrc = evento.escudo_local_url || "/UCimg/EscudoUC1.png";
+    const rivalCrestSrc = evento.escudo_rival_url || "/UCimg/EscudoConce.png";
 
     const handleNavigate = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -68,7 +87,7 @@ export default function LandingPage() {
                                         border: `2px solid var(--azul-mas-claro)`
                                     }}>
                                     <i className="fas fa-calendar-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                    <span className="font-semibold">Domingo 8 Febrero</span>
+                                    <span className="font-semibold">{formattedDate || "Domingo 8 Febrero"}</span>
                                 </div>
 
                                 {/* Hora */}
@@ -78,7 +97,7 @@ export default function LandingPage() {
                                         border: `2px solid var(--azul-mas-claro)`
                                     }}>
                                     <i className="fas fa-clock mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                    <span className="font-semibold">20:30 hrs</span>
+                                    <span className="font-semibold">{formattedTime || "20:30 hrs"}</span>
                                 </div>
 
                                 {/* Estadio */}
@@ -88,20 +107,20 @@ export default function LandingPage() {
                                         border: `2px solid var(--azul-mas-claro)`
                                     }}>
                                     <i className="fas fa-map-marker-alt mr-3" style={{ color: 'white', fontSize: '1.3em' }}></i>
-                                    <span className="font-semibold">Claro Arena</span>
+                                    <span className="font-semibold">{evento.lugar || "Claro Arena"}</span>
                                 </div>
                             </div>
 
                             {/* Título compacto */}
                             <h1 className="text-center sm:text-left text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-2 leading-tight w-full">
-                                <span className="block text-white drop-shadow-2xl">Universidad Católica</span>
+                                <span className="block text-white drop-shadow-2xl">{evento.nombre || "Universidad Catolica"}</span>
                             </h1>
 
                             {/* VS y rival en una línea */}
                             <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 w-full justify-center sm:justify-start">
                                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light tracking-wide" style={{ color: 'var(--azul-claro)' }}>vs</span>
                                 <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white opacity-90">
-                                    Deportes Concepción
+                                    {evento.rival || "Deportes Concepcion"}
                                 </h2>
                             </div>
                         </div>
@@ -116,7 +135,7 @@ export default function LandingPage() {
                                 {/* Universidad Católica */}
                                 <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
                                     <Image
-                                        src="/UCimg/EscudoUC1.png"
+                                        src={localCrestSrc}
                                         alt="Escudo Universidad Católica"
                                         width={300}
                                         height={300}
@@ -132,7 +151,7 @@ export default function LandingPage() {
                                 {/* Deportes Concepción */}
                                 <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
                                     <Image
-                                        src="/UCimg/EscudoConce.png"
+                                        src={rivalCrestSrc}
                                         alt="Escudo Deportes Concepción"
                                         width={300}
                                         height={300}

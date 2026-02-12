@@ -115,7 +115,7 @@ export default function AdminRow({
         acred.status === "aprobado" ? "bg-green-100" : acred.status === "rechazado" ? "bg-red-100" : ""
       }`}
     >
-      <td className="px-6 py-4 text-center">
+      <td className="px-3 py-2 text-center">
         <input
           type="checkbox"
           checked={isSelected}

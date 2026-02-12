@@ -11,6 +11,8 @@ import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
 import AcreditadoRow from "@/components/acreditacion/AcreditadoRow";
 import { useAcreditacion } from "@/hooks/useAcreditacion";
+import { useAcreditacionConfig } from "@/hooks/useAcreditacionConfig";
+import { useEventoActivo } from "@/hooks";
 import BotonVolver from "@/components/common/BotonesFlotantes/BotonVolver";
 import { validateRUT, validateEmail } from "@/lib/validation";
 
@@ -114,10 +116,36 @@ function createEmptyAcreditado(): Acreditado {
 }
 
 export default function AcreditacionPage() {
+  const { evento, loading: eventoLoading } = useEventoActivo();
   const { areas, loading: areasLoading, cuposError, closeCuposError, submitAcreditacion, error: areasError } = useAcreditacion();
+  const { isOpen: accreditationOpen, loading: configLoading, closeMessage, ventanasActivas } = useAcreditacionConfig(evento.id);
+  const isClosed = !accreditationOpen;
 
-  const ACCREDITATION_CLOSED = true;
-  const ACCREDITATION_CLOSED_MESSAGE = "Lamentablemente ya no estas en tiempo de acreditarte. El plazo de acreditacion ha finalizado.";
+  const formattedDate = React.useMemo(() => {
+    if (!evento.fecha) return "";
+    const parsed = new Date(`${evento.fecha}T${evento.hora || "00:00"}`);
+    if (Number.isNaN(parsed.getTime())) return "";
+    const formatter = new Intl.DateTimeFormat("es-CL", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const text = formatter.format(parsed);
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }, [evento.fecha, evento.hora]);
+
+  const upcomingWindow = React.useMemo(() => {
+    if (ventanasActivas.length === 0) return null;
+    const now = new Date();
+    return ventanasActivas.find((ventana) => new Date(ventana.termina_en) > now) || null;
+  }, [ventanasActivas]);
+
+  const disclaimerWindow = React.useMemo(() => {
+    if (upcomingWindow) return upcomingWindow;
+    if (ventanasActivas.length === 0) return null;
+    return ventanasActivas[ventanasActivas.length - 1];
+  }, [upcomingWindow, ventanasActivas]);
   
   const [formData, setFormData] = useState<FormData>({
     responsable_nombre: "",
@@ -396,7 +424,7 @@ export default function AcreditacionPage() {
     }
   };
 
-  if (areasLoading) {
+  if (eventoLoading || areasLoading || configLoading) {
     return <LoadingSpinner message="Cargando..." />;
   }
 
@@ -418,19 +446,21 @@ export default function AcreditacionPage() {
             Acreditación Prensa
           </h1>
           <p className="text-white/80 mt-2 text-lg">
-            Universidad Católica vs Deportes Concepción - Domingo 8 de Febrero 2026, Claro Arena
+            {evento.nombre || "Universidad Catolica"} vs {evento.rival || "Deportes Concepcion"}
+            {formattedDate ? ` - ${formattedDate}` : ""}
+            {evento.lugar ? `, ${evento.lugar}` : ""}
           </p>
         </header>
 
-        {ACCREDITATION_CLOSED && (
+        {isClosed && (
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl">
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-900 rounded-xl p-5 text-center text-lg font-semibold">
-              {ACCREDITATION_CLOSED_MESSAGE}
+              {closeMessage}
             </div>
           </div>
         )}
 
-        {!ACCREDITATION_CLOSED && (
+        {!isClosed && (
           <form
             onSubmit={handleSubmit}
             className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/30 p-6 sm:p-8 shadow-2xl space-y-8"
@@ -642,11 +672,16 @@ export default function AcreditacionPage() {
         )}
       </div>
 
-      {!ACCREDITATION_CLOSED && (
+      {!isClosed && (
         <>
           <DisclaimerModal
             isVisible={showDisclaimer}
             onAccept={() => setShowDisclaimer(false)}
+            window={
+              disclaimerWindow
+                ? { startsAt: disclaimerWindow.inicia_en, endsAt: disclaimerWindow.termina_en }
+                : null
+            }
           />
 
           <ConfirmationModal

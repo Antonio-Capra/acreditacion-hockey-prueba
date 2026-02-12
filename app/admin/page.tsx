@@ -7,9 +7,13 @@ import Image from "next/image";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
-import { AdminProvider, AdminStats, AdminFilters, AdminExportActions, AdminTable, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
+import { AdminProvider, AdminStats, AdminFilters, AdminExportActions, AdminTable, AdminAcreditacionControl, AdminSidebar, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
+import { useEventoActivo } from "@/hooks";
 
 export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState<"acreditaciones" | "configuracion">("acreditaciones");
+  const { evento, loading: eventoLoading } = useEventoActivo();
+  const [activeEventoId, setActiveEventoId] = useState<number | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [acreditaciones, setAcreditaciones] = useState<Acreditacion[]>([]);
   const [filteredAcreditaciones, setFilteredAcreditaciones] = useState<Acreditacion[]>([]);
@@ -21,6 +25,7 @@ export default function AdminDashboard() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [zonas, setZonas] = useState<Array<{ id: number; nombre: string }>>([]);
+  const [eventos, setEventos] = useState<Array<{ id: number; nombre: string; activo?: boolean | null }>>([]);
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<{ isOpen: boolean; message: string; onConfirm: (() => void) | null }>({ isOpen: false, message: "", onConfirm: null });
   const [confirmActionModal, setConfirmActionModal] = useState<{ isOpen: boolean; type: "aprobado" | "rechazado" | null; message: string }>({ isOpen: false, type: null, message: "" });
   const [successModal, setSuccessModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
@@ -28,6 +33,12 @@ export default function AdminDashboard() {
   const [emailErrorModal, setEmailErrorModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    if (evento?.id) {
+      setActiveEventoId(evento.id);
+    }
+  }, [evento?.id]);
 
   // Check auth
   useEffect(() => {
@@ -38,19 +49,42 @@ export default function AdminDashboard() {
         return;
       }
       setUser(data.session.user);
-      fetchAcreditaciones();
-      fetchZonas();
     };
     checkAuth();
   }, [router]);
 
+  useEffect(() => {
+    if (!user) return;
+    const fetchEventos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("eventos")
+          .select("id, nombre, activo")
+          .order("id", { ascending: false });
+
+        if (error) throw error;
+        setEventos(data || []);
+      } catch (error) {
+        console.error("Error cargando eventos:", error);
+      }
+    };
+
+    fetchEventos();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !activeEventoId) return;
+    fetchAcreditaciones(activeEventoId);
+    fetchZonas(activeEventoId);
+  }, [user, activeEventoId]);
+
   // Fetch zonas
-  const fetchZonas = async () => {
+  const fetchZonas = async (eventoId: number) => {
     try {
       const { data, error } = await supabase
         .from("zonas_acreditacion")
         .select("id, nombre")
-        .eq("evento_id", 1)
+        .eq("evento_id", eventoId)
         .order("nombre", { ascending: true });
 
       if (error) throw error;
@@ -61,7 +95,7 @@ export default function AdminDashboard() {
   };
 
   // Fetch acreditaciones
-  const fetchAcreditaciones = async () => {
+  const fetchAcreditaciones = async (eventoId: number) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -89,7 +123,7 @@ export default function AdminDashboard() {
           responsable_telefono,
           created_at
         `)
-        .eq("evento_id", 1)
+        .eq("evento_id", eventoId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -205,6 +239,7 @@ export default function AdminDashboard() {
             correo: selectedAcreditacion.email,
             zona: zonaNombre,
             area: areaNombre,
+              eventoId: activeEventoId,
           }),
         });
       } else if (newEstado === "rechazado") {
@@ -217,6 +252,7 @@ export default function AdminDashboard() {
             nombre: selectedAcreditacion.nombre,
             apellido: `${selectedAcreditacion.primer_apellido} ${selectedAcreditacion.segundo_apellido || ""}`.trim(),
             correo: selectedAcreditacion.email,
+              eventoId: activeEventoId,
             zona: zonaNombre,
             area: areaNombre,
           }),
@@ -343,7 +379,8 @@ export default function AdminDashboard() {
             zona: zonas.find(z => z.id === acred.zona_id)?.nombre || "Por confirmar",
             area: AREA_NAMES[acred.area] || acred.area,
             tipoCredencial: acred.tipo_credencial,
-            numeroCredencial: acred.numero_credencial
+            numeroCredencial: acred.numero_credencial,
+            eventoId: activeEventoId,
           }));
 
         const rejectedEmails = emailEligible
@@ -352,7 +389,8 @@ export default function AdminDashboard() {
             nombre: acred.nombre,
             apellido: acred.primer_apellido,
             correo: acred.email,
-            motivo: acred.motivo_rechazo || "Sin motivo especificado"
+            motivo: acred.motivo_rechazo || "Sin motivo especificado",
+            eventoId: activeEventoId,
           }));
 
         const results = [];
@@ -584,6 +622,7 @@ export default function AdminDashboard() {
           correo: acred.email,
           zona: zonaNombre,
           area: areaNombre,
+          eventoId: activeEventoId,
         }),
       });
       
@@ -610,6 +649,7 @@ export default function AdminDashboard() {
           nombre: acred.nombre,
           apellido: `${acred.primer_apellido} ${acred.segundo_apellido || ""}`.trim(),
           correo: acred.email,
+          eventoId: activeEventoId,
         }),
       });
       
@@ -642,7 +682,13 @@ export default function AdminDashboard() {
     setEmailErrorModal({ isOpen: false, message: "" });
   };
 
-  if (isLoading) return <LoadingSpinner message="Cargando acreditaciones..." />;
+  if (eventoLoading || isLoading) return <LoadingSpinner message="Cargando acreditaciones..." />;
+
+  const refreshAcreditaciones = () => {
+    if (activeEventoId) {
+      fetchAcreditaciones(activeEventoId);
+    }
+  };
 
   const contextValue = {
     acreditaciones,
@@ -664,7 +710,7 @@ export default function AdminDashboard() {
     setIsProcessing,
     confirmDeleteModal,
     setConfirmDeleteModal,
-    fetchAcreditaciones,
+    fetchAcreditaciones: refreshAcreditaciones,
     openDetail,
     handleAsignZona,
     assignZonaDirect,
@@ -716,49 +762,91 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <AdminStats acreditaciones={acreditaciones} />
-
-        {/* Message */}
-        {message && (
-          <div
-            className={`mb-6 p-4 rounded-lg text-sm font-medium ${
-              message.type === "success"
-                ? "bg-green-100 text-green-800 border border-green-300"
-                : "bg-red-100 text-red-800 border border-red-300"
-            }`}
-          >
-            {message.text}
+        <div className="mb-6 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
+          <div className="flex flex-wrap gap-2 border-b border-gray-200 px-4 py-3 bg-gradient-to-r from-[#1e5799]/10 to-[#2989d8]/10">
+            <button
+              type="button"
+              onClick={() => setActiveTab("acreditaciones")}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                activeTab === "acreditaciones"
+                  ? "bg-[#1e5799] text-white"
+                  : "bg-white text-[#1e5799] border border-[#1e5799]/40"
+              }`}
+            >
+              Acreditaciones
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("configuracion")}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                activeTab === "configuracion"
+                  ? "bg-[#1e5799] text-white"
+                  : "bg-white text-[#1e5799] border border-[#1e5799]/40"
+              }`}
+            >
+              Configuracion
+            </button>
           </div>
-        )}
-
-        {/* Panel de Filtros y Acciones */}
-        <div className="mb-6">
-          <AdminFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            estadoFilter={estadoFilter}
-            setEstadoFilter={setEstadoFilter}
-            onRefresh={fetchAcreditaciones}
-          />
-
-          <AdminExportActions estadoFilter={estadoFilter} setMessage={setMessage} />
         </div>
 
-        {/* Tabla */}
-        <AdminTable
-          filteredAcreditaciones={filteredAcreditaciones}
-          AREA_NAMES={AREA_NAMES}
-          ESTADO_COLORS={ESTADO_COLORS}
-          onOpenDetail={openDetail}
-          onConfirmEmail={handleConfirmEmail}
-          onEmailError={handleEmailError}
-          selectedIds={selectedIds}
-          onSelectionChange={handleSelectionChange}
-          onSelectAll={handleSelectAll}
-          onBulkAction={handleBulkAction}
-          onConfirmDelete={handleConfirmDelete}
-        />
+        {activeTab === "acreditaciones" ? (
+          <>
+            {/* Stats Cards */}
+            <AdminStats acreditaciones={acreditaciones} />
+
+            {/* Control de acreditacion */}
+            {activeEventoId && <AdminAcreditacionControl eventoId={activeEventoId} />}
+
+            {/* Message */}
+            {message && (
+              <div
+                className={`mb-6 p-4 rounded-lg text-sm font-medium ${
+                  message.type === "success"
+                    ? "bg-green-100 text-green-800 border border-green-300"
+                    : "bg-red-100 text-red-800 border border-red-300"
+                }`}
+              >
+                {message.text}
+              </div>
+            )}
+
+            {/* Panel de Filtros y Acciones */}
+            <div className="mb-6">
+              <AdminFilters
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                estadoFilter={estadoFilter}
+                setEstadoFilter={setEstadoFilter}
+                onRefresh={() => activeEventoId && fetchAcreditaciones(activeEventoId)}
+                eventos={eventos}
+                selectedEventoId={activeEventoId}
+                onEventoChange={(id) => setActiveEventoId(id)}
+              />
+
+              <AdminExportActions estadoFilter={estadoFilter} setMessage={setMessage} />
+            </div>
+
+            {/* Tabla */}
+            <AdminTable
+              filteredAcreditaciones={filteredAcreditaciones}
+              AREA_NAMES={AREA_NAMES}
+              ESTADO_COLORS={ESTADO_COLORS}
+              onOpenDetail={openDetail}
+              onConfirmEmail={handleConfirmEmail}
+              onEmailError={handleEmailError}
+              selectedIds={selectedIds}
+              onSelectionChange={handleSelectionChange}
+              onSelectAll={handleSelectAll}
+              onBulkAction={handleBulkAction}
+              onConfirmDelete={handleConfirmDelete}
+            />
+          </>
+        ) : (
+          <AdminSidebar
+            eventoId={activeEventoId}
+            onEventoChange={(id) => setActiveEventoId(id)}
+          />
+        )}
       </div>
 
       {/* Detail Modal */}
