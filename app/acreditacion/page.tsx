@@ -446,7 +446,7 @@ export default function AcreditacionPage() {
             Acreditación Prensa
           </h1>
           <p className="text-white/80 mt-2 text-lg">
-            {evento.nombre || "Universidad Catolica"} vs {evento.rival || "Deportes Concepcion"}
+            {evento.local || "Universidad Catolica"} vs {evento.rival}
             {formattedDate ? ` - ${formattedDate}` : ""}
             {evento.lugar ? `, ${evento.lugar}` : ""}
           </p>

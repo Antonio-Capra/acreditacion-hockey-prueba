@@ -134,17 +134,17 @@ export default function LandingPage() {
                             <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-12 lg:gap-16 xl:gap-20 mb-4 sm:mb-8 w-full">
                                 {/* Universidad Católica */}
                                 <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
-                                  {eventoLoading ? (
-                                    <div className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 xl:h-40 xl:w-40 rounded-full bg-gray-200/60 border border-gray-200 animate-pulse" />
-                                  ) : (
-                                    <Image
-                                      src={localCrestSrc}
-                                      alt="Escudo Universidad Católica"
-                                      width={300}
-                                      height={300}
-                                      className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
-                                    />
-                                  )}
+                                    {eventoLoading ? (
+                                        <div className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 xl:h-40 xl:w-40 rounded-full bg-gray-200/60 border border-gray-200 animate-pulse" />
+                                    ) : (
+                                        <Image
+                                            src={localCrestSrc}
+                                            alt="Escudo Universidad Católica"
+                                            width={300}
+                                            height={300}
+                                            className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                        />
+                                    )}
                                 </div>
 
                                 {/* VS */}
@@ -154,17 +154,17 @@ export default function LandingPage() {
 
                                 {/* Deportes Concepción */}
                                 <div className="flex flex-col items-center transform hover:scale-110 transition-transform duration-300">
-                                  {eventoLoading ? (
-                                    <div className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 xl:h-40 xl:w-40 rounded-full bg-gray-200/60 border border-gray-200 animate-pulse" />
-                                  ) : (
-                                    <Image
-                                      src={rivalCrestSrc}
-                                      alt="Escudo Deportes Concepción"
-                                      width={300}
-                                      height={300}
-                                      className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
-                                    />
-                                  )}
+                                    {eventoLoading ? (
+                                        <div className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 xl:h-40 xl:w-40 rounded-full bg-gray-200/60 border border-gray-200 animate-pulse" />
+                                    ) : (
+                                        <Image
+                                            src={rivalCrestSrc}
+                                            alt="Escudo Deportes Concepción"
+                                            width={300}
+                                            height={300}
+                                            className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 object-contain max-w-xs min-w-[64px] min-h-[64px]"
+                                        />
+                                    )}
                                 </div>
                             </div>
 
