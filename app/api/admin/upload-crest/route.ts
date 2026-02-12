@@ -119,12 +119,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No se pudo subir el archivo" }, { status: 500 });
     }
 
-    const { data: publicUrlData, error: publicUrlError } = supabaseAdmin.storage
+    const { data: publicUrlData } = supabaseAdmin.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 
-    if (publicUrlError || !publicUrlData?.publicUrl) {
-      console.error("[upload-crest] public URL error", publicUrlError);
+    if (!publicUrlData?.publicUrl) {
+      console.error("[upload-crest] public URL missing", publicUrlData);
       return NextResponse.json({ error: "No se pudo obtener la URL publica" }, { status: 500 });
     }
 
