@@ -35,7 +35,7 @@ export default function AdminStats({ acreditaciones, eventoId, zonas = [] }: Adm
     const map = new Map<string, number>();
 
     // contar por zona_id
-    aprobadas && acreditaciones.forEach((a) => {
+    acreditaciones.forEach((a) => {
       if (a.status !== 'aprobado') return;
       const zid = a.zona_id ?? -1;
       const zoneName = zid === -1 ? 'Sin asignar' : (zonas.find(z => z.id === zid)?.nombre ?? `Zona ${zid}`);
@@ -60,7 +60,7 @@ export default function AdminStats({ acreditaciones, eventoId, zonas = [] }: Adm
       }
     };
     fetchEmailIssues();
-  }, [eventoId ?? null]);
+  }, [eventoId]);
 
   const getStatusLabel = (status: string) => {
     switch (status) {

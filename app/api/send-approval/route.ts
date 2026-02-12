@@ -275,7 +275,7 @@ export async function POST(req: Request) {
       // Guardar log del email
       await supabaseAdmin.from("email_logs").insert({
         acreditacion_id: body.id || null,
-        evento_id: (body as any).eventoId ?? null,
+        evento_id: body.eventoId ?? null,
         resend_id: emailResult?.id || null,
         to_email: correo,
         email_type: "approval",

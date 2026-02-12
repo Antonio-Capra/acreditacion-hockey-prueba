@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as ExcelJS from "exceljs";
-import * as XLSX from 'xlsx';
 import { createClient } from "@supabase/supabase-js";
 
 interface Acreditado {
