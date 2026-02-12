@@ -7,7 +7,7 @@ import Image from "next/image";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 import Modal from "@/components/common/Modal";
-import { AdminProvider, AdminStats, AdminFilters, AdminExportActions, AdminTable, AdminAcreditacionControl, AdminSidebar, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
+import { AdminProvider, AdminStats, AdminExportActions, AdminTable, AdminAcreditacionControl, AdminSidebar, Acreditacion, User, AREA_NAMES, ESTADO_COLORS } from "@/components/admin-dashboard";
 import { useEventoActivo } from "@/hooks";
 
 export default function AdminDashboard() {
@@ -810,19 +810,8 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Panel de Filtros y Acciones */}
+            {/* Acciones complementarias */}
             <div className="mb-6">
-              <AdminFilters
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                estadoFilter={estadoFilter}
-                setEstadoFilter={setEstadoFilter}
-                onRefresh={() => activeEventoId && fetchAcreditaciones(activeEventoId)}
-                eventos={eventos}
-                selectedEventoId={activeEventoId}
-                onEventoChange={(id) => setActiveEventoId(id)}
-              />
-
               <AdminExportActions estadoFilter={estadoFilter} setMessage={setMessage} />
             </div>
 
@@ -839,6 +828,18 @@ export default function AdminDashboard() {
               onSelectAll={handleSelectAll}
               onBulkAction={handleBulkAction}
               onConfirmDelete={handleConfirmDelete}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              estadoFilter={estadoFilter}
+              setEstadoFilter={setEstadoFilter}
+              onRefresh={() => {
+                if (activeEventoId) {
+                  fetchAcreditaciones(activeEventoId);
+                }
+              }}
+              eventos={eventos}
+              selectedEventoId={activeEventoId}
+              onEventoChange={(id) => setActiveEventoId(id)}
             />
           </>
         ) : (

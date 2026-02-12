@@ -23,6 +23,9 @@ interface AdminTableProps {
   estadoFilter?: string;
   setEstadoFilter?: (filter: string) => void;
   onRefresh?: () => void;
+  eventos?: Array<{ id: number; nombre: string; activo?: boolean | null }>;
+  selectedEventoId?: number | null;
+  onEventoChange?: (id: number) => void;
 }
 
 export default function AdminTable({
@@ -43,12 +46,17 @@ export default function AdminTable({
   estadoFilter,
   setEstadoFilter,
   onRefresh,
+  eventos,
+  selectedEventoId,
+  onEventoChange,
 }: AdminTableProps) {
   const [confirmActionModal, setConfirmActionModal] = useState<{ isOpen: boolean; type: "aprobado" | "rechazado" | null; message: string; onConfirm: () => void }>({ isOpen: false, type: null, message: "", onConfirm: () => {} });
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<{ isOpen: boolean; message: string; onConfirm: () => void }>({ isOpen: false, message: "", onConfirm: () => {} });
 
   // Control de tamaño de fuente de la tabla
   const [fontScale, setFontScale] = useState<number>(100);
+  const filterInputClass = "w-full px-3 py-2 h-12 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20";
+  const filterSelectClass = "w-full px-3 py-2 h-12 rounded-lg bg-white/20 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20";
 
   const openConfirmModal = (type: "aprobado" | "rechazado", message: string, onConfirm: () => void) => {
     setConfirmActionModal({ isOpen: true, type, message, onConfirm });
@@ -75,52 +83,108 @@ export default function AdminTable({
             <h2 className="text-xl font-bold text-white">Lista de Acreditaciones</h2>
             {/* Filtros compactos en la cabecera (si el parent pasa las props) */}
             {setSearchTerm && setEstadoFilter && (
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  aria-label="filtro-buscar"
-                  placeholder="Buscar (nombre, email, RUT...)"
-                  value={searchTerm || ''}
-                  onChange={(e) => setSearchTerm?.(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
-                />
-                <select
-                  aria-label="filtro-estado"
-                  value={estadoFilter || ''}
-                  onChange={(e) => setEstadoFilter?.(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-white/20 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
-                >
-                  <option className="text-black" value="">Todos</option>
-                  <option className="text-black" value="pendiente">Pendiente</option>
-                  <option className="text-black" value="aprobado">Aprobado</option>
-                  <option className="text-black" value="rechazado">Rechazado</option>
-                </select>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onRefresh?.()}
-                    className="px-4 py-2 rounded-lg bg-white text-[#1e5799] font-semibold hover:opacity-90"
-                    aria-label="actualizar-filtros"
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {eventos && eventos.length > 0 && onEventoChange && (
+                  <div>
+                    <label className="text-[11px] font-semibold text-white/80 uppercase tracking-wide block mb-1">
+                      Evento
+                    </label>
+                    <select
+                      aria-label="filtro-evento"
+                      value={selectedEventoId ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (!value) return;
+                        onEventoChange?.(Number(value));
+                      }}
+                      className={filterSelectClass}
+                    >
+                      <option className="text-black" value="" disabled>
+                        Seleccionar evento
+                      </option>
+                      {eventos.map((evento) => (
+                        <option key={evento.id} className="text-black" value={evento.id}>
+                          {evento.nombre || `Evento ${evento.id}`}
+                          {evento.activo ? ' (Activo)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-[11px] font-semibold text-white/80 uppercase tracking-wide block mb-1">
+                    Buscar
+                  </label>
+                  <input
+                    type="text"
+                    aria-label="filtro-buscar"
+                    placeholder="Nombre, email, RUT..."
+                    value={searchTerm || ''}
+                    onChange={(e) => setSearchTerm?.(e.target.value)}
+                    className={filterInputClass}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-white/80 uppercase tracking-wide block mb-1">
+                    Estado
+                  </label>
+                  <select
+                    aria-label="filtro-estado"
+                    value={estadoFilter || ''}
+                    onChange={(e) => setEstadoFilter?.(e.target.value)}
+                    className={filterSelectClass}
                   >
-                    Actualizar
-                  </button>
-                  <div className="flex items-center ml-auto bg-white/10 px-2 py-1 rounded-md text-white">
+                    <option className="text-black" value="">Todos</option>
+                    <option className="text-black" value="pendiente">Pendiente</option>
+                    <option className="text-black" value="aprobado">Aprobado</option>
+                    <option className="text-black" value="rechazado">Rechazado</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-2 lg:col-span-1">
+                  <label className="text-[11px] font-semibold text-white/80 uppercase tracking-wide block mb-1">
+                    Herramientas
+                  </label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <button
-                      onClick={() => setFontScale(s => Math.max(80, s - 10))}
-                      aria-label="disminuir-tamano"
-                      className="px-2 py-1 hover:bg-white/10 rounded-md"
-                      title="Disminuir tamaño de letra"
+                      onClick={() => onRefresh?.()}
+                      className="px-4 h-12 rounded-lg bg-white text-[#1e5799] font-semibold hover:opacity-90 flex items-center justify-center"
+                      aria-label="actualizar-filtros"
                     >
-                      −
+                      Actualizar
                     </button>
-                    <span className="px-2 text-sm text-white font-semibold" aria-hidden>{fontScale}%</span>
-                    <button
-                      onClick={() => setFontScale(s => Math.min(140, s + 10))}
-                      aria-label="aumentar-tamano"
-                      className="px-2 py-1 hover:bg-white/10 rounded-md"
-                      title="Aumentar tamaño de letra"
-                    >
-                      +
-                    </button>
+                    <div className="flex items-center gap-2 bg-white/10 px-3 rounded-md text-white h-12">
+                      <button
+                        onClick={() => setFontScale((s) => Math.max(80, s - 10))}
+                        aria-label="disminuir-tamano"
+                        className="p-1.5 rounded-md hover:bg-white/10"
+                        title="Reducir tamaño de letra"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.5" />
+                          <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M8 11h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                      <span className="px-2 text-sm text-white font-semibold" aria-hidden>
+                        {fontScale}%
+                      </span>
+                      <button
+                        onClick={() => setFontScale((s) => Math.min(140, s + 10))}
+                        aria-label="aumentar-tamano"
+                        className="p-1.5 rounded-md hover:bg-white/10"
+                        title="Aumentar tamaño de letra"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.5" />
+                          <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M11 8v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M8 11h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -244,6 +308,7 @@ export default function AdminTable({
         </div>
       )}
       </div>
+      </div>
       <ConfirmationModal
         isOpen={confirmActionModal.isOpen}
         title={confirmActionModal.type === "aprobado" ? "Confirmar Aprobación" : "Confirmar Rechazo"}
@@ -265,6 +330,5 @@ export default function AdminTable({
         onCancel={closeConfirmDeleteModal}
       />
     </div>
-  </div>
   );
 }

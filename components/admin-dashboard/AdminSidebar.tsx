@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent, DragEvent, KeyboardEvent } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 
@@ -36,6 +38,22 @@ interface AdminSidebarProps {
   onEventoChange: (id: number) => void;
 }
 
+type CrestTarget = "local" | "opponent";
+
+interface CrestUploadState {
+  uploading: boolean;
+  error: string | null;
+}
+
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
+const MAX_IMAGE_SIZE_MB = 4;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+const createInitialCrestUploads = (): Record<CrestTarget, CrestUploadState> => ({
+  local: { uploading: false, error: null },
+  opponent: { uploading: false, error: null },
+});
+
 export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarProps) {
   const [eventInfo, setEventInfo] = useState<EventInfo>(DEFAULT_EVENT);
   const [eventClosed, setEventClosed] = useState(false);
@@ -45,6 +63,9 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [crestUploads, setCrestUploads] = useState<Record<CrestTarget, CrestUploadState>>(
+    () => createInitialCrestUploads()
+  );
 
   const activeEventoId = eventoId ?? eventos.find((evt) => evt.activo)?.id ?? null;
   const selectedEventoId = activeEventoId ?? eventoId;
@@ -55,7 +76,7 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
     return match.activo ? `${base} (Activo)` : base;
   }, [eventos, selectedEventoId]);
 
-  const fetchEventos = async () => {
+  const fetchEventos = useCallback(async () => {
     try {
       setError(null);
 
@@ -76,15 +97,11 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
       const message = err instanceof Error ? err.message : "Error al cargar evento";
       setError(message);
     }
-  };
+  }, [eventoId, onEventoChange]);
 
   useEffect(() => {
-      try {
-      fetchEventos();
-    } catch {
-      // Errors are handled inside fetchEventos
-    }
-  }, [eventoId, onEventoChange]);
+    fetchEventos();
+  }, [fetchEventos]);
 
   useEffect(() => {
     const fetchEvento = async () => {
@@ -126,9 +143,90 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
     fetchEvento();
   }, [selectedEventoId]);
 
+  useEffect(() => {
+    setCrestUploads(createInitialCrestUploads());
+  }, [selectedEventoId]);
+
+  const setCrestUploadState = useCallback(
+    (target: CrestTarget, patch: Partial<CrestUploadState>) => {
+      setCrestUploads((prev) => ({
+        ...prev,
+        [target]: {
+          ...prev[target],
+          ...patch,
+        },
+      }));
+    },
+    []
+  );
+
+  const uploadCrest = useCallback(
+    async (file: File, target: CrestTarget) => {
+      if (!selectedEventoId) {
+        setCrestUploadState(target, {
+          error: "Selecciona o crea un evento antes de subir un escudo.",
+        });
+        return;
+      }
+
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        setCrestUploadState(target, {
+          error: `El archivo supera ${MAX_IMAGE_SIZE_MB} MB`,
+        });
+        return;
+      }
+
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        setCrestUploadState(target, {
+          error: "Formato no soportado (usa PNG, JPG, SVG o WebP)",
+        });
+        return;
+      }
+
+      setCrestUploadState(target, { uploading: true, error: null });
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("target", target);
+        formData.append("eventoId", String(selectedEventoId));
+
+        const response = await fetch("/api/admin/upload-crest", {
+          method: "POST",
+          body: formData,
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | { url?: string; error?: string }
+          | null;
+
+        if (!response.ok || !payload?.url) {
+          throw new Error(payload?.error ?? "No se pudo subir el archivo");
+        }
+
+        const uploadedUrl = payload.url ?? "";
+        setEventInfo((prev) =>
+          target === "local"
+            ? { ...prev, localCrestUrl: uploadedUrl }
+            : { ...prev, opponentCrestUrl: uploadedUrl }
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Error al subir imagen";
+        setCrestUploadState(target, { error: message });
+      } finally {
+        setCrestUploadState(target, { uploading: false });
+      }
+    },
+    [selectedEventoId, setCrestUploadState]
+  );
+
   const handleSave = async () => {
     try {
       if (!selectedEventoId) return;
+      if (crestUploads.local.uploading || crestUploads.opponent.uploading) {
+        setError("Espera a que terminen las cargas de escudos antes de guardar.");
+        return;
+      }
       setSaving(true);
       setError(null);
       setSuccess(null);
@@ -297,6 +395,15 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
     }
   };
 
+  const crestInputsDisabled = loading || !selectedEventoId;
+  const crestUploadsBusy = crestUploads.local.uploading || crestUploads.opponent.uploading;
+  const crestHelperLocal = crestInputsDisabled
+    ? "Selecciona un evento para habilitar esta subida."
+    : "Se usa como escudo local en la landing y los correos. Guarda para aplicar.";
+  const crestHelperOpponent = crestInputsDisabled
+    ? "Selecciona un evento para habilitar esta subida."
+    : "Escudo del rival mostrado en la landing y correos. Guarda para aplicar.";
+
   return (
     <section className="space-y-6">
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
@@ -382,7 +489,7 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
                 disabled={saving}
                 className="w-full px-4 py-2 border border-[#1e5799] text-[#1e5799] rounded-xl font-semibold hover:bg-[#1e5799]/10 transition-colors disabled:opacity-60"
               >
-                Crear borrador
+                Crear evento
               </button>
               <button
                 type="button"
@@ -459,28 +566,28 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
                   disabled={loading}
                 />
               </label>
-              <label className="block text-xs font-semibold text-gray-600">
-                Escudo organizador (URL)
-                <input
-                  type="url"
-                  value={eventInfo.localCrestUrl}
-                  onChange={(e) => setEventInfo({ ...eventInfo, localCrestUrl: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  placeholder="https://..."
-                  disabled={loading}
-                />
-              </label>
-              <label className="block text-xs font-semibold text-gray-600">
-                Escudo rival (URL)
-                <input
-                  type="url"
-                  value={eventInfo.opponentCrestUrl}
-                  onChange={(e) => setEventInfo({ ...eventInfo, opponentCrestUrl: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  placeholder="https://..."
-                  disabled={loading}
-                />
-              </label>
+              <CrestUploader
+                label="Escudo organizador"
+                value={eventInfo.localCrestUrl}
+                disabled={crestInputsDisabled}
+                uploading={crestUploads.local.uploading}
+                error={crestUploads.local.error}
+                helperText={crestHelperLocal}
+                onUrlChange={(value) => setEventInfo({ ...eventInfo, localCrestUrl: value })}
+                onFileUpload={(file) => uploadCrest(file, "local")}
+              />
+              <CrestUploader
+                label="Escudo rival"
+                value={eventInfo.opponentCrestUrl}
+                disabled={crestInputsDisabled}
+                uploading={crestUploads.opponent.uploading}
+                error={crestUploads.opponent.error}
+                helperText={crestHelperOpponent}
+                onUrlChange={(value) =>
+                  setEventInfo({ ...eventInfo, opponentCrestUrl: value })
+                }
+                onFileUpload={(file) => uploadCrest(file, "opponent")}
+              />
             </div>
           </details>
 
@@ -512,10 +619,10 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving || loading}
+              disabled={saving || loading || crestUploadsBusy}
               className="w-full px-4 py-2 bg-[#1e5799] text-white rounded-xl font-semibold hover:bg-[#207cca] transition-colors disabled:opacity-60"
             >
-              {saving ? "Guardando..." : "Guardar cambios"}
+              {saving ? "Guardando..." : crestUploadsBusy ? "Procesando imagen..." : "Guardar cambios"}
             </button>
           </div>
         </div>
@@ -535,5 +642,133 @@ export default function AdminSidebar({ eventoId, onEventoChange }: AdminSidebarP
         isLoading={saving}
       />
     </section>
+  );
+}
+
+interface CrestUploaderProps {
+  label: string;
+  value: string;
+  disabled: boolean;
+  uploading: boolean;
+  error?: string | null;
+  helperText?: string;
+  onUrlChange: (value: string) => void;
+  onFileUpload: (file: File) => void;
+}
+
+function CrestUploader({
+  label,
+  value,
+  disabled,
+  uploading,
+  error,
+  helperText,
+  onUrlChange,
+  onFileUpload,
+}: CrestUploaderProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0];
+    if (nextFile) {
+      onFileUpload(nextFile);
+      event.target.value = "";
+    }
+  };
+
+  const handleUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onUrlChange(event.target.value);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (disabled || uploading) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (disabled || uploading) return;
+    event.preventDefault();
+    const nextFile = event.dataTransfer.files?.[0];
+    if (nextFile) {
+      onFileUpload(nextFile);
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (disabled || uploading) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fileInputRef.current?.click();
+    }
+  };
+
+  const openFileDialog = () => {
+    if (disabled || uploading) return;
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs font-semibold text-gray-600">
+        <span>{label}</span>
+        {uploading && <span className="text-[#1e5799]">Subiendo...</span>}
+      </div>
+      <div
+        className={`rounded-xl border-2 border-dashed px-3 py-3 transition ${
+          uploading ? "border-[#1e5799] bg-blue-50/40" : "border-gray-200"
+        } ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-[#1e5799]"}`}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
+        onClick={openFileDialog}
+        onKeyDown={handleKeyDown}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <div className="flex items-center gap-3">
+          {value ? (
+            <Image
+              src={value}
+              alt={`Vista previa ${label}`}
+              width={64}
+              height={64}
+              className="h-12 w-12 rounded-lg border border-gray-200 object-contain bg-white"
+            />
+          ) : (
+            <div className="h-12 w-12 rounded-lg border border-dashed border-gray-300 bg-gray-50 text-[10px] font-semibold text-gray-400 flex items-center justify-center">
+              IMG
+            </div>
+          )}
+          <div className="text-[11px] text-gray-500">
+            <p>Arrastra un archivo o haz clic para subir.</p>
+            <p className="text-[10px] text-gray-400">
+              Formatos: PNG, JPG, SVG, WebP · Max {MAX_IMAGE_SIZE_MB} MB
+            </p>
+          </div>
+        </div>
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+        disabled={disabled || uploading}
+      />
+      <label className="block text-[11px] font-semibold text-gray-600">
+        o pega una URL
+        <input
+          type="url"
+          value={value}
+          onChange={handleUrlChange}
+          placeholder="https://..."
+          disabled={disabled}
+          className="mt-1 w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+        />
+      </label>
+      {helperText && <p className="text-[11px] text-gray-500">{helperText}</p>}
+      {error && <p className="text-[11px] text-red-600">{error}</p>}
+    </div>
   );
 }

@@ -268,6 +268,37 @@ describe('AdminTable Bulk Actions', () => {
     expect(screen.getByLabelText('actualizar-filtros')).toBeInTheDocument();
   });
 
+  it('renders evento selector and calls handler when provided', async () => {
+    const user = userEvent.setup();
+    const onEventoChange = jest.fn();
+    const eventos = [
+      { id: 1, nombre: 'Evento Test 1', activo: true },
+      { id: 2, nombre: 'Evento Test 2' },
+    ];
+
+    render(
+      <TestWrapper>
+        <AdminTable
+          {...mockProps}
+          searchTerm=""
+          setSearchTerm={jest.fn()}
+          estadoFilter=""
+          setEstadoFilter={jest.fn()}
+          onRefresh={jest.fn()}
+          eventos={eventos}
+          selectedEventoId={1}
+          onEventoChange={onEventoChange}
+        />
+      </TestWrapper>
+    );
+
+    const select = screen.getByLabelText('filtro-evento');
+    expect(select).toBeInTheDocument();
+
+    await user.selectOptions(select, '2');
+    expect(onEventoChange).toHaveBeenCalledWith(2);
+  });
+
   it('font size controls adjust table font-size', async () => {
     const user = userEvent.setup();
     render(
