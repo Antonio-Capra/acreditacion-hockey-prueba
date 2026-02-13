@@ -21,6 +21,7 @@ interface AccreditacionRequest {
   responsable_telefono: string;
   empresa: string;
   area: string;
+  medio_link?: string;
   acreditados: Acreditado[];
   evento_id?: number;
 }
@@ -32,6 +33,12 @@ const FALLBACK_AREAS = [
   { id: 3, codigo: "produccion", cupo_maximo: 40, evento_id: 1 },
   { id: 4, codigo: "catering", cupo_maximo: 20, evento_id: 1 },
 ];
+
+interface ErrorObject {
+  message?: string;
+  detail?: string;
+  [key: string]: unknown;
+}
 
 export async function POST(req: Request) {
   // Cliente anónimo para INSERT
@@ -57,6 +64,7 @@ export async function POST(req: Request) {
       responsable_telefono,
       empresa,
       area,
+      medio_link,
       acreditados,
       evento_id: requestEventoId
     } = data;
@@ -90,13 +98,14 @@ export async function POST(req: Request) {
         .select("id, codigo, cupo_maximo");
 
       if (areasError) {
-        console.warn("Error al acceder a la tabla areas_prensa, usando datos de fallback:", areasError.message);
+        // Error al acceder a la tabla, usar fallback
         areasData = FALLBACK_AREAS;
       } else {
         areasData = data || FALLBACK_AREAS;
       }
     } catch (err) {
-      console.warn("Error al consultar áreas, usando datos de fallback:", err);
+      // Error al consultar áreas, usar fallback
+      void err;
       areasData = FALLBACK_AREAS;
     }
 
@@ -159,7 +168,8 @@ export async function POST(req: Request) {
       .select("id, nombre");
 
     if (zonasError) {
-      console.warn("Error al obtener zonas:", zonasError.message);
+      // Error al obtener zonas, continuar sin ellas
+      void zonasError;
     }
 
     // Función para determinar zona basada en cargo
@@ -210,6 +220,7 @@ export async function POST(req: Request) {
       numero_credencial: acreditado.numero_credencial,
       area: area,
       empresa: empresa,
+      medio_link: medio_link || null,
       zona_id: getZonaIdByCargo(acreditado.cargo),
       status: "pendiente",
       responsable_nombre,
@@ -224,7 +235,20 @@ export async function POST(req: Request) {
       .from("acreditados")
       .insert(acreditadosToInsert);
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      // Lanzar el error de Supabase directamente si es un RUT duplicado
+      const errorMessage = insertError.message || JSON.stringify(insertError);
+      if (errorMessage.includes("23505") || errorMessage.includes("unique") || errorMessage.includes("idx_acreditados_rut_evento_id")) {
+        return NextResponse.json(
+          {
+            error: "Ya existe un acreditado con este RUT en el evento. Por favor, revisa los datos ingresados.",
+            isRutDuplicate: true,
+          },
+          { status: 409 }
+        );
+      }
+      throw insertError;
+    }
 
     return NextResponse.json(
       {
@@ -235,13 +259,56 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    // Detectar si es un error de llave única duplicada (RUT duplicado en el evento)
+    let errorMessage = "Error desconocido";
+    let statusCode = 500;
+    let isRutDuplicate = false;
+
+    // Manejar diferentes tipos de errores
+    if (error && typeof error === "object") {
+      const errorObj = error as ErrorObject;
+      
+      // Error de Supabase
+      if (errorObj.message) {
+        errorMessage = errorObj.message;
+        if (
+          errorMessage.includes("23505") ||
+          errorMessage.includes("unique") ||
+          errorMessage.includes("idx_acreditados_rut_evento_id")
+        ) {
+          isRutDuplicate = true;
+          errorMessage = "Ya existe un acreditado con este RUT en el evento. Por favor, revisa los datos ingresados.";
+          statusCode = 409;
+        }
+      } else if (errorObj.detail) {
+        errorMessage = errorObj.detail;
+        if (errorMessage.includes("23505") || errorMessage.includes("unique")) {
+          isRutDuplicate = true;
+          errorMessage = "Ya existe un acreditado con este RUT en el evento. Por favor, revisa los datos ingresados.";
+          statusCode = 409;
+        }
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+      if (
+        errorMessage.includes("23505") ||
+        errorMessage.includes("unique") ||
+        errorMessage.includes("idx_acreditados_rut_evento_id")
+      ) {
+        isRutDuplicate = true;
+        errorMessage = "Ya existe un acreditado con este RUT en el evento. Por favor, revisa los datos ingresados.";
+        statusCode = 409;
+      }
+    }
+
+    // Error capturado y manejado apropiadamente
     return NextResponse.json(
       {
         error: errorMessage,
+        isRutDuplicate,
         details: error instanceof Error ? error.stack : error,
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }

@@ -127,6 +127,7 @@ export default function AdminDashboard() {
           numero_credencial,
           area,
           empresa,
+          medio_link,
           zona_id,
           status,
           motivo_rechazo,
@@ -155,6 +156,7 @@ export default function AdminDashboard() {
         numero_credencial: a.numero_credencial,
         area: a.area,
         empresa: a.empresa,
+        medio_link: a.medio_link,
         zona_id: a.zona_id,
         status: a.status,
         motivo_rechazo: a.motivo_rechazo,
@@ -946,6 +948,23 @@ export default function AdminDashboard() {
                   <div>
                     <label className="text-sm font-medium text-gray-600">Empresa</label>
                     <p className="text-base font-semibold">{selectedAcreditacion.empresa}</p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-600">Link del Medio</label>
+                    <p className="text-base font-semibold">
+                      {selectedAcreditacion.medio_link ? (
+                        <a
+                          href={selectedAcreditacion.medio_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline break-all"
+                        >
+                          {selectedAcreditacion.medio_link}
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -14,6 +14,7 @@ export interface Acreditacion {
   numero_credencial: string;
   area: string;
   empresa: string;
+  medio_link?: string;
   zona_id?: number;
   status: "pendiente" | "aprobado" | "rechazado";
   motivo_rechazo?: string;

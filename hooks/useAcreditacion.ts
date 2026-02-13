@@ -29,6 +29,7 @@ interface FormData {
   responsable_telefono: string;
   empresa: string;
   area: string;
+  medio_link?: string;
   acreditados: Acreditado[];
   evento_id?: number;
 }
@@ -57,6 +58,10 @@ export function useAcreditacion() {
     existentes: number;
     solicitados: number;
   } | null>(null);
+  const [rutDuplicateError, setRutDuplicateError] = useState<{
+    show: boolean;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchAreas();
@@ -70,15 +75,14 @@ export function useAcreditacion() {
       // Use fallback data directly
       setAreas(FALLBACK_AREAS);
     } catch (err) {
-      // If any error occurs, use fallback data
-      console.warn('Error fetching areas, using fallback data:', err);
+      // Usar fallback data
       setAreas(FALLBACK_AREAS);
     } finally {
       setLoading(false);
     }
   };
 
-  const submitAcreditacion = async (formData: FormData): Promise<{ success: boolean; cuposError?: boolean }> => {
+  const submitAcreditacion = async (formData: FormData): Promise<{ success: boolean; cuposError?: boolean; rutDuplicate?: boolean }> => {
     try {
       setLoading(true);
       setError(null);
@@ -115,6 +119,8 @@ export function useAcreditacion() {
         responsable_telefono: formData.responsable_telefono?.trim() || '',
         empresa: formData.empresa.trim(),
         area: formData.area.trim(),
+        ...(formData.medio_link && { medio_link: formData.medio_link.trim() }),
+        ...(formData.evento_id && { evento_id: formData.evento_id }),
         acreditados: formData.acreditados.map(a => ({
           nombre: a.nombre?.trim() || '',
           primer_apellido: a.primer_apellido?.trim() || '',
@@ -136,7 +142,7 @@ export function useAcreditacion() {
       });
 
       if (!response.ok) {
-        let errorData: { error?: string } = {};
+        let errorData: { error?: string; isRutDuplicate?: boolean } = {};
         let errorMessage = `Error del servidor: ${response.status}`;
         
         try {
@@ -154,12 +160,18 @@ export function useAcreditacion() {
             }
           }
         } catch (textError) {
-          console.error('Failed to get response text:', textError);
+          // Log error
+          void textError;
         }
         
-        // Log for debugging (remove in production)
-        // console.error('API Error Response:', errorData);
-        // console.error('Error Message:', errorMessage);
+        // Check if it's a RUT duplicate error (status 409 o flag isRutDuplicate)
+        if (errorData.isRutDuplicate || response.status === 409) {
+          setRutDuplicateError({
+            show: true,
+            message: errorData.error || "Ya existe un acreditado con este RUT en el evento. Por favor, revisa los datos ingresados.",
+          });
+          return { success: false, rutDuplicate: true };
+        }
         
         // Check if it's a cupos error
         if (errorMessage.includes('No hay cupos disponibles')) {
@@ -197,12 +209,18 @@ export function useAcreditacion() {
     setCuposError(null);
   };
 
+  const closeRutDuplicateError = () => {
+    setRutDuplicateError(null);
+  };
+
   return {
     areas,
     loading,
     error,
     cuposError,
     closeCuposError,
+    rutDuplicateError,
+    closeRutDuplicateError,
     submitAcreditacion,
     refetchAreas: fetchAreas,
   };

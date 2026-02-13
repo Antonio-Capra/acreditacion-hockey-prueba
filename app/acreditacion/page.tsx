@@ -98,6 +98,7 @@ interface FormData {
   responsable_telefono: string;
   empresa: string;
   empresa_personalizada: string;
+  medio_link: string;
   area: string;
   acreditados: Acreditado[];
 }
@@ -117,7 +118,7 @@ function createEmptyAcreditado(): Acreditado {
 
 export default function AcreditacionPage() {
   const { evento, loading: eventoLoading } = useEventoActivo();
-  const { areas, loading: areasLoading, cuposError, closeCuposError, submitAcreditacion, error: areasError } = useAcreditacion();
+  const { areas, loading: areasLoading, cuposError, closeCuposError, rutDuplicateError, closeRutDuplicateError, submitAcreditacion, error: areasError } = useAcreditacion();
   const { isOpen: accreditationOpen, loading: configLoading, closeMessage, ventanasActivas } = useAcreditacionConfig(evento?.id ?? 0);
   const isClosed = !accreditationOpen;
 
@@ -156,6 +157,7 @@ export default function AcreditacionPage() {
     responsable_telefono: "",
     empresa: "",
     empresa_personalizada: "",
+    medio_link: "",
     area: "",
     acreditados: [createEmptyAcreditado()],
   });
@@ -182,6 +184,17 @@ export default function AcreditacionPage() {
       return formData.empresa_personalizada;
     }
     return formData.empresa;
+  };
+
+  const isValidUrl = (domain: string): boolean => {
+    // Validar que sea un dominio válido (puede incluir o no el protocolo/www)
+    // Eliminamos protocolo y www si están presentes para validar solo el dominio
+    const cleanDomain = domain
+      .replace(/^https?:\/\/(www\.)?/, "")
+      .replace(/\/$/, "");
+    
+    // Validar que tenga al menos un punto y caracteres válidos
+    return cleanDomain.length > 0 && /^[a-zA-Z0-9]([a-zA-Z0-9-]*\.)+[a-zA-Z]{2,}$/.test(cleanDomain);
   };
 
   // Calcular el paso actual basado en el progreso del formulario
@@ -253,6 +266,7 @@ export default function AcreditacionPage() {
       ...prev,
       empresa: value,
       empresa_personalizada: value === "Otros" ? prev.empresa_personalizada : "",
+      medio_link: value === "Otros" ? prev.medio_link : "",
     }));
   };
 
@@ -260,6 +274,13 @@ export default function AcreditacionPage() {
     setFormData((prev) => ({
       ...prev,
       empresa_personalizada: value,
+    }));
+  };
+
+  const handleMedioLinkChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      medio_link: value,
     }));
   };
 
@@ -353,6 +374,9 @@ export default function AcreditacionPage() {
     if (formData.empresa === "Otros" && !formData.empresa_personalizada?.trim()) {
       return "Complete el nombre del medio/empresa";
     }
+    if (formData.empresa === "Otros" && formData.medio_link?.trim() && !isValidUrl(formData.medio_link)) {
+      return "El link del medio debe ser una URL válida";
+    }
     if (!formData.area?.trim()) {
       return "Seleccione un área";
     }
@@ -412,6 +436,7 @@ export default function AcreditacionPage() {
       responsable_telefono: "",
       empresa: "",
       empresa_personalizada: "",
+      medio_link: "",
       area: "",
       acreditados: [createEmptyAcreditado()],
     });
@@ -432,8 +457,17 @@ export default function AcreditacionPage() {
       const formDataToSend = { ...formData };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (formDataToSend as any).empresa_personalizada;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (formDataToSend as any).medio_link;
       if (formData.empresa === "Otros") {
         formDataToSend.empresa = `Otros: ${formData.empresa_personalizada}`;
+        // Agregar el prefijo https://www. al dominio si existe
+        if (formData.medio_link?.trim()) {
+          const domain = formData.medio_link.trim();
+          const fullUrl = domain.startsWith("http") ? domain : `https://www.${domain}`;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (formDataToSend as any).medio_link = fullUrl;
+        }
       }
 
       const result = await submitAcreditacion({ ...formDataToSend, evento_id: evento?.id });
@@ -442,6 +476,8 @@ export default function AcreditacionPage() {
         setSuccessModal({ show: true, acreditados_count: formData.acreditados.length });
         setSubmissionStatus({ type: "success", message: "Acreditación enviada exitosamente" });
       } else if (result.cuposError) {
+        // Modal is already shown by the hook, no need to do anything else
+      } else if (result.rutDuplicate) {
         // Modal is already shown by the hook, no need to do anything else
       }
 
@@ -616,14 +652,26 @@ export default function AcreditacionPage() {
                 ))}
               </select>
               {formData.empresa === "Otros" && (
-                <input
-                  type="text"
-                  placeholder="Nombre del Medio/Empresa"
-                  value={formData.empresa_personalizada}
-                  onChange={(e) => handleEmpresaPersonalizadaChange(e.target.value)}
-                  className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
-                  required
-                />
+                <>
+                  <input
+                    type="text"
+                    placeholder="Nombre del Medio/Empresa"
+                    value={formData.empresa_personalizada}
+                    onChange={(e) => handleEmpresaPersonalizadaChange(e.target.value)}
+                    className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1e5799] focus:outline-none"
+                    required
+                  />
+                  <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden focus-within:border-[#1e5799]">
+                    <span className="px-4 py-3 bg-gray-100 text-gray-600 font-semibold whitespace-nowrap">https://www.</span>
+                    <input
+                      type="text"
+                      placeholder="tudominio.cl"
+                      value={formData.medio_link}
+                      onChange={(e) => handleMedioLinkChange(e.target.value)}
+                      className="flex-1 px-3 py-3 focus:outline-none"
+                    />
+                  </div>
+                </>
               )}
               </div>
             </FormSection>
@@ -796,6 +844,23 @@ export default function AcreditacionPage() {
                 },
               ]}
               onClose={closeCuposError}
+            />
+          )}
+
+          {rutDuplicateError?.show && (
+            <Modal
+              isOpen={rutDuplicateError.show}
+              type="error"
+              title="RUT Duplicado en el Evento"
+              message={rutDuplicateError.message}
+              buttons={[
+                {
+                  label: "Entendido",
+                  onClick: closeRutDuplicateError,
+                  variant: "primary",
+                },
+              ]}
+              onClose={closeRutDuplicateError}
             />
           )}
         </>
