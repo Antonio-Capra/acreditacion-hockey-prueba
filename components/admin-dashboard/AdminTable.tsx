@@ -104,8 +104,7 @@ export default function AdminTable({
                       </option>
                       {eventos.map((evento) => (
                         <option key={evento.id} className="text-black" value={evento.id}>
-                          {evento.nombre || `Evento ${evento.id}`}
-                          {evento.activo ? ' (Activo)' : ''}
+                          {evento.activo && 'ACTIVO - '}{evento.nombre || `Evento ${evento.id}`}
                         </option>
                       ))}
                     </select>
